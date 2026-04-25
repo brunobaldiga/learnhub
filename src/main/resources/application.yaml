@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: learnhub
+  datasource:
+    url: jdbc:postgresql://localhost:5432/learnhub
+    username: admin
+    password: 1234
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: false
+    baseline-on-migrate: true
+    baseline-description: "init"
+    baseline-version: 1
+    user: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+
