@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity()
@@ -34,8 +35,9 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Subscription subscription;
 
-    @OneToMany(mappedBy = "creator")
-    private List<Course> courses;
+    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<Course> courses = new ArrayList<>();
 
     private String keycloakId;
 

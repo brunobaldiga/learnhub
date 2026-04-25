@@ -2,7 +2,6 @@ package org.example.learnhub.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.types.CourseStatus;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -10,31 +9,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "courses")
+@Table(name = "sections")
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Course {
+public class Section {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User creator;
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
-    @Column(nullable = false)
-    private String title;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private CourseStatus status;
-
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Section> sections = new ArrayList<>();
+    private List<Video> videos = new ArrayList<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

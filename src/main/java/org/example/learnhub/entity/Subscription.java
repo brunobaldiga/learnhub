@@ -3,6 +3,7 @@ package org.example.learnhub.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.learnhub.types.SubscriptionStatus;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -18,10 +19,11 @@ public class Subscription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne()
+    @OneToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime startedAt;
 

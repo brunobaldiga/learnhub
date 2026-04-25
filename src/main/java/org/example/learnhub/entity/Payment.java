@@ -2,39 +2,34 @@ package org.example.learnhub.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.types.CourseStatus;
+import org.example.learnhub.types.CurrencyType;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "courses")
+@Table(name = "payments")
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Course {
+public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private User creator;
+    private User user;
 
     @Column(nullable = false)
-    private String title;
+    private BigDecimal amount;
 
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private CourseStatus status;
-
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Section> sections = new ArrayList<>();
+    @Column(nullable = false)
+    private CurrencyType currency;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
