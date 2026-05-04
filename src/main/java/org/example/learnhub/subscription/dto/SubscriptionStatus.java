@@ -1,4 +1,4 @@
-package org.example.learnhub.types;
+package org.example.learnhub.subscription.dto;
 
 public enum SubscriptionStatus {
     ACTIVE,

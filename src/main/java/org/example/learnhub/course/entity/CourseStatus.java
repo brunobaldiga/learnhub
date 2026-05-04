@@ -1,4 +1,4 @@
-package org.example.learnhub.types;
+package org.example.learnhub.course.entity;
 
 public enum CourseStatus {
     PUBLIC,

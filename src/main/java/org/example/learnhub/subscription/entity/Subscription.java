@@ -1,8 +1,9 @@
-package org.example.learnhub.entity;
+package org.example.learnhub.subscription.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.types.SubscriptionStatus;
+import org.example.learnhub.subscription.dto.SubscriptionStatus;
+import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;

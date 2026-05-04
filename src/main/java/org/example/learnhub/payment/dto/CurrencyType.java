@@ -1,4 +1,4 @@
-package org.example.learnhub.types;
+package org.example.learnhub.payment.dto;
 
 public enum CurrencyType {
     USD,

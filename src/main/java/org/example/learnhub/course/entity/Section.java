@@ -1,29 +1,32 @@
-package org.example.learnhub.entity;
+package org.example.learnhub.course.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "videos")
+@Table(name = "sections")
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Video {
+public class Section {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "section_id", nullable = false)
-    private Section section;
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
-    @Column(nullable = false, length = 1000)
-    private String videoUrl;
+    @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Video> videos = new ArrayList<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
