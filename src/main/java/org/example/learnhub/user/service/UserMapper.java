@@ -1,4 +1,4 @@
-package org.example.learnhub.user;
+package org.example.learnhub.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.service.CourseMapper;
@@ -23,7 +23,6 @@ public class UserMapper {
         return new UserResponse(
                 user.getEmail(),
                 user.getUsername(),
-                user.getSubscription(),
                 user.getRoleType(),
                 user.getCreatedAt()
         );

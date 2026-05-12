@@ -3,8 +3,6 @@ package org.example.learnhub.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.course.entity.CourseProgress;
-import org.example.learnhub.subscription.entity.Subscription;
 import org.example.learnhub.user.dto.RoleType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.security.core.GrantedAuthority;
@@ -40,9 +38,6 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private RoleType roleType = RoleType.USER;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Subscription subscription;
 
     @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL)
     @Builder.Default

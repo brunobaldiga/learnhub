@@ -1,4 +1,4 @@
-package org.example.learnhub.user;
+package org.example.learnhub.user.repository;
 
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;

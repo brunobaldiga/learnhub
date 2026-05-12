@@ -1,7 +1,8 @@
-package org.example.learnhub.course.entity;
+package org.example.learnhub.enrollment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -11,14 +12,14 @@ import java.time.LocalDateTime;
 @Table(
     name = "course_progress",
     uniqueConstraints =
-    @UniqueConstraint(columnNames = {"user_id", "course_id"}) // the combination of user_id and course_id cannot repeat
+    @UniqueConstraint(columnNames = {"user_id", "course_id"})
 )
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CourseProgress {
+public class Enrollment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;

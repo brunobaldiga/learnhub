@@ -1,4 +1,4 @@
-package org.example.learnhub.user;
+package org.example.learnhub.user.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.config.TokenService;
@@ -7,6 +7,7 @@ import org.example.learnhub.user.dto.TokenResponse;
 import org.example.learnhub.user.dto.UserLoginRequest;
 import org.example.learnhub.user.dto.UserRegisterRequest;
 import org.example.learnhub.user.dto.UserResponse;
+import org.example.learnhub.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;

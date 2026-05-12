@@ -1,6 +1,7 @@
-package org.example.learnhub.user;
+package org.example.learnhub.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.user.repository.UserRepository;
 import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.dto.UserRegisterRequest;
 import org.example.learnhub.user.dto.UserResponse;

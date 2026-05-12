@@ -21,7 +21,7 @@ public class CourseController {
     private final CourseService service;
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
-    @PostMapping("/create")
+    @PostMapping()
     public ResponseEntity<CourseResponse> create(
             @AuthenticationPrincipal User user,
             @RequestBody @Validated CourseRequest request
@@ -40,50 +40,21 @@ public class CourseController {
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
     @GetMapping
-    public ResponseEntity<Page<CourseResponse>> getUserCourses(
+    public ResponseEntity<Page<CourseResponse>> findUserCourses(
             @AuthenticationPrincipal() User user,
             CourseFilter filter,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(service.getCourses(user, filter, pageable));
+        return ResponseEntity.ok(service.findCourses(user, filter, pageable));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
-    @GetMapping("/enrolled")
-    public ResponseEntity<Page<CourseResponse>> enrolled(
-            @AuthenticationPrincipal User user,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        return ResponseEntity.ok(service.getEnrolledCourses(user.getId(), page, size));
-    }
-
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
-    @PostMapping("/{courseId}/enroll")
-    public ResponseEntity<Void> enroll(
-            @AuthenticationPrincipal User user,
-            @PathVariable Integer courseId
-    ) {
-        service.enroll(user, courseId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
-    @DeleteMapping("/{courseId}/enroll")
-    public ResponseEntity<Void> unenroll(
-            @AuthenticationPrincipal User user,
-            @PathVariable Integer courseId
-    ) {
-        service.unenroll(user, courseId);
-        return ResponseEntity.noContent().build();
-    }
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
     @GetMapping("/{courseId}")
-    public ResponseEntity<CourseResponse> findById(
+    public ResponseEntity<CourseResponse> findCourseById(
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId
     ) {
-        return ResponseEntity.ok(service.findById(user, courseId));
+        return ResponseEntity.ok(service.findCourseById(user, courseId));
     }
 }
