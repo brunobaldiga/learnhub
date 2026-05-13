@@ -1,6 +1,7 @@
 package org.example.learnhub.course.dto;
 
-import org.example.learnhub.course.entity.Section;
+import org.example.learnhub.sections.dto.SectionResponse;
+import org.example.learnhub.sections.entity.Section;
 import org.example.learnhub.course.entity.CourseStatus;
 
 import java.math.BigDecimal;
@@ -15,6 +16,5 @@ public record CourseResponse (
     CourseStatus status,
     BigDecimal price,
     Integer salesAmount,
-    List<Section> sections,
     LocalDateTime createdAt
 ) {}

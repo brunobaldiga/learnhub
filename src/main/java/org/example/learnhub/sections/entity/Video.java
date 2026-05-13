@@ -1,4 +1,4 @@
-package org.example.learnhub.course.entity;
+package org.example.learnhub.sections.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -24,6 +24,9 @@ public class Video {
 
     @Column(nullable = false, length = 1000)
     private String videoUrl;
+
+    @Column(nullable = false)
+    private Integer index;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

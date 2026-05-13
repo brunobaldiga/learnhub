@@ -1,7 +1,8 @@
-package org.example.learnhub.course.entity;
+package org.example.learnhub.sections.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.learnhub.course.entity.Course;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -19,6 +20,12 @@ public class Section {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private Integer index;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "course_id", nullable = false)

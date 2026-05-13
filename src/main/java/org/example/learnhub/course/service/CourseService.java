@@ -1,15 +1,14 @@
 package org.example.learnhub.course.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.course.dto.UpdateCourseRequest;
+import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
+import org.example.learnhub.course.gateway.SectionGateway;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.repository.CourseSpecs;
+import org.example.learnhub.sections.entity.Section;
 import org.example.learnhub.user.entity.User;
-import org.example.learnhub.course.dto.CourseFilter;
-import org.example.learnhub.course.dto.CourseRequest;
-import org.example.learnhub.course.dto.CourseResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class CourseService {
     private final CourseRepository repository;
     private final CourseMapper mapper;
+    private final SectionGateway sectionGateway;
 
     public CourseResponse create(User user, CourseRequest request) {
         Course course = mapper.toCourse(request);
@@ -70,6 +70,18 @@ public class CourseService {
                 .orElseThrow(() -> new RuntimeException("Course not found."));
 
         mapper.updateCourse(course, request);
+        repository.save(course);
+
+        return mapper.toDto(course);
+    }
+
+    public CourseResponse createCourseSection(User user, Integer courseId, SectionRequest request) {
+        Course course = repository.findByIdAndCreatorId(courseId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Course not found."));
+
+        Section section = sectionGateway.saveSection(request, course);
+        course.getSections().add(section);
+
         repository.save(course);
 
         return mapper.toDto(course);

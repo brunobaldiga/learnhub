@@ -1,12 +1,9 @@
 package org.example.learnhub.course.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.course.dto.UpdateCourseRequest;
+import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.user.entity.User;
-import org.example.learnhub.course.dto.CourseFilter;
-import org.example.learnhub.course.dto.CourseRequest;
-import org.example.learnhub.course.dto.CourseResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -67,5 +64,15 @@ public class CourseController {
             @RequestBody UpdateCourseRequest request
     ) {
         return ResponseEntity.ok(service.updateCourseById(user, courseId, request));
+    }
+
+    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PostMapping("/{courseId}/sections")
+    public ResponseEntity<CourseResponse> createCourseSection(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer courseId,
+            @RequestBody SectionRequest request
+    ) {
+        return ResponseEntity.ok(service.createCourseSection(user, courseId, request));
     }
 }
