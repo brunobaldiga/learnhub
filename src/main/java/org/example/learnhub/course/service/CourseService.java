@@ -1,6 +1,7 @@
 package org.example.learnhub.course.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.course.dto.UpdateCourseRequest;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.course.repository.CourseRepository;
@@ -62,5 +63,15 @@ public class CourseService {
 
     public Integer countVideosByCourseId(Integer courseId) {
         return repository.countVideosByCourseId(courseId);
+    }
+
+    public CourseResponse updateCourseById(User user, Integer courseId, UpdateCourseRequest request) {
+        Course course = repository.findByIdAndCreatorId(courseId, user.getId())
+                .orElseThrow(() -> new RuntimeException("Course not found."));
+
+        mapper.updateCourse(course, request);
+        repository.save(course);
+
+        return mapper.toDto(course);
     }
 }

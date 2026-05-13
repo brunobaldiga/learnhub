@@ -29,14 +29,20 @@ public class EnrollmentController {
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
     @GetMapping()
-    public ResponseEntity<Page<EnrollmentResponse>> getUserEnrollments(
+    public ResponseEntity<Page<EnrollmentResponse>> findUserEnrollments(
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(service.getEnrolledCourses(user.getId(), page, size));
+        return ResponseEntity.ok(service.findEnrolledCourses(user.getId(), page, size));
     }
 
-    @GetMapping("/{enrollmentId")
-    public ResponseEntity<EnrollmentResponse> getEnrollment
+    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @GetMapping("/{enrollmentId}")
+    public ResponseEntity<EnrollmentResponse> findEnrollmentById(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer enrollmentId
+    ) {
+        return ResponseEntity.ok(service.findEnrollmentById(user.getId(), enrollmentId));
+    }
 }

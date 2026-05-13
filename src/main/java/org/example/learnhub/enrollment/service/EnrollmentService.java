@@ -38,10 +38,15 @@ public class EnrollmentService {
         repository.save(courseProgress);
     }
 
-    public Page<EnrollmentResponse> getEnrolledCourses(Integer userId, int page, int size) {
+    public Page<EnrollmentResponse> findEnrolledCourses(Integer userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        return repository.findByEnrollmentsUserId(userId, pageable)
+        return repository.findByUserId(userId, pageable)
                 .map(mapper::toDto);
+    }
+
+    public EnrollmentResponse findEnrollmentById(Integer userId, Integer enrollmentId) {
+        return repository.findByIdAndUserId(userId, enrollmentId)
+                .orElseThrow(() -> new RuntimeException(String.format("Enrollment with %d not found.", enrollmentId)));
     }
 }

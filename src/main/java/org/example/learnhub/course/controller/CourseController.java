@@ -1,6 +1,7 @@
 package org.example.learnhub.course.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.course.dto.UpdateCourseRequest;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.user.entity.User;
 import org.example.learnhub.course.dto.CourseFilter;
@@ -56,5 +57,15 @@ public class CourseController {
             @PathVariable Integer courseId
     ) {
         return ResponseEntity.ok(service.findCourseById(user, courseId));
+    }
+
+    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PatchMapping("/{courseId}")
+    public ResponseEntity<CourseResponse> updateCourseById(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer courseId,
+            @RequestBody UpdateCourseRequest request
+    ) {
+        return ResponseEntity.ok(service.updateCourseById(user, courseId, request));
     }
 }

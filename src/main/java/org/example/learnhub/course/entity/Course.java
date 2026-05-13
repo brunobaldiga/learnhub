@@ -5,6 +5,7 @@ import lombok.*;
 import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,14 @@ public class Course {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private CourseStatus status = CourseStatus.PRIVATE;
+
+    @Builder.Default
+    private BigDecimal price = BigDecimal.ZERO;
+
+    @Builder.Default
+    private Integer salesAmount = 0;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
