@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface SectionRepository extends JpaRepository<Section, Integer> {
-    Optional<Section> findByIdAndUserId(Integer sectionId, Integer id);
+    Optional<Section> findByIdAndCourseCreatorId(Integer sectionId, Integer id);
 }

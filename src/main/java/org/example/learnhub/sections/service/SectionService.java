@@ -28,7 +28,7 @@ public class SectionService {
     }
 
     public SectionResponse create(User user, Integer sectionId, VideoRequest request) {
-        Section section = repository.findByIdAndUserId(sectionId, user.getId())
+        Section section = repository.findByIdAndCourseCreatorId(sectionId, user.getId())
                 .orElseThrow(() -> new RuntimeException(String.format("Section with ID %d not found.", sectionId)));
 
         Video video = videoMapper.toVideo(request);
