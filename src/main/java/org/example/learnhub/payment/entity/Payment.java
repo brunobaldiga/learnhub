@@ -2,6 +2,7 @@ package org.example.learnhub.payment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.payment.dto.CurrencyType;
 import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,9 +22,17 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false)
+    private Integer userId;
+
+    @Column(nullable = false)
+    private Integer courseId;
+
+    @Column(nullable = false)
+    private String courseTitle;
+
+    @Column(nullable = false)
+    private BigDecimal coursePrice;
 
     @Column(nullable = false)
     private BigDecimal amount;

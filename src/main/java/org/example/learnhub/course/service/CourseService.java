@@ -7,6 +7,7 @@ import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.course.gateway.SectionGateway;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.repository.CourseSpecs;
+import org.example.learnhub.sections.dto.SectionResponse;
 import org.example.learnhub.sections.entity.Section;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -75,15 +78,22 @@ public class CourseService {
         return mapper.toDto(course);
     }
 
-    public CourseResponse createCourseSection(User user, Integer courseId, SectionRequest request) {
+    public SectionResponse createCourseSection(User user, Integer courseId, SectionRequest request) {
         Course course = repository.findByIdAndCreatorId(courseId, user.getId())
                 .orElseThrow(() -> new RuntimeException("Course not found."));
+
+        if (course.getSections().size() >= 20) throw new RuntimeException("Course cannot have more than 20 sections.");
 
         Section section = sectionGateway.saveSection(request, course);
         course.getSections().add(section);
 
         repository.save(course);
 
-        return mapper.toDto(course);
+        return sectionGateway.toDto(section);
+    }
+
+    public List<SectionResponse> findCourseSection(User user, Integer courseId) {
+        // todo: check if user paid
+        return sectionGateway.findAllByCourseId(courseId);
     }
 }

@@ -3,9 +3,9 @@ package org.example.learnhub.sections.service;
 import org.example.learnhub.sections.dto.VideoRequest;
 import org.example.learnhub.sections.dto.VideoResponse;
 import org.example.learnhub.sections.entity.Video;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class VideoMapper {
     public Video toVideo(VideoRequest request) {
         return Video.builder()

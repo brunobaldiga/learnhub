@@ -5,7 +5,6 @@ import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.sections.dto.SectionResponse;
 import org.example.learnhub.sections.dto.VideoRequest;
-import org.example.learnhub.sections.dto.VideoResponse;
 import org.example.learnhub.sections.entity.Section;
 import org.example.learnhub.sections.entity.Video;
 import org.example.learnhub.sections.repository.SectionRepository;
@@ -38,8 +37,25 @@ public class SectionService {
 
         repository.save(section);
 
-        List<VideoResponse> videos = section.getVideos().stream().map(videoMapper::toDto).toList();
 
-        return mapper.toDto(section, videos);
+        return mapper.toDto(section);
+    }
+
+    public List<SectionResponse> findAllByCourseId(Integer courseId) {
+        return repository.findAllByCourseId(courseId)
+                .stream()
+                .map(mapper::toDto)
+                .toList();
+    }
+
+    public SectionResponse delete(User user, Integer sectionId, Integer videoId) {
+        Section section = repository.findByIdAndCourseCreatorId(sectionId, user.getId())
+                .orElseThrow(() -> new RuntimeException(String.format("Section with ID %d not found.", sectionId)));;
+
+        section.getVideos().removeIf(video -> video.getId().equals(videoId));
+
+        repository.save(section);
+
+        return mapper.toDto(section);
     }
 }

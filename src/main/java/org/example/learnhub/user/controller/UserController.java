@@ -1,7 +1,6 @@
 package org.example.learnhub.user.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.config.TokenService;
 import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.dto.TokenResponse;
 import org.example.learnhub.user.dto.UserLoginRequest;
@@ -10,8 +9,6 @@ import org.example.learnhub.user.dto.UserResponse;
 import org.example.learnhub.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +18,10 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService service;
-    private final AuthenticationManager authenticationManager;
-    private final TokenService tokenService;
+
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(
+    public ResponseEntity<TokenResponse> register(
             @RequestBody @Validated UserRegisterRequest request
     ) {
         return ResponseEntity.ok(service.register(request));
@@ -35,14 +31,8 @@ public class UserController {
     public ResponseEntity<TokenResponse> login(
             @RequestBody @Validated UserLoginRequest request
     ) {
-        var usernamePassword = new UsernamePasswordAuthenticationToken(
-                request.identifier(), request.password()
-        );
 
-        var auth = authenticationManager.authenticate(usernamePassword);
-        var token = tokenService.generateToken((User) auth.getPrincipal());
-
-        return ResponseEntity.ok(new TokenResponse(token));
+        return ResponseEntity.ok(service.login(request));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")

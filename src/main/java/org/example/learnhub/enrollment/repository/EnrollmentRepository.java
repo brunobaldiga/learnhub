@@ -18,5 +18,5 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
 
     Page<Enrollment> findByUserId(Integer userId, Pageable pageable);
 
-    Optional<EnrollmentResponse> findByIdAndUserId(Integer userId, Integer enrollmentId);
+    Optional<Enrollment> findByIdAndUserId(Integer userId, Integer enrollmentId);
 }

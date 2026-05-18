@@ -2,9 +2,9 @@ package org.example.learnhub.enrollment.service;
 
 import org.example.learnhub.enrollment.dto.EnrollmentResponse;
 import org.example.learnhub.enrollment.entity.Enrollment;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class EnrollmentMapper {
     public EnrollmentResponse toDto(Enrollment enrollment) {
         return new EnrollmentResponse(

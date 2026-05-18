@@ -5,13 +5,11 @@ import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.dto.CourseRequest;
 import org.example.learnhub.course.dto.CourseResponse;
 import org.example.learnhub.course.entity.CourseStatus;
-import org.example.learnhub.sections.dto.SectionResponse;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
-
-@Service
+@Component
 public class CourseMapper {
     public Course toCourse(CourseRequest request) {
         return Course.builder()
@@ -37,6 +35,5 @@ public class CourseMapper {
         Optional.ofNullable(request.title()).ifPresent(course::setTitle);
         Optional.ofNullable(request.status()).ifPresent(course::setStatus);
         Optional.ofNullable(request.price()).ifPresent(course::setPrice);
-        Optional.ofNullable(request.salesAmount()).ifPresent(course::setSalesAmount);
     }
 }

@@ -3,6 +3,7 @@ package org.example.learnhub.course.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.service.CourseService;
+import org.example.learnhub.sections.dto.SectionResponse;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/courses")
@@ -68,11 +71,20 @@ public class CourseController {
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
     @PostMapping("/{courseId}/sections")
-    public ResponseEntity<CourseResponse> createCourseSection(
+    public ResponseEntity<SectionResponse> createCourseSection(
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId,
             @RequestBody SectionRequest request
     ) {
         return ResponseEntity.ok(service.createCourseSection(user, courseId, request));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @GetMapping("/{courseId}/sections")
+    public ResponseEntity<List<SectionResponse>> findCourseSections(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer courseId
+    ) {
+        return ResponseEntity.ok(service.findCourseSection(user, courseId));
     }
 }

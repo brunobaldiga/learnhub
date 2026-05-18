@@ -1,10 +1,15 @@
 package org.example.learnhub.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.config.TokenService;
+import org.example.learnhub.user.dto.TokenResponse;
+import org.example.learnhub.user.dto.UserLoginRequest;
 import org.example.learnhub.user.repository.UserRepository;
 import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.dto.UserRegisterRequest;
 import org.example.learnhub.user.dto.UserResponse;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -14,8 +19,10 @@ public class UserService {
     private final UserMapper mapper;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository repository;
+    private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
 
-    public UserResponse register(UserRegisterRequest request) {
+    public TokenResponse register(UserRegisterRequest request) {
         if (repository.existsByEmail(request.email())) throw new RuntimeException("Email is already in use.");
         if (repository.existsByUsername(request.username())) throw new RuntimeException("Username is already in use.");
 
@@ -25,7 +32,7 @@ public class UserService {
 
         repository.save(user);
 
-        return mapper.toDto(user);
+        return login(new UserLoginRequest(request.email(), request.password()));
     }
 
     public UserResponse findById(Integer id) {
@@ -33,5 +40,16 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return mapper.toDto(user);
+    }
+
+    public TokenResponse login(UserLoginRequest request) {
+        var usernamePassword = new UsernamePasswordAuthenticationToken(
+                request.identifier(), request.password()
+        );
+
+        var auth = authenticationManager.authenticate(usernamePassword);
+        var token = tokenService.generateToken((User) auth.getPrincipal());
+
+        return new TokenResponse(token);
     }
 }

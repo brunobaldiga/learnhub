@@ -5,9 +5,9 @@ import org.example.learnhub.course.service.CourseMapper;
 import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.dto.UserRegisterRequest;
 import org.example.learnhub.user.dto.UserResponse;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 @RequiredArgsConstructor
 public class UserMapper {
     private final CourseMapper courseMapper;

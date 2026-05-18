@@ -18,16 +18,6 @@ public class EnrollmentController {
     private final EnrollmentService service;
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
-    @PostMapping("/{courseId}")
-    public ResponseEntity<Void> enroll(
-            @AuthenticationPrincipal User user,
-            @PathVariable Integer courseId
-    ) {
-        service.enroll(user, courseId);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
     @GetMapping()
     public ResponseEntity<Page<EnrollmentResponse>> findUserEnrollments(
             @AuthenticationPrincipal User user,

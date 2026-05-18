@@ -46,7 +46,7 @@ public class EnrollmentService {
     }
 
     public EnrollmentResponse findEnrollmentById(Integer userId, Integer enrollmentId) {
-        return repository.findByIdAndUserId(userId, enrollmentId)
-                .orElseThrow(() -> new RuntimeException(String.format("Enrollment with %d not found.", enrollmentId)));
+        return mapper.toDto(repository.findByIdAndUserId(userId, enrollmentId)
+                .orElseThrow(() -> new RuntimeException(String.format("Enrollment with %d not found.", enrollmentId))));
     }
 }

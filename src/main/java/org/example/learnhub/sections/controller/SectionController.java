@@ -26,4 +26,14 @@ public class SectionController {
         return ResponseEntity.ok(service.create(user, sectionId, request));
     }
 
+
+    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @DeleteMapping("/{sectionId}/videos/{videoId}")
+    public ResponseEntity<SectionResponse> create(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer sectionId,
+            @PathVariable Integer videoId
+    ) {
+        return ResponseEntity.ok(service.delete(user, sectionId, videoId));
+    }
 }
