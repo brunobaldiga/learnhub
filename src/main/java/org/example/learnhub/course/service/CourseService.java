@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
+import org.example.learnhub.course.gateway.PaymentGateway;
 import org.example.learnhub.course.gateway.SectionGateway;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.repository.CourseSpecs;
+import org.example.learnhub.payment.entity.Payment;
 import org.example.learnhub.sections.dto.SectionResponse;
 import org.example.learnhub.sections.entity.Section;
 import org.example.learnhub.user.entity.User;
@@ -17,6 +19,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,8 @@ public class CourseService {
     private final CourseRepository repository;
     private final CourseMapper mapper;
     private final SectionGateway sectionGateway;
+    private final PaymentGateway paymentGateway;
+
 
     public CourseResponse create(User user, CourseRequest request) {
         Course course = mapper.toCourse(request);
@@ -93,7 +98,13 @@ public class CourseService {
     }
 
     public List<SectionResponse> findCourseSection(User user, Integer courseId) {
-        // todo: check if user paid
+        Course course = findCourseEntityById(user, courseId);
+
+        boolean hasPaid = paymentGateway.findByUserIdAndCourseId(user.getId(), courseId);
+        boolean isOwner = course.getCreator().getId().equals(user.getId());
+
+        if (!hasPaid && !isOwner) throw new RuntimeException("User haven't paid for the course");
+
         return sectionGateway.findAllByCourseId(courseId);
     }
 }

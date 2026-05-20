@@ -64,7 +64,7 @@ public class CourseController {
     public ResponseEntity<CourseResponse> updateCourseById(
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId,
-            @RequestBody UpdateCourseRequest request
+            @RequestBody @Validated UpdateCourseRequest request
     ) {
         return ResponseEntity.ok(service.updateCourseById(user, courseId, request));
     }
@@ -74,7 +74,7 @@ public class CourseController {
     public ResponseEntity<SectionResponse> createCourseSection(
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId,
-            @RequestBody SectionRequest request
+            @RequestBody @Validated SectionRequest request
     ) {
         return ResponseEntity.ok(service.createCourseSection(user, courseId, request));
     }
