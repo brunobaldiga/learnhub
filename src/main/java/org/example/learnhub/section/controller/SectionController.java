@@ -1,9 +1,9 @@
-package org.example.learnhub.sections.controller;
+package org.example.learnhub.section.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.sections.dto.SectionResponse;
-import org.example.learnhub.sections.dto.VideoRequest;
-import org.example.learnhub.sections.service.SectionService;
+import org.example.learnhub.section.dto.SectionResponse;
+import org.example.learnhub.section.dto.VideoRequest;
+import org.example.learnhub.section.service.SectionService;
 import org.example.learnhub.user.entity.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;

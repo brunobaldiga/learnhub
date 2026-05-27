@@ -1,14 +1,13 @@
-package org.example.learnhub.sections.gateway;
+package org.example.learnhub.section.gateway;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.gateway.SectionGateway;
-import org.example.learnhub.sections.dto.SectionResponse;
-import org.example.learnhub.sections.entity.Section;
-import org.example.learnhub.sections.service.SectionMapper;
-import org.example.learnhub.sections.service.SectionService;
-import org.example.learnhub.sections.service.VideoMapper;
+import org.example.learnhub.section.dto.SectionResponse;
+import org.example.learnhub.section.entity.Section;
+import org.example.learnhub.section.service.SectionMapper;
+import org.example.learnhub.section.service.SectionService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -27,10 +26,5 @@ public class SectionGatewayImpl implements SectionGateway {
     @Override
     public SectionResponse toDto(Section section) {
         return mapper.toDto(section);
-    }
-
-    @Override
-    public List<SectionResponse> findAllByCourseId(Integer courseId) {
-        return service.findAllByCourseId(courseId);
     }
 }

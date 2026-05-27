@@ -1,13 +1,13 @@
-package org.example.learnhub.sections.service;
+package org.example.learnhub.section.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.sections.dto.SectionResponse;
-import org.example.learnhub.sections.dto.VideoRequest;
-import org.example.learnhub.sections.entity.Section;
-import org.example.learnhub.sections.entity.Video;
-import org.example.learnhub.sections.repository.SectionRepository;
+import org.example.learnhub.section.dto.SectionResponse;
+import org.example.learnhub.section.dto.VideoRequest;
+import org.example.learnhub.section.entity.Section;
+import org.example.learnhub.section.entity.Video;
+import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.user.entity.User;
 import org.springframework.stereotype.Service;
 
@@ -39,13 +39,6 @@ public class SectionService {
 
 
         return mapper.toDto(section);
-    }
-
-    public List<SectionResponse> findAllByCourseId(Integer courseId) {
-        return repository.findAllByCourseId(courseId)
-                .stream()
-                .map(mapper::toDto)
-                .toList();
     }
 
     public SectionResponse delete(User user, Integer sectionId, Integer videoId) {

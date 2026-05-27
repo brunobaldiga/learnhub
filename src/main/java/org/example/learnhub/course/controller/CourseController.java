@@ -3,7 +3,7 @@ package org.example.learnhub.course.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.service.CourseService;
-import org.example.learnhub.sections.dto.SectionResponse;
+import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

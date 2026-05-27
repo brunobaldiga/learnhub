@@ -1,4 +1,4 @@
-package org.example.learnhub.sections.dto;
+package org.example.learnhub.section.dto;
 
 import java.time.LocalDateTime;
 

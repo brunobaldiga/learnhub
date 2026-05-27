@@ -8,18 +8,15 @@ import org.example.learnhub.course.gateway.PaymentGateway;
 import org.example.learnhub.course.gateway.SectionGateway;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.repository.CourseSpecs;
-import org.example.learnhub.payment.entity.Payment;
-import org.example.learnhub.sections.dto.SectionResponse;
-import org.example.learnhub.sections.entity.Section;
+import org.example.learnhub.section.dto.SectionResponse;
+import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -105,6 +102,8 @@ public class CourseService {
 
         if (!hasPaid && !isOwner) throw new RuntimeException("User haven't paid for the course");
 
-        return sectionGateway.findAllByCourseId(courseId);
+        return course.getSections().stream()
+                .map(sectionGateway::toDto)
+                .toList();
     }
 }

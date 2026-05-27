@@ -1,8 +1,8 @@
-package org.example.learnhub.sections.service;
+package org.example.learnhub.section.service;
 
-import org.example.learnhub.sections.dto.VideoRequest;
-import org.example.learnhub.sections.dto.VideoResponse;
-import org.example.learnhub.sections.entity.Video;
+import org.example.learnhub.section.dto.VideoRequest;
+import org.example.learnhub.section.dto.VideoResponse;
+import org.example.learnhub.section.entity.Video;
 import org.springframework.stereotype.Component;
 
 @Component

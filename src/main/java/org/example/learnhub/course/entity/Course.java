@@ -1,9 +1,8 @@
 package org.example.learnhub.course.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Max;
 import lombok.*;
-import org.example.learnhub.sections.entity.Section;
+import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 

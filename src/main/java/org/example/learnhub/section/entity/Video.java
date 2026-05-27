@@ -1,4 +1,4 @@
-package org.example.learnhub.sections.entity;
+package org.example.learnhub.section.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

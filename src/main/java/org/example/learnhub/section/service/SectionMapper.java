@@ -1,10 +1,10 @@
-package org.example.learnhub.sections.service;
+package org.example.learnhub.section.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.sections.dto.SectionResponse;
-import org.example.learnhub.sections.entity.Section;
+import org.example.learnhub.section.dto.SectionResponse;
+import org.example.learnhub.section.entity.Section;
 import org.springframework.stereotype.Component;
 
 @Component
