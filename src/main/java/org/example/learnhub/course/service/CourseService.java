@@ -8,6 +8,9 @@ import org.example.learnhub.course.gateway.PaymentGateway;
 import org.example.learnhub.course.gateway.SectionGateway;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.repository.CourseSpecs;
+import org.example.learnhub.exception.CourseAccessDenied;
+import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.MaxSectionsReached;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.user.entity.User;
@@ -25,7 +28,6 @@ public class CourseService {
     private final CourseMapper mapper;
     private final SectionGateway sectionGateway;
     private final PaymentGateway paymentGateway;
-
 
     public CourseResponse create(User user, CourseRequest request) {
         Course course = mapper.toCourse(request);
@@ -63,7 +65,7 @@ public class CourseService {
     public Course findCourseEntityById(User user, Integer courseId) {
         return repository.findByIdAndStatus(courseId, CourseStatus.PUBLIC)
                 .or(() -> repository.findByIdAndCreatorId(courseId, user.getId()))
-                .orElseThrow(() -> new RuntimeException("Course not found."));
+                .orElseThrow(() -> new EntityNotFound("Course not found."));
     }
 
     public Integer countVideosByCourseId(Integer courseId) {
@@ -72,7 +74,7 @@ public class CourseService {
 
     public CourseResponse updateCourseById(User user, Integer courseId, UpdateCourseRequest request) {
         Course course = repository.findByIdAndCreatorId(courseId, user.getId())
-                .orElseThrow(() -> new RuntimeException("Course not found."));
+                .orElseThrow(() -> new EntityNotFound("Course not found."));
 
         mapper.updateCourse(course, request);
         repository.save(course);
@@ -82,9 +84,9 @@ public class CourseService {
 
     public SectionResponse createCourseSection(User user, Integer courseId, SectionRequest request) {
         Course course = repository.findByIdAndCreatorId(courseId, user.getId())
-                .orElseThrow(() -> new RuntimeException("Course not found."));
+                .orElseThrow(() -> new EntityNotFound("Course not found."));
 
-        if (course.getSections().size() >= 20) throw new RuntimeException("Course cannot have more than 20 sections.");
+        if (course.getSections().size() >= 20) throw new MaxSectionsReached("Course cannot have more than 20 sections.");
 
         Section section = sectionGateway.saveSection(request, course);
         course.getSections().add(section);
@@ -100,7 +102,7 @@ public class CourseService {
         boolean hasPaid = paymentGateway.findByUserIdAndCourseId(user.getId(), courseId);
         boolean isOwner = course.getCreator().getId().equals(user.getId());
 
-        if (!hasPaid && !isOwner) throw new RuntimeException("User haven't paid for the course");
+        if (!hasPaid && !isOwner) throw new CourseAccessDenied("User haven't paid for the course");
 
         return course.getSections().stream()
                 .map(sectionGateway::toDto)

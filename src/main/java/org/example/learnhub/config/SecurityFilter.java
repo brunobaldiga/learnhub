@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.repository.UserRepository;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,7 +29,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             var username = tokenService.validateToken(token);
 
             User user = userRepository.findByUsername(username).orElseThrow(
-                    () -> new RuntimeException("User ID was not found")
+                    () -> new EntityNotFound("User not found")
             );
 
             var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());

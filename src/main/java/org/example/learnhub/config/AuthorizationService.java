@@ -1,6 +1,7 @@
 package org.example.learnhub.config;
 
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.user.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,6 +18,6 @@ public class AuthorizationService implements UserDetailsService {
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
         return repository.findByUsername(identifier)
                 .or(() -> repository.findByEmail(identifier))
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new EntityNotFound("User not found"));
     }
 }

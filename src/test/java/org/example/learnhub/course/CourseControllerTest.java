@@ -57,11 +57,12 @@ public class CourseControllerTest {
         ));
 
         mockMvc.perform(post("/api/courses")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                             {"title": "Java Course"}
                         """))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isOk());
     }
 
     @Test

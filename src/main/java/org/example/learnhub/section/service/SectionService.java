@@ -3,6 +3,7 @@ package org.example.learnhub.section.service;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.dto.VideoRequest;
 import org.example.learnhub.section.entity.Section;
@@ -28,7 +29,7 @@ public class SectionService {
 
     public SectionResponse create(User user, Integer sectionId, VideoRequest request) {
         Section section = repository.findByIdAndCourseCreatorId(sectionId, user.getId())
-                .orElseThrow(() -> new RuntimeException(String.format("Section with ID %d not found.", sectionId)));
+                .orElseThrow(() -> new EntityNotFound("Section not found"));
 
         Video video = videoMapper.toVideo(request);
         video.setSection(section);
@@ -43,7 +44,7 @@ public class SectionService {
 
     public SectionResponse delete(User user, Integer sectionId, Integer videoId) {
         Section section = repository.findByIdAndCourseCreatorId(sectionId, user.getId())
-                .orElseThrow(() -> new RuntimeException(String.format("Section with ID %d not found.", sectionId)));;
+                .orElseThrow(() -> new EntityNotFound("Section not found"));
 
         section.getVideos().removeIf(video -> video.getId().equals(videoId));
 

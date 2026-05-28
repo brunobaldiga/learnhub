@@ -7,6 +7,8 @@ import org.example.learnhub.enrollment.dto.EnrollmentResponse;
 import org.example.learnhub.enrollment.entity.Enrollment;
 import org.example.learnhub.enrollment.gateway.CourseGateway;
 import org.example.learnhub.enrollment.repository.EnrollmentRepository;
+import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.UserAlreadyEnrolled;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,7 +29,7 @@ public class EnrollmentService {
 
         Optional<Enrollment> existingCourseProgress = repository.findByUserAndCourse(user, course);
 
-        if (existingCourseProgress.isPresent()) throw new RuntimeException("User is already enrolled.");
+        if (existingCourseProgress.isPresent()) throw new UserAlreadyEnrolled("User is already enrolled.");
 
         Enrollment courseProgress = Enrollment.builder()
                 .user(user)
@@ -47,6 +49,6 @@ public class EnrollmentService {
 
     public EnrollmentResponse findEnrollmentById(Integer userId, Integer enrollmentId) {
         return mapper.toDto(repository.findByIdAndUserId(userId, enrollmentId)
-                .orElseThrow(() -> new RuntimeException(String.format("Enrollment with %d not found.", enrollmentId))));
+                .orElseThrow(() -> new EntityNotFound("Enrollment not found")));
     }
 }

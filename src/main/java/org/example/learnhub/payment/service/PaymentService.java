@@ -3,6 +3,7 @@ package org.example.learnhub.payment.service;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.enrollment.gateway.CourseGateway;
+import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.payment.dto.CurrencyType;
 import org.example.learnhub.payment.dto.PurchaseResponse;
 import org.example.learnhub.payment.entity.Payment;
@@ -51,6 +52,6 @@ public class PaymentService {
     public PurchaseResponse findById(User user, Integer paymentId) {
         return repository.findByIdAndUserId(user.getId(), paymentId)
                 .map(mapper::toDto)
-                .orElseThrow(() -> new RuntimeException(String.format("Payment with ID %d not found.", paymentId)));
+                .orElseThrow(() -> new EntityNotFound("Payment not found"));
     }
 }
