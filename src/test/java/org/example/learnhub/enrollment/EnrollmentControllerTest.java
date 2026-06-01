@@ -25,7 +25,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -101,15 +103,16 @@ public class EnrollmentControllerTest {
 
         List<EnrollmentResponse> list = List.of(enrollmentResponse);
         Page<EnrollmentResponse> page = new PageImpl<>(list, PageRequest.of(0, 10), list.size());
-        when(service.findEnrolledCourses(any(), any(), any())).thenReturn(page);
+        when(service.findEnrolledCourses(any(), anyInt(), anyInt())).thenReturn(page);
 
         mockMvc.perform(get("/api/enrollments")
                 .with(authentication(
                         new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)))
                 ))
             ).andExpect(status().isOk())
-             .andExpect(jsonPath("$.content.length").value(1));
-
+             .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.size").value(10));
     }
-
 }
