@@ -2,13 +2,14 @@ package org.example.learnhub.enrollment.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.enrollment.dto.EnrollmentResponse;
 import org.example.learnhub.enrollment.entity.Enrollment;
-import org.example.learnhub.enrollment.gateway.CourseGateway;
+import org.example.learnhub.exception.CourseAccessDenied;
+import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.enrollment.repository.EnrollmentRepository;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.exception.UserAlreadyEnrolled;
+import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,9 +24,12 @@ public class EnrollmentService {
     private final EnrollmentRepository repository;
     private final EnrollmentMapper mapper;
     private final CourseGateway courseGateway;
+    private final PaymentGateway paymentGateway;
 
     public void enroll(User user, Integer courseId) {
         Course course = courseGateway.findCourseById(user, courseId);
+
+        if (!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId)) throw new CourseAccessDenied("User haven't bought the course.");
 
         Optional<Enrollment> existingCourseProgress = repository.findByUserAndCourse(user, course);
 
@@ -49,6 +53,6 @@ public class EnrollmentService {
 
     public EnrollmentResponse findEnrollmentById(Integer userId, Integer enrollmentId) {
         return mapper.toDto(repository.findByIdAndUserId(userId, enrollmentId)
-                .orElseThrow(() -> new EntityNotFound("Enrollment not found")));
+                .orElseThrow(() -> new EntityNotFound("Enrollment not found.")));
     }
 }

@@ -1,11 +1,9 @@
-package org.example.learnhub.course.gateway;
+package org.example.learnhub.gateway;
 
 import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
-
-import java.util.List;
 
 public interface SectionGateway {
     Section saveSection(SectionRequest request, Course course);

@@ -16,4 +16,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     Page<Payment> findByUserIdAndDateRange(Integer id, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
     Optional<Payment> findByIdAndUserId(Integer id, Integer paymentId);
+
+    boolean existsByUserIdAndCourseId(Integer id, Integer courseId);
 }

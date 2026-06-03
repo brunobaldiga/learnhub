@@ -1,16 +1,14 @@
-package org.example.learnhub.section.gateway;
+package org.example.learnhub.section.infra;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.course.gateway.SectionGateway;
+import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.section.service.SectionMapper;
 import org.example.learnhub.section.service.SectionService;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor

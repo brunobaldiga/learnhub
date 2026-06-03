@@ -6,8 +6,8 @@ import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.dto.UpdateCourseRequest;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
-import org.example.learnhub.course.gateway.PaymentGateway;
-import org.example.learnhub.course.gateway.SectionGateway;
+import org.example.learnhub.gateway.PaymentGateway;
+import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.service.CourseMapper;
 import org.example.learnhub.course.service.CourseService;
@@ -251,7 +251,7 @@ public class CourseServiceTest {
 
 
         when(repository.findByIdAndStatus(any(), any())).thenReturn(Optional.of(course));
-        when(paymentGateway.findByUserIdAndCourseId(any(), any())).thenReturn(false);
+        when(paymentGateway.existsByUserIdAndCourseId(any(), any())).thenReturn(false);
         when(sectionGateway.toDto(section)).thenReturn(sectionResponse);
 
         List<SectionResponse> result = service.findCourseSection(user, course.getId());
@@ -274,7 +274,7 @@ public class CourseServiceTest {
                 .build();
 
         when(repository.findByIdAndStatus(any(), any())).thenReturn(Optional.of(course));
-        when(paymentGateway.findByUserIdAndCourseId(any(), any())).thenReturn(true);
+        when(paymentGateway.existsByUserIdAndCourseId(any(), any())).thenReturn(true);
         when(sectionGateway.toDto(section)).thenReturn(sectionResponse);
 
         List<SectionResponse> result = service.findCourseSection(user, course.getId());
@@ -297,7 +297,7 @@ public class CourseServiceTest {
                 .build();
 
         when(repository.findByIdAndStatus(any(), any())).thenReturn(Optional.of(course));
-        when(paymentGateway.findByUserIdAndCourseId(any(), any())).thenReturn(false);
+        when(paymentGateway.existsByUserIdAndCourseId(any(), any())).thenReturn(false);
 
 
         assertThatThrownBy(() -> service.findCourseSection(user, course.getId()))

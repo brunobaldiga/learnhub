@@ -2,12 +2,12 @@ package org.example.learnhub.payment.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.enrollment.gateway.CourseGateway;
+import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.payment.dto.CurrencyType;
 import org.example.learnhub.payment.dto.PurchaseResponse;
 import org.example.learnhub.payment.entity.Payment;
-import org.example.learnhub.payment.gateway.EnrollmentGateway;
+import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.payment.repository.PaymentRepository;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -53,5 +53,9 @@ public class PaymentService {
         return repository.findByIdAndUserId(user.getId(), paymentId)
                 .map(mapper::toDto)
                 .orElseThrow(() -> new EntityNotFound("Payment not found"));
+    }
+
+    public boolean existsByUserIdAndCourseId(Integer id, Integer courseId) {
+        return repository.existsByUserIdAndCourseId(id, courseId);
     }
 }

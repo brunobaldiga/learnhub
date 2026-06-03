@@ -1,4 +1,4 @@
-package org.example.learnhub.payment.gateway;
+package org.example.learnhub.gateway;
 
 
 import org.example.learnhub.user.entity.User;

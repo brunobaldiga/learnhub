@@ -1,6 +1,5 @@
 package org.example.learnhub.enrollment;
 
-import jakarta.persistence.PrePersist;
 import org.example.learnhub.config.TokenService;
 import org.example.learnhub.enrollment.controller.EnrollmentController;
 import org.example.learnhub.enrollment.dto.EnrollmentResponse;
