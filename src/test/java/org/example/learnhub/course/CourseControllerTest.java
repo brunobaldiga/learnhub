@@ -7,6 +7,7 @@ import org.example.learnhub.course.dto.CourseResponse;
 import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.service.CourseService;
+import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +20,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CourseController.class)
@@ -92,11 +95,76 @@ public class CourseControllerTest {
     }
 
     @Test
-    void shouldReturn200WhenCourseUpdatedSuccessfully() {}
+    @WithMockUser(roles = "CREATOR")
+    void shouldReturn200WhenCourseUpdatedSuccessfully() throws Exception {
+        Integer courseId = 1;
+
+        when(service.updateCourseById(any(), any(), any()))
+                .thenReturn(new CourseResponse(
+                        courseId,
+                        1,
+                        "creator",
+                        "Updated Java Course",
+                        CourseStatus.PRIVATE,
+                        BigDecimal.ZERO,
+                        0,
+                        LocalDateTime.now()
+                ));
+
+        mockMvc.perform(patch("/api/courses/{courseId}", courseId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "title": "Updated Java Course"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(courseId))
+                .andExpect(jsonPath("$.title").value("Updated Java Course"));
+    }
 
     @Test
-    void shouldReturn200WhenCourseSectionCreatedSuccessfully() {}
+    @WithMockUser(roles = "CREATOR")
+    void shouldReturn200WhenCourseSectionCreatedSuccessfully() throws Exception {
+        Integer courseId = 1;
+
+        when(service.createCourseSection(any(), any(), any()))
+                .thenReturn(new SectionResponse(
+                        1,
+                        "Introduction",
+                        0,
+                        List.of()
+                ));
+
+        mockMvc.perform(post("/api/courses/{courseId}/sections", courseId)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "title": "Introduction",
+                                    "index": 0
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title").value("Introduction"))
+                .andExpect(jsonPath("$.index").value(0))
+                .andExpect(jsonPath("$.videos").isArray());
+    }
 
     @Test
-    void shouldThrow
+    @WithMockUser(roles = "USER")
+    void shouldReturn403WhenUserHasNoPermission() throws Exception {
+        mockMvc.perform(post("/api/courses")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                                "title": "Java Course"
+                            }
+                            """))
+                .andExpect(status().isForbidden());
+    }
+
 }

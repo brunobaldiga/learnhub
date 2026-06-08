@@ -101,7 +101,7 @@ public class SectionServiceTest {
     }
 
     @Test
-    void shouldThrowWhenSectionNotFoundOnCreateVideo() {
+    void shouldReturn404WhenSectionNotFoundOnCreateVideo() {
         VideoRequest request = new VideoRequest(
                 "https://youtube.com/video",
                 0
@@ -147,7 +147,7 @@ public class SectionServiceTest {
     }
 
     @Test
-    void shouldThrowWhenSectionNotFoundOnDeleteVideo() {
+    void shouldReturn404WhenSectionNotFoundOnDeleteVideo() {
         when(repository.findByIdAndCourseCreatorId(any(), any()))
                 .thenReturn(Optional.empty());
 

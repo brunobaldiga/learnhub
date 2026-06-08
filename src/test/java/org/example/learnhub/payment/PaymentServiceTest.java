@@ -163,7 +163,7 @@ public class PaymentServiceTest {
     }
 
     @Test
-    void shouldThrowWhenPaymentNotFound() {
+    void shouldReturn404WhenPaymentNotFound() {
         when(repository.findByIdAndUserId(any(), any()))
                 .thenReturn(Optional.empty());
 

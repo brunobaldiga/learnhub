@@ -95,7 +95,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void shouldThrowWhenEmailAlreadyExists() {
+    void shouldReturn409WhenEmailAlreadyExists() {
         UserRegisterRequest request = new UserRegisterRequest(
                 "john",
                 "john@email.com",
@@ -110,7 +110,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void shouldThrowWhenUsernameAlreadyExists() {
+    void shouldReturn409WhenUsernameAlreadyExists() {
         UserRegisterRequest request = new UserRegisterRequest(
                 "john",
                 "john@email.com",
@@ -167,7 +167,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void shouldThrowWhenUserDoesNotExist() {
+    void shouldReturn404WhenUserDoesNotExist() {
         when(repository.findById(any()))
                 .thenReturn(Optional.empty());
 

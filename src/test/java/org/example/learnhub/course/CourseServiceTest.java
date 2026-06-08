@@ -6,6 +6,9 @@ import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.dto.UpdateCourseRequest;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
+import org.example.learnhub.exception.CourseAccessDenied;
+import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.MaxSectionsReached;
 import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.course.repository.CourseRepository;
@@ -109,12 +112,12 @@ public class CourseServiceTest {
     }
 
     @Test
-    void shouldThrowWhenCourseNotFound() {
+    void shouldReturn404WhenCourseNotFound() {
         when(repository.findByIdAndStatus(any(), any())).thenReturn(Optional.empty());
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findCourseById(user, 1))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(EntityNotFound.class)
                 .hasMessage("Course not found.");
     }
 
@@ -155,7 +158,7 @@ public class CourseServiceTest {
     }
 
     @Test
-    void shouldThrowWhenCourseNotFoundOnUpdate() {
+    void shouldReturn404WhenCourseNotFoundOnUpdate() {
         UpdateCourseRequest request = new UpdateCourseRequest(
                 "Updated Java Course", CourseStatus.PUBLIC, BigDecimal.valueOf(20)
         );
@@ -163,7 +166,7 @@ public class CourseServiceTest {
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.updateCourseById(user, 1, request))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(EntityNotFound.class)
                 .hasMessage("Course not found.");
 
     }
@@ -203,7 +206,7 @@ public class CourseServiceTest {
     }
 
     @Test
-    void shouldThrowWhenSectionLimitReached() {
+    void shouldReturn409WhenSectionLimitReached() {
         List<Section> sections = new ArrayList<>(Collections.nCopies(20, new Section()));
 
         Course course = Course.builder()
@@ -220,12 +223,12 @@ public class CourseServiceTest {
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
 
         assertThatThrownBy(() -> service.createCourseSection(user, course.getId(), request))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(MaxSectionsReached.class)
                 .hasMessage("Course cannot have more than 20 sections.");
     }
 
     @Test
-    void shouldThrowWhenCourseNotFoundOnSectionCreate() {
+    void shouldReturn404WhenCourseNotFoundOnSectionCreate() {
         SectionRequest request = new SectionRequest(
                 "Section 21",
                 21
@@ -234,7 +237,7 @@ public class CourseServiceTest {
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.createCourseSection(user, 1, request))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(EntityNotFound.class)
                 .hasMessage("Course not found.");
     }
 
@@ -284,7 +287,7 @@ public class CourseServiceTest {
     }
 
     @Test
-    void shouldThrowWhenUserHasNotPaid() {
+    void shouldReturn403WhenUserHasNotPaid() {
         User creator = User.builder().id(2).build();
 
         Section section = Section.builder().id(1).title("Section 1").index(0).build();
@@ -301,7 +304,7 @@ public class CourseServiceTest {
 
 
         assertThatThrownBy(() -> service.findCourseSection(user, course.getId()))
-                .isInstanceOf(RuntimeException.class)
+                .isInstanceOf(CourseAccessDenied.class)
                 .hasMessage("User haven't paid for the course");
     }
 }

@@ -75,7 +75,7 @@ public class EnrollmentServiceTest {
     };
 
     @Test
-    void shouldThrowWhenUserHasNotPaidToEnrollCourse() {
+    void shouldReturn403WhenUserHasNotPaidToEnrollCourse() {
         when(courseGateway.findCourseById(any(), any())).thenReturn(course);
         when(paymentGateway.existsByUserIdAndCourseId(any(), any())).thenReturn(false);
 
@@ -85,7 +85,7 @@ public class EnrollmentServiceTest {
     }
 
     @Test
-    void shouldThrowWhenUserHasAlreadyEnrolledCourse() {
+    void shouldReturn409WhenUserHasAlreadyEnrolledCourse() {
         Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).build();
 
         when(courseGateway.findCourseById(any(), any())).thenReturn(course);
@@ -135,7 +135,7 @@ public class EnrollmentServiceTest {
     }
 
     @Test
-    void shouldThrowWhenEnrollmentDoesNotExists() {
+    void shouldReturn404WhenEnrollmentDoesNotExists() {
         when(repository.findByIdAndUserId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findEnrollmentById(user.getId(), 1))
