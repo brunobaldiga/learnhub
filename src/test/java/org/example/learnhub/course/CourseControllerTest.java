@@ -1,5 +1,6 @@
 package org.example.learnhub.course;
 
+import org.example.learnhub.config.SecurityConfiguration;
 import org.example.learnhub.config.TokenService;
 import org.example.learnhub.course.controller.CourseController;
 import org.example.learnhub.course.dto.CourseResponse;
@@ -10,6 +11,7 @@ import org.example.learnhub.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -23,9 +25,10 @@ import static org.mockito.Mockito.when;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CourseController.class)
+@Import(SecurityConfiguration.class)
 public class CourseControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -83,8 +86,17 @@ public class CourseControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}")
                 .with(csrf()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors[0].field").value("title"))
+                .andExpect(jsonPath("$.errors[0].message").value("Title cannot be blank."));
     }
 
+    @Test
+    void shouldReturn200WhenCourseUpdatedSuccessfully() {}
 
+    @Test
+    void shouldReturn200WhenCourseSectionCreatedSuccessfully() {}
+
+    @Test
+    void shouldThrow
 }

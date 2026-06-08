@@ -99,7 +99,7 @@ public class CourseService {
     public List<SectionResponse> findCourseSection(User user, Integer courseId) {
         Course course = findCourseEntityById(user, courseId);
 
-        boolean hasPaid = paymentGateway.findByUserIdAndCourseId(user.getId(), courseId);
+        boolean hasPaid = paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
         boolean isOwner = course.getCreator().getId().equals(user.getId());
 
         if (!hasPaid && !isOwner) throw new CourseAccessDenied("User haven't paid for the course");

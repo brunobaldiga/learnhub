@@ -97,7 +97,7 @@ public class CourseServiceTest {
                 .build();
 
         CourseResponse response = new CourseResponse(
-                1, 1, "John", "Java Course", CourseStatus.PRIVATE, BigDecimal.ZERO, 0, LocalDateTime.now()
+                1, 1, "John", "Java Course", CourseStatus.PUBLIC, BigDecimal.ZERO, 0, LocalDateTime.now()
         );
 
         when(mapper.toDto(course)).thenReturn(response);
@@ -120,7 +120,8 @@ public class CourseServiceTest {
 
     @Test
     void shouldUpdateCourseSuccessfully() {
-        Course course = Course.builder()
+        Course
+                course = Course.builder()
                 .id(1)
                 .creator(user)
                 .title("Java Course")
@@ -288,7 +289,6 @@ public class CourseServiceTest {
 
         Section section = Section.builder().id(1).title("Section 1").index(0).build();
         List<Section> sections = new ArrayList<>(List.of(section));
-        SectionResponse sectionResponse = new SectionResponse(1, "Section 1", 0, List.of());
 
         Course course = Course.builder()
                 .id(1)
