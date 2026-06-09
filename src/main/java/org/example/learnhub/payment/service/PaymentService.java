@@ -54,8 +54,4 @@ public class PaymentService {
                 .map(mapper::toDto)
                 .orElseThrow(() -> new EntityNotFound("Payment not found"));
     }
-
-    public boolean existsByUserIdAndCourseId(Integer id, Integer courseId) {
-        return repository.existsByUserIdAndCourseId(id, courseId);
-    }
 }
