@@ -1,5 +1,7 @@
 package org.example.learnhub.section.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.dto.VideoRequest;
@@ -13,27 +15,51 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/sections")
 @RequiredArgsConstructor
+@Tag(
+        name = "Sections",
+        description = "Operations related to course sections and videos"
+)
 public class SectionController {
+
     private final SectionService service;
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
     @PostMapping("/{sectionId}/videos")
+    @Operation(
+            summary = "Add video to section",
+            description = "Creates a new video and adds it to the specified section"
+    )
     public ResponseEntity<SectionResponse> create(
             @AuthenticationPrincipal User user,
             @PathVariable Integer sectionId,
             @RequestBody VideoRequest request
     ) {
-        return ResponseEntity.ok(service.create(user, sectionId, request));
+        return ResponseEntity.ok(
+                service.create(
+                        user,
+                        sectionId,
+                        request
+                )
+        );
     }
-
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
     @DeleteMapping("/{sectionId}/videos/{videoId}")
-    public ResponseEntity<SectionResponse> create(
+    @Operation(
+            summary = "Remove video from section",
+            description = "Deletes a video from the specified section"
+    )
+    public ResponseEntity<SectionResponse> delete(
             @AuthenticationPrincipal User user,
             @PathVariable Integer sectionId,
             @PathVariable Integer videoId
     ) {
-        return ResponseEntity.ok(service.delete(user, sectionId, videoId));
+        return ResponseEntity.ok(
+                service.delete(
+                        user,
+                        sectionId,
+                        videoId
+                )
+        );
     }
 }
