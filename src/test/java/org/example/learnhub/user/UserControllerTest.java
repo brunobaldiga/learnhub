@@ -11,6 +11,8 @@ import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.repository.UserRepository;
 import org.example.learnhub.user.service.UserService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -83,9 +85,11 @@ public class UserControllerTest {
                 .andExpect(status().isOk());
     }
 
-    @Test
-    @WithMockUser(roles = "USER")
-    void shouldReturn200WhenUserRequestsOwnProfile() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"USER", "CREATOR", "ADMIN"})
+    void shouldReturn200WhenUserRequestsOwnProfile(String role) throws Exception {
+        User user = User.builder().id(1).build();
+
         when(service.findById(any()))
                 .thenReturn(
                         new UserResponse(
@@ -96,8 +100,11 @@ public class UserControllerTest {
                         )
                 );
 
-        mockMvc.perform(get("/api/users/me"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/users/me")
+                        .with(authentication(new UsernamePasswordAuthenticationToken(
+                                user, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                        )))
+                ).andExpect(status().isOk());
     }
 
     @Test

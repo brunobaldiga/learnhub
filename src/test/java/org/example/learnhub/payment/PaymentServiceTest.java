@@ -177,7 +177,7 @@ public class PaymentServiceTest {
         when(repository.existsByUserIdAndCourseId(1, 1))
                 .thenReturn(true);
 
-        boolean result = service.existsByUserIdAndCourseId(1, 1);
+        boolean result = repository.existsByUserIdAndCourseId(1, 1);
 
         assertThat(result).isTrue();
     }
@@ -187,7 +187,7 @@ public class PaymentServiceTest {
         when(repository.existsByUserIdAndCourseId(1, 1))
                 .thenReturn(false);
 
-        boolean result = service.existsByUserIdAndCourseId(1, 1);
+        boolean result = repository.existsByUserIdAndCourseId(1, 1);
 
         assertThat(result).isFalse();
     }
