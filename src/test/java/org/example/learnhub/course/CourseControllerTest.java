@@ -116,12 +116,16 @@ public class CourseControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "title": "Updated Java Course"
+                                    "title": "Updated Java Course",
+                                    "status": "PRIVATE",
+                                    "price": 0
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(courseId))
-                .andExpect(jsonPath("$.title").value("Updated Java Course"));
+                .andExpect(jsonPath("$.title").value("Updated Java Course"))
+                .andExpect(jsonPath("$.status").value("PRIVATE"))
+                .andExpect(jsonPath("$.price").value(0));
     }
 
     @Test
