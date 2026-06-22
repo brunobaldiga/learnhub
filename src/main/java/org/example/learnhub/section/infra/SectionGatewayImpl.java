@@ -17,12 +17,27 @@ public class SectionGatewayImpl implements SectionGateway {
     private final SectionMapper mapper;
 
     @Override
-    public Section saveSection(SectionRequest request, Course course) {
-        return service.save(request, course);
+    public void deleteSection(Section section) {
+        service.deleteSection(section);
+    }
+
+    @Override
+    public Section saveSection(Section section) {
+        return service.saveSection(section);
+    }
+
+    @Override
+    public Section createSection(SectionRequest request, Course course) {
+        return service.createSection(request, course);
     }
 
     @Override
     public SectionResponse toDto(Section section) {
         return mapper.toDto(section);
+    }
+
+    @Override
+    public Section findByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
+        return service.findEntitySectionByIdAndCourseCreatorId(sectionId, creatorId);
     }
 }

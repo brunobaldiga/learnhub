@@ -49,7 +49,7 @@ public class SectionControllerTest {
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn200WhenCreatorCreatesVideo() throws Exception {
-        when(service.create(any(), any(), any()))
+        when(service.createVideo(any(), any(), any()))
                 .thenReturn(
                         new SectionResponse(
                                 1,
@@ -96,7 +96,7 @@ public class SectionControllerTest {
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn404WhenSectionDoesNotExistOnCreate() throws Exception {
-        when(service.create(any(), any(), any()))
+        when(service.createVideo(any(), any(), any()))
                 .thenThrow(new EntityNotFound("Section not found"));
 
         mockMvc.perform(post("/api/sections/1/videos")
@@ -114,14 +114,6 @@ public class SectionControllerTest {
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn200WhenCreatorDeletesVideo() throws Exception {
-        when(service.delete(any(), any(), any()))
-                .thenReturn(new SectionResponse(
-                        1,
-                        "Section 1",
-                        0,
-                        List.of()
-                ));
-
         mockMvc.perform(delete("/api/sections/1/videos/1")
                         .with(csrf()))
                 .andExpect(status().isOk());

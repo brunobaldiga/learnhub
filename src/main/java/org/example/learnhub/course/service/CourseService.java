@@ -13,6 +13,7 @@ import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.exception.MaxSectionsReached;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
+import org.example.learnhub.section.service.SectionMapper;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,7 @@ public class CourseService {
     private final CourseMapper mapper;
     private final SectionGateway sectionGateway;
     private final PaymentGateway paymentGateway;
+    private final SectionMapper sectionMapper;
 
     public CourseResponse create(User user, CourseRequest request) {
         Course course = mapper.toCourse(request);
@@ -88,7 +90,7 @@ public class CourseService {
 
         if (course.getSections().size() >= 20) throw new MaxSectionsReached("Course cannot have more than 20 sections.");
 
-        Section section = sectionGateway.saveSection(request, course);
+        Section section = sectionGateway.createSection(request, course);
         course.getSections().add(section);
 
         repository.save(course);
@@ -107,5 +109,21 @@ public class CourseService {
         return course.getSections().stream()
                 .map(sectionGateway::toDto)
                 .toList();
+    }
+
+    public SectionResponse updateCourseSection(User user, Integer sectionId, SectionRequest request) {
+        Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
+
+        section.setTitle(request.title());
+        section.setIndex(request.index());
+
+        sectionGateway.saveSection(section);
+
+        return sectionMapper.toDto(section);
+    }
+
+    public void deleteCourseSection(User user, Integer sectionId) {
+        Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
+        sectionGateway.deleteSection(section);
     }
 }

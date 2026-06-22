@@ -92,7 +92,7 @@ public class SectionServiceTest {
         when(videoMapper.toVideo(request)).thenReturn(video);
         when(mapper.toDto(section)).thenReturn(response);
 
-        SectionResponse result = service.create(user, 1, request);
+        SectionResponse result = service.createVideo(user, 1, request);
 
         verify(repository).save(section);
 
@@ -110,7 +110,7 @@ public class SectionServiceTest {
         when(repository.findByIdAndCourseCreatorId(any(), any()))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.create(user, 1, request))
+        assertThatThrownBy(() -> service.createVideo(user, 1, request))
                 .isInstanceOf(EntityNotFound.class)
                 .hasMessage("Section not found");
     }
@@ -126,23 +126,12 @@ public class SectionServiceTest {
                 .videos(new ArrayList<>(List.of(video)))
                 .build();
 
-        SectionResponse response = new SectionResponse(
-                1,
-                "Section 1",
-                0,
-                List.of()
-        );
 
-        when(repository.findByIdAndCourseCreatorId(1, user.getId()))
-                .thenReturn(Optional.of(section));
+        when(repository.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(Optional.of(section));
 
-        when(mapper.toDto(section)).thenReturn(response);
-
-        SectionResponse result = service.delete(user, 1, 1);
+        service.deleteVideo(user, 1, 1);
 
         verify(repository).save(section);
-
-        assertThat(result).isEqualTo(response);
         assertThat(section.getVideos().isEmpty()).isTrue();
     }
 
@@ -151,7 +140,7 @@ public class SectionServiceTest {
         when(repository.findByIdAndCourseCreatorId(any(), any()))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.delete(user, 1, 1))
+        assertThatThrownBy(() -> service.deleteVideo(user, 1, 1))
                 .isInstanceOf(EntityNotFound.class)
                 .hasMessage("Section not found");
     }

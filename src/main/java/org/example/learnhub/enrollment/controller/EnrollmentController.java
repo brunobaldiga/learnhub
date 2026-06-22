@@ -34,13 +34,7 @@ public class EnrollmentController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(
-                service.findEnrolledCourses(
-                        user.getId(),
-                        page,
-                        size
-                )
-        );
+        return ResponseEntity.ok(service.findEnrolledCourses(user.getId(), page, size));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
@@ -53,11 +47,6 @@ public class EnrollmentController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer enrollmentId
     ) {
-        return ResponseEntity.ok(
-                service.findEnrollmentById(
-                        user.getId(),
-                        enrollmentId
-                )
-        );
+        return ResponseEntity.ok(service.findEnrollmentById(user.getId(), enrollmentId));
     }
 }

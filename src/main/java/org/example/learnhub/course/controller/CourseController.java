@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.*;
+import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.user.entity.User;
@@ -25,7 +26,6 @@ import java.util.List;
         description = "Operations related to course management"
 )
 public class CourseController {
-
     private final CourseService service;
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
@@ -92,13 +92,7 @@ public class CourseController {
             @PathVariable Integer courseId,
             @RequestBody @Validated UpdateCourseRequest request
     ) {
-        return ResponseEntity.ok(
-                service.updateCourseById(
-                        user,
-                        courseId,
-                        request
-                )
-        );
+        return ResponseEntity.ok(service.updateCourseById(user, courseId, request));
     }
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
@@ -112,13 +106,35 @@ public class CourseController {
             @PathVariable Integer courseId,
             @RequestBody @Validated SectionRequest request
     ) {
-        return ResponseEntity.ok(
-                service.createCourseSection(
-                        user,
-                        courseId,
-                        request
-                )
-        );
+        return ResponseEntity.ok(service.createCourseSection(user, courseId, request));
+    }
+
+    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PutMapping("/{courseId}/section/{sectionId}")
+    @Operation(
+            summary = "Update section",
+            description = "Updates an existing section from a course"
+    )
+    public ResponseEntity<SectionResponse> updateCourseSection(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer sectionId,
+            @RequestBody @Validated SectionRequest request
+    ) {
+        return ResponseEntity.ok(service.updateCourseSection(user, sectionId, request));
+    }
+
+    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @DeleteMapping("/{courseId}/section/{sectionId}")
+    @Operation(
+            summary = "Delete section",
+            description = "Deletes an existing section from a course"
+    )
+    public ResponseEntity<Void> deleteCourseSection(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer sectionId
+    ) {
+        service.deleteCourseSection(user, sectionId);
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
@@ -131,11 +147,6 @@ public class CourseController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId
     ) {
-        return ResponseEntity.ok(
-                service.findCourseSection(
-                        user,
-                        courseId
-                )
-        );
+        return ResponseEntity.ok(service.findCourseSection(user, courseId));
     }
 }

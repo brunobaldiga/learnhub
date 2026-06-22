@@ -29,18 +29,12 @@ public class SectionController {
             summary = "Add video to section",
             description = "Creates a new video and adds it to the specified section"
     )
-    public ResponseEntity<SectionResponse> create(
+    public ResponseEntity<SectionResponse> createVideo(
             @AuthenticationPrincipal User user,
             @PathVariable Integer sectionId,
             @RequestBody VideoRequest request
     ) {
-        return ResponseEntity.ok(
-                service.create(
-                        user,
-                        sectionId,
-                        request
-                )
-        );
+        return ResponseEntity.ok(service.createVideo(user, sectionId, request));
     }
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
@@ -49,17 +43,12 @@ public class SectionController {
             summary = "Remove video from section",
             description = "Deletes a video from the specified section"
     )
-    public ResponseEntity<SectionResponse> delete(
+    public ResponseEntity<Void> deleteVideo(
             @AuthenticationPrincipal User user,
             @PathVariable Integer sectionId,
             @PathVariable Integer videoId
     ) {
-        return ResponseEntity.ok(
-                service.delete(
-                        user,
-                        sectionId,
-                        videoId
-                )
-        );
+        service.deleteVideo(user, sectionId, videoId);
+        return ResponseEntity.noContent().build();
     }
 }

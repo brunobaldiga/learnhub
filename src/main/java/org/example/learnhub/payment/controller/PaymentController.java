@@ -36,12 +36,7 @@ public class PaymentController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId
     ) {
-        return ResponseEntity.ok(
-                service.purchase(
-                        user,
-                        courseId
-                )
-        );
+        return ResponseEntity.ok(service.purchase(user, courseId));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
@@ -56,14 +51,7 @@ public class PaymentController {
             @RequestParam(required = false) LocalDateTime endDate,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(
-                service.history(
-                        user,
-                        startDate,
-                        endDate,
-                        pageable
-                )
-        );
+        return ResponseEntity.ok(service.history(user, startDate, endDate, pageable));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
@@ -76,11 +64,6 @@ public class PaymentController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer paymentId
     ) {
-        return ResponseEntity.ok(
-                service.findById(
-                        user,
-                        paymentId
-                )
-        );
+        return ResponseEntity.ok(service.findById(user, paymentId));
     }
 }

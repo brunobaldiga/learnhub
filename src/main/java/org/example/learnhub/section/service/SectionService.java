@@ -12,8 +12,6 @@ import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.user.entity.User;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class SectionService {
@@ -21,15 +19,19 @@ public class SectionService {
     private final SectionMapper mapper;
     private final VideoMapper videoMapper;
 
-    public Section save(SectionRequest request, Course course) {
+    public Section saveSection(Section section) {
+        return repository.save(section);
+    }
+
+    public Section createSection(SectionRequest request, Course course) {
         Section section = mapper.toSection(request, course);
 
         return repository.save(section);
     }
 
-    public SectionResponse create(User user, Integer sectionId, VideoRequest request) {
-        Section section = repository.findByIdAndCourseCreatorId(sectionId, user.getId())
-                .orElseThrow(() -> new EntityNotFound("Section not found"));
+
+    public SectionResponse createVideo(User user, Integer sectionId, VideoRequest request) {
+        Section section = findEntitySectionByIdAndCourseCreatorId(sectionId, user.getId());
 
         Video video = videoMapper.toVideo(request);
         video.setSection(section);
@@ -42,14 +44,20 @@ public class SectionService {
         return mapper.toDto(section);
     }
 
-    public SectionResponse delete(User user, Integer sectionId, Integer videoId) {
-        Section section = repository.findByIdAndCourseCreatorId(sectionId, user.getId())
-                .orElseThrow(() -> new EntityNotFound("Section not found"));
+    public void deleteVideo(User user, Integer sectionId, Integer videoId) {
+        Section section = findEntitySectionByIdAndCourseCreatorId(sectionId, user.getId());
 
         section.getVideos().removeIf(video -> video.getId().equals(videoId));
 
         repository.save(section);
+    }
 
-        return mapper.toDto(section);
+    public Section findEntitySectionByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
+        return repository.findByIdAndCourseCreatorId(sectionId, creatorId)
+                .orElseThrow(() -> new EntityNotFound("Section not found"));
+    }
+
+    public void deleteSection(Section section) {
+        repository.delete(section);
     }
 }

@@ -196,7 +196,7 @@ public class CourseServiceTest {
         );
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
-        when(sectionGateway.saveSection(any(), any())).thenReturn(section);
+        when(sectionGateway.createSection(any(), any())).thenReturn(section);
         when(sectionGateway.toDto(any())).thenReturn(response);
 
         SectionResponse result = service.createCourseSection(user, course.getId(), request);

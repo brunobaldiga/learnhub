@@ -34,9 +34,7 @@ public class UserController {
     public ResponseEntity<TokenResponse> register(
             @RequestBody @Validated UserRegisterRequest request
     ) {
-        return ResponseEntity.ok(
-                service.register(request)
-        );
+        return ResponseEntity.ok(service.register(request));
     }
 
     @PostMapping("/login")
@@ -47,9 +45,7 @@ public class UserController {
     public ResponseEntity<TokenResponse> login(
             @RequestBody @Validated UserLoginRequest request
     ) {
-        return ResponseEntity.ok(
-                service.login(request)
-        );
+        return ResponseEntity.ok(service.login(request));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
@@ -61,8 +57,6 @@ public class UserController {
     public ResponseEntity<UserResponse> me(
             @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(
-                service.findById(user.getId())
-        );
+        return ResponseEntity.ok(service.findById(user.getId()));
     }
 }
