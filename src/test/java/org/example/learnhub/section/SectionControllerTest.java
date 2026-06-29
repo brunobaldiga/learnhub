@@ -116,7 +116,7 @@ public class SectionControllerTest {
     void shouldReturn200WhenCreatorDeletesVideo() throws Exception {
         mockMvc.perform(delete("/api/sections/1/videos/1")
                         .with(csrf()))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
