@@ -1,7 +1,11 @@
 package org.example.learnhub.payment.service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.course.entity.CourseStatus;
+import org.example.learnhub.exception.CourseAccessDenied;
+import org.example.learnhub.exception.DuplicatePurchaseException;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.payment.dto.CurrencyType;
@@ -24,10 +28,15 @@ public class PaymentService {
     private final PaymentRepository repository;
     private final PaymentMapper mapper;
 
+    @Transactional
     public PurchaseResponse purchase(User user, Integer courseId) {
         Course course = courseGateway.findCourseById(user, courseId);
 
-        enrollmentGateway.enroll(user, course.getId());
+        if (repository.existsByUserIdAndCourseId(user.getId(), courseId))
+            throw new DuplicatePurchaseException("User has already paid for this course.");
+
+        if (user.getId().equals(course.getCreator().getId()) || !course.getStatus().equals(CourseStatus.PUBLIC))
+            throw new CourseAccessDenied("Course access denied");
 
         Payment payment = Payment.builder()
                 .userId(user.getId())
@@ -38,7 +47,11 @@ public class PaymentService {
                 .currency(CurrencyType.USD)
                 .build();
 
+        course.setSalesAmount(course.getSalesAmount() + 1);
+
         payment = repository.save(payment);
+
+        enrollmentGateway.enroll(user, course.getId());
 
         return mapper.toDto(payment);
     }

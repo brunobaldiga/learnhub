@@ -158,20 +158,22 @@ INSERT INTO videos (
 )
 
 VALUES
-    (1, 'https://example.com/videos/spring-intro-1.mp4', 1, CURRENT_TIMESTAMP),
-    (1, 'https://example.com/videos/spring-intro-2.mp4', 2, CURRENT_TIMESTAMP),
+    (1,'https://www.youtube.com/watch?v=9SGDpanrc8U',1,CURRENT_TIMESTAMP),
+    (1,'https://www.youtube.com/watch?v=vtPkZShrvXQ',2,CURRENT_TIMESTAMP),
+    (1,'https://www.youtube.com/watch?v=HGTJBPNC-Gw',3,CURRENT_TIMESTAMP),
 
-    (2, 'https://example.com/videos/spring-core-1.mp4', 1, CURRENT_TIMESTAMP),
-    (2, 'https://example.com/videos/spring-core-2.mp4', 2, CURRENT_TIMESTAMP),
+    (2,'https://www.youtube.com/watch?v=35EQXmHKZYs',1,CURRENT_TIMESTAMP),
+    (2,'https://www.youtube.com/watch?v=Kw4xJfR5L9k',2,CURRENT_TIMESTAMP),
+    (2,'https://www.youtube.com/watch?v=4XTsAAHW_Tc',3,CURRENT_TIMESTAMP),
 
-    (3, 'https://example.com/videos/rest-api-1.mp4', 1, CURRENT_TIMESTAMP),
-    (3, 'https://example.com/videos/rest-api-2.mp4', 2, CURRENT_TIMESTAMP),
+    (3,'https://www.youtube.com/watch?v=8SGI_XS5OPw',1,CURRENT_TIMESTAMP),
+    (3,'https://www.youtube.com/watch?v=5PdEmeopJVQ',2,CURRENT_TIMESTAMP),
+    (3,'https://www.youtube.com/watch?v=6oOq6X4bQ4A',3,CURRENT_TIMESTAMP),
 
-    (4, 'https://example.com/videos/react-start-1.mp4', 1, CURRENT_TIMESTAMP),
-    (4, 'https://example.com/videos/react-start-2.mp4', 2, CURRENT_TIMESTAMP),
+    (4,'https://www.youtube.com/watch?v=4XTsAAHW_Tc',1,CURRENT_TIMESTAMP),
+    (4,'https://www.youtube.com/watch?v=vtPkZShrvXQ',2,CURRENT_TIMESTAMP),
+    (4,'https://www.youtube.com/watch?v=35EQXmHKZYs',3,CURRENT_TIMESTAMP),
 
-    (5, 'https://example.com/videos/react-components-1.mp4', 1, CURRENT_TIMESTAMP),
-    (5, 'https://example.com/videos/react-components-2.mp4', 2, CURRENT_TIMESTAMP),
-
-    (6, 'https://example.com/videos/react-state-1.mp4', 1, CURRENT_TIMESTAMP),
-    (6, 'https://example.com/videos/react-state-2.mp4', 2, CURRENT_TIMESTAMP);
+    (5,'https://www.youtube.com/watch?v=HGTJBPNC-Gw',1,CURRENT_TIMESTAMP),
+    (5,'https://www.youtube.com/watch?v=9SGDpanrc8U',2,CURRENT_TIMESTAMP),
+    (5,'https://www.youtube.com/watch?v=5PdEmeopJVQ',3,CURRENT_TIMESTAMP);

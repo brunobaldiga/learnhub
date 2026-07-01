@@ -9,6 +9,7 @@ import org.example.learnhub.user.dto.UserRegisterRequest;
 import org.example.learnhub.user.dto.UserResponse;
 import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,7 +35,9 @@ public class UserController {
     public ResponseEntity<TokenResponse> register(
             @RequestBody @Validated UserRegisterRequest request
     ) {
-        return ResponseEntity.ok(service.register(request));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(service.register(request));
     }
 
     @PostMapping("/login")

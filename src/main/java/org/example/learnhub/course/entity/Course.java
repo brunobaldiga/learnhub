@@ -1,6 +1,8 @@
 package org.example.learnhub.course.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.user.entity.User;
@@ -45,7 +47,18 @@ public class Course {
     @Builder.Default
     private List<Section> sections = new ArrayList<>();
 
+    @Column(nullable = false)
+    private Double averageRating;
+
+    @Column(nullable = false)
+    private Integer totalReviews = 0;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public void addReview(Integer rating) {
+        totalReviews = getTotalReviews() + 1;
+        averageRating = ((getAverageRating() * getTotalReviews()) + rating) / getTotalReviews();
+    }
 }

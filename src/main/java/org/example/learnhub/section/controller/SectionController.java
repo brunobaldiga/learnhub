@@ -7,6 +7,7 @@ import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.dto.VideoRequest;
 import org.example.learnhub.section.service.SectionService;
 import org.example.learnhub.user.entity.User;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,7 +35,8 @@ public class SectionController {
             @PathVariable Integer sectionId,
             @RequestBody VideoRequest request
     ) {
-        return ResponseEntity.ok(service.createVideo(user, sectionId, request));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.createVideo(user, sectionId, request));
     }
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")

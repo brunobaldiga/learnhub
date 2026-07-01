@@ -2,14 +2,17 @@ package org.example.learnhub.course.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.course.service.CourseReviewService;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,6 +30,7 @@ import java.util.List;
 )
 public class CourseController {
     private final CourseService service;
+    private final CourseReviewService courseReviewService;
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
     @PostMapping
@@ -38,7 +42,8 @@ public class CourseController {
             @AuthenticationPrincipal User user,
             @RequestBody @Validated CourseRequest request
     ) {
-        return ResponseEntity.ok(service.create(user, request));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.create(user, request));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
@@ -148,5 +153,20 @@ public class CourseController {
             @PathVariable Integer courseId
     ) {
         return ResponseEntity.ok(service.findCourseSection(user, courseId));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PostMapping("/{courseId}/reviews")
+    @Operation(
+            summary = "Write a course review",
+            description = "Allow user who bought the course to write a review"
+    )
+    public ResponseEntity<CourseReviewResponse> createCourseReview(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer courseId,
+            @RequestBody @Valid CourseReviewRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(courseReviewService.createCourseReview(user, courseId, request)));
     }
 }

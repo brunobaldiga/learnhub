@@ -32,14 +32,20 @@ public class GlobalExceptionHandler {
             EmailAlreadyInUse.class,
             MaxSectionsReached.class,
             UserAlreadyEnrolled.class,
-            UsernameAlreadyInUse.class
+            UsernameAlreadyInUse.class,
+            DuplicatePurchaseException.class,
+            DuplicateReviewException.class,
     })
     public ResponseEntity<ApiError> handle(RuntimeException ex) {
         return buildError(HttpStatus.CONFLICT, ex.getMessage());
     }
 
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({
+            MethodArgumentNotValidException.class,
+            SelfReviewNotAllowedException.class,
+            CourseReviewNotAllowedException.class
+    })
     public ResponseEntity<ValidationApiError> handle(MethodArgumentNotValidException ex) {
         List<ValidationError> errors = ex.getBindingResult()
                 .getFieldErrors()

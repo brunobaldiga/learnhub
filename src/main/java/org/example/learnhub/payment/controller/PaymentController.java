@@ -8,6 +8,7 @@ import org.example.learnhub.payment.service.PaymentService;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -36,7 +37,9 @@ public class PaymentController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId
     ) {
-        return ResponseEntity.ok(service.purchase(user, courseId));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(service.purchase(user, courseId));
     }
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
