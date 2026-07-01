@@ -13,6 +13,7 @@ import org.example.learnhub.exception.SelfReviewNotAllowedException;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.user.entity.User;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -44,5 +45,9 @@ public class CourseReviewService {
         repository.save(courseReview);
 
         return mapper.toDto(courseReview);
+    }
+
+    public Page<CourseReviewResponse> findCourseReviews(User user, CourseReviewFilter filter, Pageable pageable) {
+
     }
 }

@@ -167,6 +167,20 @@ public class CourseController {
             @RequestBody @Valid CourseReviewRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(courseReviewService.createCourseReview(user, courseId, request)));
+                .body(courseReviewService.createCourseReview(user, courseId, request));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PostMapping("/{courseId}/reviews")
+    @Operation(
+            summary = "List course reviews by course id",
+            description = "Returns all the reviews for the specified course"
+    )
+    public ResponseEntity<Page<CourseReviewResponse>> findCourseReviews(
+            @AuthenticationPrincipal User user,
+            CourseReviewFilter filter,
+            Pageable pageable
+    ) {
+        return ResponseEntity.ok(courseReviewService.findCourseReviews(user, filter, pageable));
     }
 }
