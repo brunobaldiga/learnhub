@@ -1,5 +1,7 @@
 package org.example.learnhub.course.repository;
 
+import org.example.learnhub.course.dto.CourseReviewFilter;
+import org.example.learnhub.course.entity.CourseReview;
 import org.springframework.data.jpa.domain.Specification;
 
 public class CourseReviewSpecs {

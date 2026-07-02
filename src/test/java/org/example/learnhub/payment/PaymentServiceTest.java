@@ -1,6 +1,7 @@
 package org.example.learnhub.payment;
 
 import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.exception.EntityNotFound;
@@ -10,6 +11,7 @@ import org.example.learnhub.payment.entity.Payment;
 import org.example.learnhub.payment.repository.PaymentRepository;
 import org.example.learnhub.payment.service.PaymentMapper;
 import org.example.learnhub.payment.service.PaymentService;
+import org.example.learnhub.user.dto.RoleType;
 import org.example.learnhub.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +63,19 @@ public class PaymentServiceTest {
 
     @Test
     void shouldPurchaseCourseSuccessfully() {
-        Course course = Course.builder().id(1).title("Java Course").price(BigDecimal.valueOf(99.99)).build();
+        User creator = User.builder()
+                .id(2)
+                .username("Natan")
+                .roleType(RoleType.CREATOR)
+                .build();
+
+        Course course = Course.builder()
+                .id(1)
+                .creator(creator)
+                .title("Java Course")
+                .status(CourseStatus.PUBLIC)
+                .price(BigDecimal.valueOf(99.99))
+                .build();
 
         Payment payment = Payment.builder()
                 .id(1)

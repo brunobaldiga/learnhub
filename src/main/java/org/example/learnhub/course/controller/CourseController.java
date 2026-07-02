@@ -11,6 +11,7 @@ import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -171,16 +172,32 @@ public class CourseController {
     }
 
     @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
-    @PostMapping("/{courseId}/reviews")
+    @GetMapping("/{courseId}/reviews")
     @Operation(
             summary = "List course reviews by course id",
             description = "Returns all the reviews for the specified course"
     )
     public ResponseEntity<Page<CourseReviewResponse>> findCourseReviews(
-            @AuthenticationPrincipal User user,
             CourseReviewFilter filter,
-            Pageable pageable
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "25") int size
     ) {
-        return ResponseEntity.ok(courseReviewService.findCourseReviews(user, filter, pageable));
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(courseReviewService.findCourseReviews(filter, pageable));
+    }
+
+    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @DeleteMapping("/{courseId}/reviews/{courseReviewId}")
+    @Operation(
+            summary = "Delete review",
+            description = "Delete a review authored by user"
+    )
+    public ResponseEntity<Void> deleteCourseReview(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer courseId,
+            @PathVariable Integer courseReviewId
+    ) {
+        courseReviewService.deleteReviewById(user, courseId, courseReviewId);
+        return ResponseEntity.noContent().build();
     }
 }

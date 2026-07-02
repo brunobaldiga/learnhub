@@ -63,7 +63,7 @@ public class PaymentControllerTest {
 
     @ParameterizedTest
     @ValueSource(strings = {"USER", "CREATOR", "ADMIN"})
-    void shouldReturn200WhenUserPurchasesCourse(String role) throws Exception {
+    void shouldReturn201WhenUserPurchasesCourse(String role) throws Exception {
         Integer courseId = 1;
 
         PurchaseResponse response = new PurchaseResponse(
@@ -85,7 +85,7 @@ public class PaymentControllerTest {
                                         List.of(new SimpleGrantedAuthority("ROLE_" + role))
                                 )
                         )))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @ParameterizedTest

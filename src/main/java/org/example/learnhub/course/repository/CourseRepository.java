@@ -13,13 +13,11 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface CourseRepository extends JpaRepository<Course, Integer>,
-        JpaSpecificationExecutor<Course> {
-
+public interface CourseRepository extends JpaRepository<Course, Integer>, JpaSpecificationExecutor<Course> {
     @Query("""
         SELECT COUNT(v)
         FROM Video v
-        WHERE v.section.course.id = :courseId        
+        WHERE v.section.course.id = :courseId
     """)
     Integer countVideosByCourseId(Integer courseId);
 

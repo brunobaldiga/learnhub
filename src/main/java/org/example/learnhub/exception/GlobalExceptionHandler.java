@@ -15,16 +15,18 @@ import java.util.List;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
     @ExceptionHandler({
             CourseAccessDenied.class,
+            ReviewOwnershipException.class,
             AuthorizationDeniedException.class
     })
-    public ResponseEntity<ApiError> handle(CourseAccessDenied ex) {
+    public ResponseEntity<ApiError> handleForbidden(Exception ex) {
         return buildError(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
     @ExceptionHandler(EntityNotFound.class)
-    public ResponseEntity<ApiError> handle(EntityNotFound ex) {
+    public ResponseEntity<ApiError> handleNotFound(EntityNotFound ex) {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
@@ -34,26 +36,30 @@ public class GlobalExceptionHandler {
             UserAlreadyEnrolled.class,
             UsernameAlreadyInUse.class,
             DuplicatePurchaseException.class,
-            DuplicateReviewException.class,
+            DuplicateReviewException.class
     })
-    public ResponseEntity<ApiError> handle(RuntimeException ex) {
+    public ResponseEntity<ApiError> handleConflict(RuntimeException ex) {
         return buildError(HttpStatus.CONFLICT, ex.getMessage());
     }
 
-
     @ExceptionHandler({
-            MethodArgumentNotValidException.class,
             SelfReviewNotAllowedException.class,
             CourseReviewNotAllowedException.class
     })
-    public ResponseEntity<ValidationApiError> handle(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiError> handleBadRequest(RuntimeException ex) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ValidationApiError> handleValidation(MethodArgumentNotValidException ex) {
         List<ValidationError> errors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
                 .map(error -> new ValidationError(
                         error.getField(),
                         error.getDefaultMessage()
-                )).toList();
+                ))
+                .toList();
 
         return ResponseEntity.badRequest().body(
                 new ValidationApiError(
@@ -65,14 +71,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> generic(Exception ex) {
-        return buildError(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred");
+    public ResponseEntity<ApiError> handleUnexpected(Exception ex) {
+        return buildError(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Unexpected error occurred"
+        );
     }
 
-    private ResponseEntity<ApiError> buildError(
-            HttpStatus status,
-            String message
-    ) {
+    private ResponseEntity<ApiError> buildError(HttpStatus status, String message) {
         return ResponseEntity.status(status).body(
                 new ApiError(
                         status.value(),

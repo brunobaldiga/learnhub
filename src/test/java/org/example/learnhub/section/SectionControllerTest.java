@@ -48,7 +48,7 @@ public class SectionControllerTest {
 
     @Test
     @WithMockUser(roles = "CREATOR")
-    void shouldReturn200WhenCreatorCreatesVideo() throws Exception {
+    void shouldReturn201WhenCreatorCreatesVideo() throws Exception {
         when(service.createVideo(any(), any(), any()))
                 .thenReturn(
                         new SectionResponse(
@@ -75,7 +75,7 @@ public class SectionControllerTest {
                             "index":0
                         }
                         """))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Test

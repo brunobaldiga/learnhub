@@ -51,7 +51,7 @@ public class UserControllerTest {
     private TokenService tokenService;
 
     @Test
-    void shouldReturn200WhenUserRegisters() throws Exception {
+    void shouldReturn201WhenUserRegisters() throws Exception {
         when(service.register(any()))
                 .thenReturn(new TokenResponse("jwt-token"));
 
@@ -65,7 +65,7 @@ public class UserControllerTest {
                             "password":"123456"
                         }
                         """))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
     }
 
     @Test

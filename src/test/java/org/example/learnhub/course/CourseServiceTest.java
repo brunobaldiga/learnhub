@@ -123,8 +123,7 @@ public class CourseServiceTest {
 
     @Test
     void shouldUpdateCourseSuccessfully() {
-        Course
-                course = Course.builder()
+        Course course = Course.builder()
                 .id(1)
                 .creator(user)
                 .title("Java Course")
