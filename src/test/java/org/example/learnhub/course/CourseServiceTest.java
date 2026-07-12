@@ -1,9 +1,6 @@
 package org.example.learnhub.course;
 
-import org.example.learnhub.course.dto.CourseRequest;
-import org.example.learnhub.course.dto.CourseResponse;
-import org.example.learnhub.course.dto.SectionRequest;
-import org.example.learnhub.course.dto.UpdateCourseRequest;
+import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.exception.CourseAccessDenied;
@@ -16,6 +13,7 @@ import org.example.learnhub.course.service.CourseMapper;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
+import org.example.learnhub.section.service.SectionMapper;
 import org.example.learnhub.user.dto.RoleType;
 import org.example.learnhub.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +22,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -32,9 +35,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,6 +55,9 @@ public class CourseServiceTest {
 
     @Mock
     private CourseMapper mapper;
+
+    @Mock
+    private SectionMapper sectionMapper;
 
     @InjectMocks
     private CourseService service;
@@ -305,5 +312,110 @@ public class CourseServiceTest {
         assertThatThrownBy(() -> service.findCourseSection(user, course.getId()))
                 .isInstanceOf(CourseAccessDenied.class)
                 .hasMessage("User haven't paid for the course");
+    }
+
+    @Test
+    void shouldSearchCoursesSuccessfully() {
+        Course course = Course.builder()
+                .id(1)
+                .title("Java")
+                .build();
+
+        CourseResponse response = new CourseResponse(
+                1, 1, "John", "Java",
+                CourseStatus.PUBLIC,
+                BigDecimal.ZERO,
+                0,
+                LocalDateTime.now()
+        );
+
+        Page<Course> page = new PageImpl<>(List.of(course));
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(repository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(mapper.toDto(course)).thenReturn(response);
+
+        Page<CourseResponse> result = service.search(new CourseFilter(null, "John"), pageable);
+
+        assertThat(result.getContent()).containsExactly(response);
+    }
+
+    @Test
+    void shouldFindOwnedCoursesSuccessfully() {
+        Course course = Course.builder()
+                .id(1)
+                .creator(user)
+                .build();
+
+        CourseResponse response = new CourseResponse(
+                1, 1, "John",
+                "Java",
+                CourseStatus.PUBLIC,
+                BigDecimal.ZERO,
+                0,
+                LocalDateTime.now()
+        );
+
+        Page<Course> page = new PageImpl<>(List.of(course));
+        Pageable pageable = PageRequest.of(0, 10);
+
+        when(repository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
+        when(mapper.toDto(course)).thenReturn(response);
+
+        Page<CourseResponse> result = service.findCourses(user, new CourseFilter(null, "John"), pageable);
+
+        assertThat(result.getContent()).containsExactly(response);
+    }
+
+    @Test
+    void shouldCountVideosByCourseId() {
+        when(repository.countVideosByCourseId(1)).thenReturn(10);
+
+        Integer result = service.countVideosByCourseId(1);
+
+        assertThat(result).isEqualTo(10);
+    }
+
+    @Test
+    void shouldUpdateSectionSuccessfully() {
+        Section section = Section.builder()
+                .id(1)
+                .title("Old")
+                .index(0)
+                .build();
+
+        SectionRequest request = new SectionRequest(
+                "New Title",
+                1
+        );
+
+        SectionResponse response = new SectionResponse(
+                1,
+                "New Title",
+                1,
+                List.of()
+        );
+
+        when(sectionGateway.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(section);
+        when(sectionMapper.toDto(section)).thenReturn(response);
+
+        SectionResponse result = service.updateCourseSection(user, 1, request);
+
+        verify(sectionGateway).saveSection(section);
+
+        assertThat(result).isEqualTo(response);
+    }
+
+    @Test
+    void shouldDeleteSectionSuccessfully() {
+        Section section = Section.builder()
+                .id(1)
+                .build();
+
+        when(sectionGateway.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(section);
+
+        service.deleteCourseSection(user, 1);
+
+        verify(sectionGateway).deleteSection(section);
     }
 }

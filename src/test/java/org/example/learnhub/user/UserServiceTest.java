@@ -71,8 +71,8 @@ public class UserServiceTest {
                 "123456"
         );
 
-        when(repository.existsByEmail(request.email())).thenReturn(false);
-        when(repository.existsByUsername(request.username())).thenReturn(false);
+        when(repository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
+        when(repository.existsByUsernameIgnoreCase(request.username())).thenReturn(false);
 
         when(mapper.toUser(request)).thenReturn(user);
         when(passwordEncoder.encode(request.password())).thenReturn("encoded-password");
@@ -101,7 +101,7 @@ public class UserServiceTest {
                 "123456"
         );
 
-        when(repository.existsByEmail(request.email())).thenReturn(true);
+        when(repository.existsByEmailIgnoreCase(request.email())).thenReturn(true);
 
         assertThatThrownBy(() -> service.register(request))
                 .isInstanceOf(EmailAlreadyInUse.class)
@@ -116,8 +116,8 @@ public class UserServiceTest {
                 "123456"
         );
 
-        when(repository.existsByEmail(request.email())).thenReturn(false);
-        when(repository.existsByUsername(request.username())).thenReturn(true);
+        when(repository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
+        when(repository.existsByUsernameIgnoreCase(request.username())).thenReturn(true);
 
         assertThatThrownBy(() -> service.register(request))
                 .isInstanceOf(UsernameAlreadyInUse.class)

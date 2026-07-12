@@ -13,11 +13,10 @@ import org.springframework.stereotype.Service;
 public class AuthorizationService implements UserDetailsService {
     private final UserRepository repository;
 
-
     @Override
     public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
-        return repository.findByUsername(identifier)
-                .or(() -> repository.findByEmail(identifier))
-                .orElseThrow(() -> new EntityNotFound("User not found"));
+        return repository.findByUsernameIgnoreCase(identifier)
+                .or(() -> repository.findByEmailIgnoreCase(identifier))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }

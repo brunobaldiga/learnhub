@@ -26,8 +26,8 @@ public class UserService {
     private final TokenService tokenService;
 
     public TokenResponse register(UserRegisterRequest request) {
-        if (repository.existsByEmail(request.email())) throw new EmailAlreadyInUse("Email is already in use.");
-        if (repository.existsByUsername(request.username())) throw new UsernameAlreadyInUse("Username is already in use.");
+        if (repository.existsByEmailIgnoreCase(request.email())) throw new EmailAlreadyInUse("Email is already in use.");
+        if (repository.existsByUsernameIgnoreCase(request.username())) throw new UsernameAlreadyInUse("Username is already in use.");
 
         User user = mapper.toUser(request);
 

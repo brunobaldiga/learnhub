@@ -295,7 +295,7 @@ public class CourseControllerTest {
                             }
                             """))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.authorUsername").value("john"))
+                .andExpect(jsonPath("$.authorUsername").value("John"))
                 .andExpect(jsonPath("$.rating").value(5));
     }
 

@@ -8,6 +8,12 @@ CREATE TABLE users (
     created_at TIMESTAMP(6) NOT NULL
 );
 
+CREATE UNIQUE INDEX uk_users_username_lower
+ON users (LOWER(username));
+
+CREATE UNIQUE INDEX uk_users_email_lower
+ON users (LOWER(email));
+
 CREATE TABLE courses (
      id SERIAL PRIMARY KEY,
      user_id INTEGER NOT NULL,
