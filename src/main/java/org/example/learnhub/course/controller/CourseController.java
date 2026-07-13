@@ -1,6 +1,11 @@
 package org.example.learnhub.course.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +15,7 @@ import org.example.learnhub.course.service.CourseReviewService;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.user.entity.User;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +35,7 @@ import java.util.List;
         name = "Courses",
         description = "Operations related to course management"
 )
+@SecurityRequirement(name = "bearerAuth")
 public class CourseController {
     private final CourseService service;
     private final CourseReviewService courseReviewService;
@@ -53,9 +60,17 @@ public class CourseController {
             summary = "Search courses",
             description = "Searches courses using filters and pagination"
     )
+    @Parameters({
+            @Parameter(
+                    name = "sort",
+                    description = "Sorting criteria: property,(asc|desc)",
+                    example = "title,asc",
+                    array = @ArraySchema(schema = @Schema(type = "string"))
+            )
+    })
     public ResponseEntity<Page<CourseResponse>> search(
-            CourseFilter filter,
-            Pageable pageable
+            @ParameterObject CourseFilter filter,
+            @ParameterObject Pageable pageable
     ) {
         return ResponseEntity.ok(service.search(filter, pageable));
     }
@@ -68,8 +83,8 @@ public class CourseController {
     )
     public ResponseEntity<Page<CourseResponse>> findUserCourses(
             @AuthenticationPrincipal User user,
-            CourseFilter filter,
-            Pageable pageable
+            @ParameterObject CourseFilter filter,
+            @ParameterObject Pageable pageable
     ) {
         return ResponseEntity.ok(service.findCourses(user, filter, pageable));
     }

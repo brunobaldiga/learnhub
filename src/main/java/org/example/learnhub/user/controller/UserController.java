@@ -1,6 +1,7 @@
 package org.example.learnhub.user.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.user.dto.TokenResponse;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
         name = "Users",
         description = "Operations related to user registration, authentication and profile management"
 )
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     private final UserService service;

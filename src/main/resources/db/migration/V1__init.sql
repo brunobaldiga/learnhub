@@ -9,23 +9,25 @@ CREATE TABLE users (
 );
 
 CREATE UNIQUE INDEX uk_users_username_lower
-ON users (LOWER(username));
+    ON users (LOWER(username));
 
 CREATE UNIQUE INDEX uk_users_email_lower
-ON users (LOWER(email));
+    ON users (LOWER(email));
 
 CREATE TABLE courses (
-     id SERIAL PRIMARY KEY,
-     user_id INTEGER NOT NULL,
-     title VARCHAR(255) NOT NULL,
-     status VARCHAR(255) NOT NULL,
-     price NUMERIC(38,2) NOT NULL,
-     sales_amount INTEGER NOT NULL,
-     created_at TIMESTAMP(6) NOT NULL,
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(255) NOT NULL,
+    price NUMERIC(38,2) NOT NULL,
+    sales_amount INTEGER NOT NULL,
+    average_rating DOUBLE PRECISION NOT NULL DEFAULT 0,
+    total_reviews INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMP(6) NOT NULL,
 
-     CONSTRAINT fk_course_user
-         FOREIGN KEY (user_id)
-             REFERENCES users(id)
+    CONSTRAINT fk_course_user
+        FOREIGN KEY (user_id)
+            REFERENCES users(id)
 );
 
 CREATE TABLE sections (
@@ -92,6 +94,8 @@ INSERT INTO courses (
     status,
     price,
     sales_amount,
+    average_rating,
+    total_reviews,
     created_at
 )
 VALUES
@@ -101,6 +105,8 @@ VALUES
         'PUBLIC',
         99.99,
         15,
+        0,
+        0,
         CURRENT_TIMESTAMP
     ),
     (
@@ -109,6 +115,8 @@ VALUES
         'PUBLIC',
         79.99,
         8,
+        0,
+        0,
         CURRENT_TIMESTAMP
     );
 

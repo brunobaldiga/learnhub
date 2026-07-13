@@ -1,6 +1,7 @@
 package org.example.learnhub.payment.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.payment.dto.PurchaseResponse;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
         name = "Payments",
         description = "Operations related to course purchases and payment history"
 )
+@SecurityRequirement(name = "bearerAuth")
 public class PaymentController {
 
     private final PaymentService service;

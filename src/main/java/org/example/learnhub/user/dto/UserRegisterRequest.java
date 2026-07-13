@@ -19,8 +19,13 @@ public record UserRegisterRequest(
         String username,
 
         @Email(message = "Invalid email format.")
+        @NotBlank(message = "Email cannot be blank.")
         String email,
 
+        @Pattern(
+                regexp = "^[^\\s]+$",
+                message = "Password cannot contain spaces."
+        )
         @NotBlank(message = "Password cannot be blank.")
         @Size(
                 min = 6,
