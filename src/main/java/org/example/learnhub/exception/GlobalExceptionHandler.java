@@ -1,5 +1,6 @@
 package org.example.learnhub.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.example.learnhub.exception.dto.ApiError;
 import org.example.learnhub.exception.dto.ValidationApiError;
 import org.example.learnhub.exception.dto.ValidationError;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler({
@@ -78,6 +80,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleUnexpected(Exception ex) {
+        log.error("Unexpected exception", ex);
+
         return buildError(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "Unexpected error occurred"

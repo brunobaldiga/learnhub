@@ -30,6 +30,57 @@ CREATE TABLE courses (
             REFERENCES users(id)
 );
 
+CREATE TABLE enrollments (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    course_id INTEGER NOT NULL,
+    completed_lessons INTEGER NOT NULL DEFAULT 0,
+    total_lessons INTEGER NOT NULL,
+    enrolled_at TIMESTAMP(6) NOT NULL,
+
+    CONSTRAINT fk_enrollment_user
+        FOREIGN KEY (user_id)
+            REFERENCES users(id),
+
+    CONSTRAINT fk_enrollment_course
+        FOREIGN KEY (course_id)
+            REFERENCES courses(id),
+
+    CONSTRAINT uk_enrollment_user_course
+        UNIQUE(user_id, course_id)
+);
+
+CREATE TABLE payments (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    course_id INTEGER NOT NULL,
+    course_title VARCHAR(255) NOT NULL,
+    course_price NUMERIC(38,2) NOT NULL,
+    amount NUMERIC(38,2) NOT NULL,
+    currency VARCHAR(50) NOT NULL,
+    created_at TIMESTAMP(6) NOT NULL,
+
+    CONSTRAINT fk_payment_user
+        FOREIGN KEY (user_id)
+            REFERENCES users(id),
+
+    CONSTRAINT fk_payment_course
+        FOREIGN KEY (course_id)
+            REFERENCES courses(id),
+
+    CONSTRAINT uk_payment_user_course
+        UNIQUE (user_id, course_id)
+);
+
+CREATE INDEX idx_payments_user_id
+    ON payments(user_id);
+
+CREATE INDEX idx_payments_course_id
+    ON payments(course_id);
+
+CREATE INDEX idx_payments_created_at
+    ON payments(created_at);
+
 CREATE TABLE sections (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,

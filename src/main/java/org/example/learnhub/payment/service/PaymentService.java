@@ -18,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -56,14 +57,19 @@ public class PaymentService {
         return mapper.toDto(payment);
     }
 
-
-    public Page<PurchaseResponse> history(User user, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
-        return repository.findByUserIdAndDateRange(user.getId(), startDate, endDate, pageable)
-                .map(mapper::toDto);
+    public Page<PurchaseResponse> history(User user, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        return repository.findAll(
+                    PaymentSpecification.filter(
+                            user.getId(),
+                            startDate,
+                            endDate
+                    ),
+                    pageable
+            ).map(mapper::toDto);
     }
 
     public PurchaseResponse findById(User user, Integer paymentId) {
-        return repository.findByIdAndUserId(user.getId(), paymentId)
+        return repository.findByIdAndUserId(paymentId, user.getId())
                 .map(mapper::toDto)
                 .orElseThrow(() -> new EntityNotFound("Payment not found"));
     }
