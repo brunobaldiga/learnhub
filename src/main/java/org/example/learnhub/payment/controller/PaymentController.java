@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @RestController
@@ -52,8 +53,8 @@ public class PaymentController {
     )
     public ResponseEntity<Page<PurchaseResponse>> history(
             @AuthenticationPrincipal User user,
-            @RequestParam(required = false) LocalDateTime startDate,
-            @RequestParam(required = false) LocalDateTime endDate,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
             Pageable pageable
     ) {
         return ResponseEntity.ok(service.history(user, startDate, endDate, pageable));
