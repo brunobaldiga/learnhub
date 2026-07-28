@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.learnhub.payment.dto.PurchaseResponse;
 import org.example.learnhub.payment.service.PaymentService;
 import org.example.learnhub.user.entity.User;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -55,7 +56,7 @@ public class PaymentController {
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
-            Pageable pageable
+            @ParameterObject Pageable pageable
     ) {
         return ResponseEntity.ok(service.history(user, startDate, endDate, pageable));
     }
