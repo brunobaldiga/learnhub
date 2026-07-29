@@ -100,7 +100,7 @@ CREATE TABLE payments (
 
     CONSTRAINT fk_payment_course
         FOREIGN KEY (course_id)
-            REFERENCES courses(id),
+            REFERENCES courses(id)
 );
 
 CREATE INDEX idx_payments_user_id

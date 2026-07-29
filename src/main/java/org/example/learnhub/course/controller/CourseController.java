@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.*;
-import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.service.CourseReviewService;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.section.dto.SectionResponse;
@@ -131,7 +130,7 @@ public class CourseController {
     }
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
-    @PutMapping("/{courseId}/section/{sectionId}")
+    @PutMapping("/section/{sectionId}")
     @Operation(
             summary = "Update section",
             description = "Updates an existing section from a course"
@@ -145,7 +144,7 @@ public class CourseController {
     }
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
-    @DeleteMapping("/{courseId}/section/{sectionId}")
+    @DeleteMapping("/section/{sectionId}")
     @Operation(
             summary = "Delete section",
             description = "Deletes an existing section from a course"

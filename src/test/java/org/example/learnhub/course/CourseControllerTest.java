@@ -232,7 +232,7 @@ public class CourseControllerTest {
                         List.of()
                 ));
 
-        mockMvc.perform(put("/api/courses/1/section/1")
+        mockMvc.perform(put("/api/courses/section/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -248,7 +248,7 @@ public class CourseControllerTest {
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn204WhenDeletingSection() throws Exception {
-        mockMvc.perform(delete("/api/courses/1/section/1")
+        mockMvc.perform(delete("/api/courses/section/1")
                         .with(csrf()))
                 .andExpect(status().isNoContent());
 
