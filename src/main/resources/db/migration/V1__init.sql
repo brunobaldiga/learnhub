@@ -1,7 +1,7 @@
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(255) NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     role_type VARCHAR(255) NOT NULL,
     keycloak_id VARCHAR(255),
@@ -50,6 +50,40 @@ CREATE TABLE enrollments (
         UNIQUE(user_id, course_id)
 );
 
+CREATE TABLE course_reviews (
+    id SERIAL PRIMARY KEY,
+    course_id INTEGER NOT NULL,
+    author_id INTEGER NOT NULL,
+    rating INTEGER NOT NULL,
+    comment VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP(6) NOT NULL,
+
+    CONSTRAINT fk_course_review_course
+        FOREIGN KEY (course_id)
+            REFERENCES courses(id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_course_review_author
+        FOREIGN KEY (author_id)
+            REFERENCES users(id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT chk_course_review_rating
+        CHECK (rating >= 0 AND rating <= 5),
+
+    CONSTRAINT uk_course_review_author_course
+        UNIQUE (author_id, course_id)
+);
+
+CREATE INDEX idx_course_reviews_course_id
+    ON course_reviews(course_id);
+
+CREATE INDEX idx_course_reviews_author_id
+    ON course_reviews(author_id);
+
+CREATE INDEX idx_course_reviews_created_at
+    ON course_reviews(created_at);
+
 CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
@@ -67,9 +101,6 @@ CREATE TABLE payments (
     CONSTRAINT fk_payment_course
         FOREIGN KEY (course_id)
             REFERENCES courses(id),
-
-    CONSTRAINT uk_payment_user_course
-        UNIQUE (user_id, course_id)
 );
 
 CREATE INDEX idx_payments_user_id

@@ -52,7 +52,7 @@ public class EnrollmentService {
     }
 
     public EnrollmentResponse findEnrollmentById(Integer userId, Integer enrollmentId) {
-        return mapper.toDto(repository.findByIdAndUserId(userId, enrollmentId)
+        return mapper.toDto(repository.findByIdAndUserId(enrollmentId, userId)
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found.")));
     }
 }
