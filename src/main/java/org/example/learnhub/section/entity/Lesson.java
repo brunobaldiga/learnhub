@@ -7,13 +7,13 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "videos")
+@Table(name = "lessons")
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Video {
+public class Lesson {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -23,7 +23,7 @@ public class Video {
     private Section section;
 
     @Column(nullable = false, length = 1000)
-    private String videoUrl;
+    private String contentUrl;
 
     @Column(nullable = false)
     private Integer index;

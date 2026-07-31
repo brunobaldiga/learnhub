@@ -2,14 +2,14 @@ package org.example.learnhub.section;
 
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.dto.VideoRequest;
-import org.example.learnhub.section.dto.VideoResponse;
+import org.example.learnhub.section.dto.LessonRequest;
+import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.entity.Section;
-import org.example.learnhub.section.entity.Video;
+import org.example.learnhub.section.entity.Lesson;
 import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.section.service.SectionMapper;
 import org.example.learnhub.section.service.SectionService;
-import org.example.learnhub.section.service.VideoMapper;
+import org.example.learnhub.section.service.LessonMapper;
 import org.example.learnhub.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,7 +39,7 @@ public class SectionServiceTest {
     private SectionMapper mapper;
 
     @Mock
-    private VideoMapper videoMapper;
+    private LessonMapper lessonMapper;
 
     @InjectMocks
     private SectionService service;
@@ -55,20 +55,20 @@ public class SectionServiceTest {
     }
 
     @Test
-    void shouldCreateVideoSuccessfully() {
+    void shouldCreateLessonSuccessfully() {
         Section section = Section.builder()
                 .id(1)
-                .videos(new ArrayList<>())
+                .lessons(new ArrayList<>())
                 .build();
 
-        VideoRequest request = new VideoRequest(
+        LessonRequest request = new LessonRequest(
                 "https://youtube.com/video",
                 0
         );
 
-        Video video = Video.builder()
+        Lesson lesson = Lesson.builder()
                 .id(1)
-                .videoUrl(request.videoUrl())
+                .contentUrl(request.contentUrl())
                 .index(request.index())
                 .build();
 
@@ -77,9 +77,9 @@ public class SectionServiceTest {
                 "Section 1",
                 0,
                 List.of(
-                        new VideoResponse(
+                        new LessonResponse(
                                 1,
-                                request.videoUrl(),
+                                request.contentUrl(),
                                 0,
                                 LocalDateTime.now()
                         )
@@ -89,20 +89,20 @@ public class SectionServiceTest {
         when(repository.findByIdAndCourseCreatorId(1, user.getId()))
                 .thenReturn(Optional.of(section));
 
-        when(videoMapper.toVideo(request)).thenReturn(video);
+        when(lessonMapper.toLesson(request)).thenReturn(lesson);
         when(mapper.toDto(section)).thenReturn(response);
 
-        SectionResponse result = service.createVideo(user, 1, request);
+        SectionResponse result = service.createLesson(user, 1, request);
 
         verify(repository).save(section);
 
         assertThat(result).isEqualTo(response);
-        assertThat(section.getVideos().size()).isEqualTo(1);
+        assertThat(section.getLessons().size()).isEqualTo(1);
     }
 
     @Test
-    void shouldReturn404WhenSectionNotFoundOnCreateVideo() {
-        VideoRequest request = new VideoRequest(
+    void shouldReturn404WhenSectionNotFoundOnCreateLesson() {
+        LessonRequest request = new LessonRequest(
                 "https://youtube.com/video",
                 0
         );
@@ -110,37 +110,37 @@ public class SectionServiceTest {
         when(repository.findByIdAndCourseCreatorId(any(), any()))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.createVideo(user, 1, request))
+        assertThatThrownBy(() -> service.createLesson(user, 1, request))
                 .isInstanceOf(EntityNotFound.class)
                 .hasMessage("Section not found");
     }
 
     @Test
-    void shouldDeleteVideoSuccessfully() {
-        Video video = Video.builder()
+    void shouldDeleteLessonSuccessfully() {
+        Lesson lesson = Lesson.builder()
                 .id(1)
                 .build();
 
         Section section = Section.builder()
                 .id(1)
-                .videos(new ArrayList<>(List.of(video)))
+                .lessons(new ArrayList<>(List.of(lesson)))
                 .build();
 
 
         when(repository.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(Optional.of(section));
 
-        service.deleteVideo(user, 1, 1);
+        service.deleteLesson(user, 1, 1);
 
         verify(repository).save(section);
-        assertThat(section.getVideos().isEmpty()).isTrue();
+        assertThat(section.getLessons().isEmpty()).isTrue();
     }
 
     @Test
-    void shouldReturn404WhenSectionNotFoundOnDeleteVideo() {
+    void shouldReturn404WhenSectionNotFoundOnDeleteLesson() {
         when(repository.findByIdAndCourseCreatorId(any(), any()))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.deleteVideo(user, 1, 1))
+        assertThatThrownBy(() -> service.deleteLesson(user, 1, 1))
                 .isInstanceOf(EntityNotFound.class)
                 .hasMessage("Section not found");
     }

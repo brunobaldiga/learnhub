@@ -163,7 +163,7 @@ public class CourseControllerTest {
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Introduction"))
                 .andExpect(jsonPath("$.index").value(0))
-                .andExpect(jsonPath("$.videos").isArray());
+                .andExpect(jsonPath("$.lessons").isArray());
     }
 
     @Test

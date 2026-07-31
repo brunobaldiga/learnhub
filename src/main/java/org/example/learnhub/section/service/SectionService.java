@@ -5,9 +5,9 @@ import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.dto.VideoRequest;
+import org.example.learnhub.section.dto.LessonRequest;
+import org.example.learnhub.section.entity.Lesson;
 import org.example.learnhub.section.entity.Section;
-import org.example.learnhub.section.entity.Video;
 import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.user.entity.User;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class SectionService {
     private final SectionRepository repository;
     private final SectionMapper mapper;
-    private final VideoMapper videoMapper;
+    private final LessonMapper lessonMapper;
 
     public Section saveSection(Section section) {
         return repository.save(section);
@@ -30,13 +30,13 @@ public class SectionService {
     }
 
 
-    public SectionResponse createVideo(User user, Integer sectionId, VideoRequest request) {
+    public SectionResponse createLesson(User user, Integer sectionId, LessonRequest request) {
         Section section = findEntitySectionByIdAndCourseCreatorId(sectionId, user.getId());
 
-        Video video = videoMapper.toVideo(request);
-        video.setSection(section);
+        Lesson lesson = lessonMapper.toLesson(request);
+        lesson.setSection(section);
 
-        section.getVideos().add(video);
+        section.getLessons().add(lesson);
 
         repository.save(section);
 
@@ -44,10 +44,10 @@ public class SectionService {
         return mapper.toDto(section);
     }
 
-    public void deleteVideo(User user, Integer sectionId, Integer videoId) {
+    public void deleteLesson(User user, Integer sectionId, Integer lessonId) {
         Section section = findEntitySectionByIdAndCourseCreatorId(sectionId, user.getId());
 
-        section.getVideos().removeIf(video -> video.getId().equals(videoId));
+        section.getLessons().removeIf(lesson -> lesson.getId().equals(lessonId));
 
         repository.save(section);
     }

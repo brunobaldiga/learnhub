@@ -70,8 +70,8 @@ public class CourseService {
                 .orElseThrow(() -> new EntityNotFound("Course not found."));
     }
 
-    public Integer countVideosByCourseId(Integer courseId) {
-        return repository.countVideosByCourseId(courseId);
+    public Integer countLessonsByCourseId(Integer courseId) {
+        return repository.countLessonsByCourseId(courseId);
     }
 
     public CourseResponse updateCourseById(User user, Integer courseId, UpdateCourseRequest request) {

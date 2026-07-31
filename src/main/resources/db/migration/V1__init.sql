@@ -124,14 +124,14 @@ CREATE TABLE sections (
             REFERENCES courses(id)
 );
 
-CREATE TABLE videos (
+CREATE TABLE lessons (
     id SERIAL PRIMARY KEY,
     section_id INTEGER NOT NULL,
-    video_url VARCHAR(1000) NOT NULL,
+    content_url VARCHAR(1000) NOT NULL,
     "index" INTEGER NOT NULL,
     created_at TIMESTAMP(6) NOT NULL,
 
-    CONSTRAINT fk_video_section
+    CONSTRAINT fk_lesson_section
         FOREIGN KEY (section_id)
             REFERENCES sections(id)
 );
@@ -246,9 +246,9 @@ VALUES
         CURRENT_TIMESTAMP
     );
 
-INSERT INTO videos (
+INSERT INTO lessons (
     section_id,
-    video_url,
+    content_url,
     "index",
     created_at
 )

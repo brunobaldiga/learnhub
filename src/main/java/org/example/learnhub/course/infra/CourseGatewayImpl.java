@@ -18,7 +18,7 @@ public class CourseGatewayImpl implements CourseGateway {
     }
 
     @Override
-    public Integer countVideosByCourseId(Integer courseId) {
-        return service.countVideosByCourseId(courseId);
+    public Integer countLessonsByCourseId(Integer courseId) {
+        return service.countLessonsByCourseId(courseId);
     }
 }

@@ -368,10 +368,10 @@ public class CourseServiceTest {
     }
 
     @Test
-    void shouldCountVideosByCourseId() {
-        when(repository.countVideosByCourseId(1)).thenReturn(10);
+    void shouldCountLessonsByCourseId() {
+        when(repository.countLessonsByCourseId(1)).thenReturn(10);
 
-        Integer result = service.countVideosByCourseId(1);
+        Integer result = service.countLessonsByCourseId(1);
 
         assertThat(result).isEqualTo(10);
     }

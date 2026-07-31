@@ -16,10 +16,10 @@ import java.util.Optional;
 public interface CourseRepository extends JpaRepository<Course, Integer>, JpaSpecificationExecutor<Course> {
     @Query("""
         SELECT COUNT(v)
-        FROM Video v
+        FROM Lesson v
         WHERE v.section.course.id = :courseId
     """)
-    Integer countVideosByCourseId(Integer courseId);
+    Integer countLessonsByCourseId(Integer courseId);
 
 
     Optional<Course> findByIdAndStatus(Integer id, CourseStatus status);

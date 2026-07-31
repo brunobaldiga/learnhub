@@ -5,7 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.dto.VideoRequest;
+import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.service.SectionService;
 import org.example.learnhub.user.entity.User;
 import org.springframework.http.HttpStatus;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(
         name = "Sections",
-        description = "Operations related to course sections and videos"
+        description = "Operations related to course sections and lessons"
 )
 @SecurityRequirement(name = "bearerAuth")
 public class SectionController {
@@ -27,32 +27,32 @@ public class SectionController {
     private final SectionService service;
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
-    @PostMapping("/{sectionId}/videos")
+    @PostMapping("/{sectionId}/lessons")
     @Operation(
-            summary = "Add video to section",
-            description = "Creates a new video and adds it to the specified section"
+            summary = "Add lesson to section",
+            description = "Creates a new lesson and adds it to the specified section"
     )
-    public ResponseEntity<SectionResponse> createVideo(
+    public ResponseEntity<SectionResponse> createLesson(
             @AuthenticationPrincipal User user,
             @PathVariable Integer sectionId,
-            @RequestBody VideoRequest request
+            @RequestBody LessonRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(service.createVideo(user, sectionId, request));
+                .body(service.createLesson(user, sectionId, request));
     }
 
     @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
-    @DeleteMapping("/{sectionId}/videos/{videoId}")
+    @DeleteMapping("/{sectionId}/lessons/{lessonId}")
     @Operation(
-            summary = "Remove video from section",
-            description = "Deletes a video from the specified section"
+            summary = "Remove lesson from section",
+            description = "Deletes a lesson from the specified section"
     )
-    public ResponseEntity<Void> deleteVideo(
+    public ResponseEntity<Void> deleteLesson(
             @AuthenticationPrincipal User user,
             @PathVariable Integer sectionId,
-            @PathVariable Integer videoId
+            @PathVariable Integer lessonId
     ) {
-        service.deleteVideo(user, sectionId, videoId);
+        service.deleteLesson(user, sectionId, lessonId);
         return ResponseEntity.noContent().build();
     }
 }

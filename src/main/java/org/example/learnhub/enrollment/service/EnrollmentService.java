@@ -38,7 +38,7 @@ public class EnrollmentService {
         Enrollment courseProgress = Enrollment.builder()
                 .user(user)
                 .course(course)
-                .totalLessons(courseGateway.countVideosByCourseId(courseId))
+                .totalLessons(courseGateway.countLessonsByCourseId(courseId))
                 .build();
 
         repository.save(courseProgress);

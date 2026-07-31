@@ -6,6 +6,6 @@ public record SectionResponse(
         Integer id,
         String title,
         Integer index,
-        List<VideoResponse> videos
+        List<LessonResponse> lessons
 ) {
 }

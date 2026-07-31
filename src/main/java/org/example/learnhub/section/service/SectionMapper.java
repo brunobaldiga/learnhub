@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class SectionMapper {
-    private final VideoMapper videoMapper;
+    private final LessonMapper lessonMapper;
 
     public Section toSection(SectionRequest request, Course course) {
         return Section.builder()
@@ -25,7 +25,7 @@ public class SectionMapper {
                 section.getId(),
                 section.getTitle(),
                 section.getIndex(),
-                section.getVideos().stream().map(videoMapper::toDto).toList()
+                section.getLessons().stream().map(lessonMapper::toDto).toList()
         );
     }
 }
