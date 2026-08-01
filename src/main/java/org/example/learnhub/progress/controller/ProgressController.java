@@ -1,18 +1,18 @@
-package org.example.learnhub.lesson.controller;
+package org.example.learnhub.progress.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.lesson.dto.ProgressRequest;
-import org.example.learnhub.lesson.dto.ProgressResponse;
-import org.example.learnhub.lesson.service.LessonService;
+import org.example.learnhub.progress.dto.ProgressRequest;
+import org.example.learnhub.progress.dto.ProgressResponse;
+import org.example.learnhub.progress.service.ProgressService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/lessons")
+@RequestMapping("/api/lesson")
 @RequiredArgsConstructor
-public class LessonController {
-    private final LessonService service;
+public class ProgressController {
+    private final ProgressService service;
 
     @PatchMapping("/{lessonId}/progress")
     public ResponseEntity<ProgressResponse> progress(

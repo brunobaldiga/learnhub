@@ -1,4 +1,4 @@
-package org.example.learnhub.lesson.dto;
+package org.example.learnhub.progress.dto;
 
 public record ProgressResponse(
         Boolean completed,

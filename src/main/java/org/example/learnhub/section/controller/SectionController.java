@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.service.SectionService;
@@ -53,6 +54,18 @@ public class SectionController {
             @PathVariable Integer lessonId
     ) {
         service.deleteLesson(user, sectionId, lessonId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("/lessons/{lessonId}")
+    @Operation(
+            summary = "Get lesson details",
+            description = "Returns lesson details by its identifier"
+    )
+    public ResponseEntity<LessonResponse> findLessonById(
+            @PathVariable Integer lessonId
+    ) {
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .body(service.findLessonById(lessonId));
     }
 }
