@@ -44,7 +44,8 @@ CREATE TABLE enrollments (
 
     CONSTRAINT fk_enrollment_course
         FOREIGN KEY (course_id)
-            REFERENCES courses(id),
+            REFERENCES courses(id)
+            ON DELETE CASCADE,
 
     CONSTRAINT uk_enrollment_user_course
         UNIQUE(user_id, course_id)
@@ -122,19 +123,64 @@ CREATE TABLE sections (
     CONSTRAINT fk_section_course
         FOREIGN KEY (course_id)
             REFERENCES courses(id)
-);
+            ON DELETE CASCADE,
 
+    CONSTRAINT uk_section_course_index
+        UNIQUE(course_id, "index")
+);
 CREATE TABLE lessons (
     id SERIAL PRIMARY KEY,
     section_id INTEGER NOT NULL,
     content_url VARCHAR(1000) NOT NULL,
+    duration INTEGER NOT NULL,
     "index" INTEGER NOT NULL,
     created_at TIMESTAMP(6) NOT NULL,
 
     CONSTRAINT fk_lesson_section
         FOREIGN KEY (section_id)
             REFERENCES sections(id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT chk_lesson_duration
+        CHECK (duration > 0),
+
+    CONSTRAINT uk_lesson_section_index
+        UNIQUE(section_id, "index")
 );
+
+CREATE TABLE lesson_progress (
+    id SERIAL PRIMARY KEY,
+
+    enrollment_id INTEGER NOT NULL,
+    lesson_id INTEGER NOT NULL,
+
+    last_position_in_seconds INTEGER NOT NULL DEFAULT 0,
+
+    created_at TIMESTAMP(6) NOT NULL,
+    updated_at TIMESTAMP(6) NOT NULL,
+
+    CONSTRAINT fk_lesson_progress_enrollment
+        FOREIGN KEY (enrollment_id)
+            REFERENCES enrollments(id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_lesson_progress_lesson
+        FOREIGN KEY (lesson_id)
+            REFERENCES lessons(id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT uk_lesson_progress_enrollment_lesson
+        UNIQUE(enrollment_id, lesson_id),
+
+    CONSTRAINT chk_last_position
+        CHECK (last_position_in_seconds >= 0)
+);
+
+CREATE INDEX idx_lesson_progress_enrollment
+    ON lesson_progress(enrollment_id);
+
+CREATE INDEX idx_lesson_progress_lesson
+    ON lesson_progress(lesson_id);
 
 INSERT INTO users (
     username,
@@ -249,27 +295,27 @@ VALUES
 INSERT INTO lessons (
     section_id,
     content_url,
+    duration,
     "index",
     created_at
 )
-
 VALUES
-    (1,'https://www.youtube.com/watch?v=9SGDpanrc8U',1,CURRENT_TIMESTAMP),
-    (1,'https://www.youtube.com/watch?v=vtPkZShrvXQ',2,CURRENT_TIMESTAMP),
-    (1,'https://www.youtube.com/watch?v=HGTJBPNC-Gw',3,CURRENT_TIMESTAMP),
+    (1, 'https://www.youtube.com/watch?v=9SGDpanrc8U', 480, 1, CURRENT_TIMESTAMP),
+    (1, 'https://www.youtube.com/watch?v=vtPkZShrvXQ', 720, 2, CURRENT_TIMESTAMP),
+    (1, 'https://www.youtube.com/watch?v=HGTJBPNC-Gw', 540, 3, CURRENT_TIMESTAMP),
 
-    (2,'https://www.youtube.com/watch?v=35EQXmHKZYs',1,CURRENT_TIMESTAMP),
-    (2,'https://www.youtube.com/watch?v=Kw4xJfR5L9k',2,CURRENT_TIMESTAMP),
-    (2,'https://www.youtube.com/watch?v=4XTsAAHW_Tc',3,CURRENT_TIMESTAMP),
+    (2, 'https://www.youtube.com/watch?v=35EQXmHKZYs', 900, 1, CURRENT_TIMESTAMP),
+    (2, 'https://www.youtube.com/watch?v=Kw4xJfR5L9k', 840, 2, CURRENT_TIMESTAMP),
+    (2, 'https://www.youtube.com/watch?v=4XTsAAHW_Tc', 660, 3, CURRENT_TIMESTAMP),
 
-    (3,'https://www.youtube.com/watch?v=8SGI_XS5OPw',1,CURRENT_TIMESTAMP),
-    (3,'https://www.youtube.com/watch?v=5PdEmeopJVQ',2,CURRENT_TIMESTAMP),
-    (3,'https://www.youtube.com/watch?v=6oOq6X4bQ4A',3,CURRENT_TIMESTAMP),
+    (3, 'https://www.youtube.com/watch?v=8SGI_XS5OPw', 780, 1, CURRENT_TIMESTAMP),
+    (3, 'https://www.youtube.com/watch?v=5PdEmeopJVQ', 600, 2, CURRENT_TIMESTAMP),
+    (3, 'https://www.youtube.com/watch?v=6oOq6X4bQ4A', 960, 3, CURRENT_TIMESTAMP),
 
-    (4,'https://www.youtube.com/watch?v=4XTsAAHW_Tc',1,CURRENT_TIMESTAMP),
-    (4,'https://www.youtube.com/watch?v=vtPkZShrvXQ',2,CURRENT_TIMESTAMP),
-    (4,'https://www.youtube.com/watch?v=35EQXmHKZYs',3,CURRENT_TIMESTAMP),
+    (4, 'https://www.youtube.com/watch?v=4XTsAAHW_Tc', 660, 1, CURRENT_TIMESTAMP),
+    (4, 'https://www.youtube.com/watch?v=vtPkZShrvXQ', 720, 2, CURRENT_TIMESTAMP),
+    (4, 'https://www.youtube.com/watch?v=35EQXmHKZYs', 900, 3, CURRENT_TIMESTAMP),
 
-    (5,'https://www.youtube.com/watch?v=HGTJBPNC-Gw',1,CURRENT_TIMESTAMP),
-    (5,'https://www.youtube.com/watch?v=9SGDpanrc8U',2,CURRENT_TIMESTAMP),
-    (5,'https://www.youtube.com/watch?v=5PdEmeopJVQ',3,CURRENT_TIMESTAMP);
+    (5, 'https://www.youtube.com/watch?v=HGTJBPNC-Gw', 540, 1, CURRENT_TIMESTAMP),
+    (5, 'https://www.youtube.com/watch?v=9SGDpanrc8U', 480, 2, CURRENT_TIMESTAMP),
+    (5, 'https://www.youtube.com/watch?v=5PdEmeopJVQ', 600, 3, CURRENT_TIMESTAMP);

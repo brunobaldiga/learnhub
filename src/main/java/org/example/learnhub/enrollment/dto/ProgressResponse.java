@@ -1,7 +1,6 @@
-package org.example.learnhub.progress.dto;
+package org.example.learnhub.enrollment.dto;
 
 public record ProgressResponse(
-        Boolean completed,
         Integer completedLessons,
         Integer totalLessons,
         Double completedPercentage,

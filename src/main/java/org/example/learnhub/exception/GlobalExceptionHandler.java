@@ -18,7 +18,6 @@ import java.util.List;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-
     @ExceptionHandler({
             CourseAccessDenied.class,
             ReviewOwnershipException.class,
@@ -52,7 +51,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             SelfReviewNotAllowedException.class,
-            CourseReviewNotAllowedException.class
+            CourseReviewNotAllowedException.class,
+            InvalidLessonProgressException.class
     })
     public ResponseEntity<ApiError> handleBadRequest(RuntimeException ex) {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage());

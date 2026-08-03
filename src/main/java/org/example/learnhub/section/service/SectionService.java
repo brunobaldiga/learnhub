@@ -32,9 +32,8 @@ public class SectionService {
         return repository.save(section);
     }
 
-
     public SectionResponse createLesson(User user, Integer sectionId, LessonRequest request) {
-        Section section = findEntitySectionByIdAndCourseCreatorId(sectionId, user.getId());
+        Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
 
         Lesson lesson = lessonMapper.toLesson(request);
         lesson.setSection(section);
@@ -47,14 +46,14 @@ public class SectionService {
     }
 
     public void deleteLesson(User user, Integer sectionId, Integer lessonId) {
-        Section section = findEntitySectionByIdAndCourseCreatorId(sectionId, user.getId());
+        Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
 
         section.getLessons().removeIf(lesson -> lesson.getId().equals(lessonId));
 
         repository.save(section);
     }
 
-    public Section findEntitySectionByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
+    public Section findSectionEntityByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
         return repository.findByIdAndCourseCreatorId(sectionId, creatorId)
                 .orElseThrow(() -> new EntityNotFound("Section not found"));
     }

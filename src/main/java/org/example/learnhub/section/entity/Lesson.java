@@ -1,6 +1,8 @@
 package org.example.learnhub.section.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -24,6 +26,11 @@ public class Lesson {
 
     @Column(nullable = false, length = 1000)
     private String contentUrl;
+
+    @Column(nullable = false)
+    @Min(1)
+    @Max(86400)
+    private Integer duration;
 
     @Column(nullable = false)
     private Integer index;

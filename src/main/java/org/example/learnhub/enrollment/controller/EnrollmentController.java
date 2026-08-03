@@ -6,8 +6,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.enrollment.dto.EnrollmentResponse;
 import org.example.learnhub.enrollment.service.EnrollmentService;
+import org.example.learnhub.enrollment.dto.ProgressRequest;
+import org.example.learnhub.enrollment.dto.ProgressResponse;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -50,5 +53,15 @@ public class EnrollmentController {
             @PathVariable Integer enrollmentId
     ) {
         return ResponseEntity.ok(service.findEnrollmentById(user.getId(), enrollmentId));
+    }
+
+    @PatchMapping("/lesson/{lessonId}/progress")
+    public ResponseEntity<ProgressResponse> progress(
+            @RequestBody ProgressRequest request,
+            @PathVariable Integer lessonId,
+            @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.progress(user, lessonId, request));
     }
 }
