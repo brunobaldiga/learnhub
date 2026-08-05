@@ -25,10 +25,9 @@ import org.springframework.web.bind.annotation.*;
 )
 @SecurityRequirement(name = "bearerAuth")
 public class EnrollmentController {
-
     private final EnrollmentService service;
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping
     @Operation(
             summary = "List user enrollments",
@@ -42,7 +41,7 @@ public class EnrollmentController {
         return ResponseEntity.ok(service.findEnrolledCourses(user.getId(), page, size));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/{enrollmentId}")
     @Operation(
             summary = "Get enrollment details",
@@ -64,4 +63,19 @@ public class EnrollmentController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(service.progress(user, lessonId, request));
     }
+
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/{enrollmentId}/certificate")
+    @Operation(
+            summary = "Generate certificate",
+            description = "Generate a certificate upon course completion"
+    )
+    public ResponseEntity<CertificateResponse> certificate(
+            @PathVariable Integer enrollmentId,
+            @RequestBody CertificateRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .()
+    }
+
 }

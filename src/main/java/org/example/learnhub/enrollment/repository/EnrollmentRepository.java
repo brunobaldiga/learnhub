@@ -19,7 +19,5 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
 
     Optional<Enrollment> findByIdAndUserId(Integer userId, Integer enrollmentId);
 
-    Optional<LessonProgress> findByLessonIdAndEnrollmentId(Integer lessonId, Integer enrollmentId);
-
     Optional<Enrollment> findByCourseIdAndUserId(Integer courseId, Integer userId);
 }

@@ -39,7 +39,7 @@ public class CourseController {
     private final CourseService service;
     private final CourseReviewService courseReviewService;
 
-    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('CREATOR')")
     @PostMapping
     @Operation(
             summary = "Create a course",
@@ -53,7 +53,7 @@ public class CourseController {
                 .body(service.create(user, request));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/search")
     @Operation(
             summary = "Search courses",
@@ -74,7 +74,7 @@ public class CourseController {
         return ResponseEntity.ok(service.search(filter, pageable));
     }
 
-    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('CREATOR')")
     @GetMapping
     @Operation(
             summary = "List creator courses",
@@ -88,7 +88,7 @@ public class CourseController {
         return ResponseEntity.ok(service.findCourses(user, filter, pageable));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/{courseId}")
     @Operation(
             summary = "Get course details",
@@ -101,7 +101,7 @@ public class CourseController {
         return ResponseEntity.ok(service.findCourseById(user, courseId));
     }
 
-    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('CREATOR')")
     @PatchMapping("/{courseId}")
     @Operation(
             summary = "Update course",
@@ -115,7 +115,7 @@ public class CourseController {
         return ResponseEntity.ok(service.updateCourseById(user, courseId, request));
     }
 
-    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('CREATOR')")
     @PostMapping("/{courseId}/sections")
     @Operation(
             summary = "Create section",
@@ -129,7 +129,7 @@ public class CourseController {
         return ResponseEntity.ok(service.createCourseSection(user, courseId, request));
     }
 
-    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('CREATOR')")
     @PutMapping("/section/{sectionId}")
     @Operation(
             summary = "Update section",
@@ -143,7 +143,7 @@ public class CourseController {
         return ResponseEntity.ok(service.updateCourseSection(user, sectionId, request));
     }
 
-    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('CREATOR')")
     @DeleteMapping("/section/{sectionId}")
     @Operation(
             summary = "Delete section",
@@ -157,7 +157,7 @@ public class CourseController {
         return ResponseEntity.noContent().build();
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/{courseId}/sections")
     @Operation(
             summary = "List course sections",
@@ -170,7 +170,7 @@ public class CourseController {
         return ResponseEntity.ok(service.findCourseSection(user, courseId));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/{courseId}/reviews")
     @Operation(
             summary = "Write a course review",
@@ -185,7 +185,7 @@ public class CourseController {
                 .body(courseReviewService.createCourseReview(user, courseId, request));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/{courseId}/reviews")
     @Operation(
             summary = "List course reviews by course id",
@@ -200,7 +200,7 @@ public class CourseController {
         return ResponseEntity.ok(courseReviewService.findCourseReviews(filter, pageable));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/{courseId}/reviews/{courseReviewId}")
     @Operation(
             summary = "Delete review",
@@ -214,4 +214,5 @@ public class CourseController {
         courseReviewService.deleteReviewById(user, courseId, courseReviewId);
         return ResponseEntity.noContent().build();
     }
+
 }

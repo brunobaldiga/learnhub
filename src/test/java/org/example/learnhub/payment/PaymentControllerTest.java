@@ -19,13 +19,16 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -44,6 +47,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PaymentControllerTest {
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private RoleHierarchy roleHierarchy;
 
     @MockitoBean
     private PaymentService service;
@@ -74,15 +80,18 @@ public class PaymentControllerTest {
                 LocalDateTime.now()
         );
 
+        Collection<? extends GrantedAuthority> authorities = roleHierarchy.getReachableGrantedAuthorities(
+                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+        );
+
         when(service.purchase(any(), anyInt())).thenReturn(response);
 
         mockMvc.perform(post("/api/payments/{courseId}", courseId)
-                        .with(csrf())
                         .with(authentication(
                                 new UsernamePasswordAuthenticationToken(
                                         user,
                                         null,
-                                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                        authorities
                                 )
                         )))
                 .andExpect(status().isCreated());
@@ -101,6 +110,10 @@ public class PaymentControllerTest {
                 LocalDateTime.now()
         );
 
+        Collection<? extends GrantedAuthority> authorities = roleHierarchy.getReachableGrantedAuthorities(
+                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+        );
+
         when(service.findById(any(), anyInt())).thenReturn(response);
 
         mockMvc.perform(get("/api/payments/{paymentId}", paymentId)
@@ -108,7 +121,7 @@ public class PaymentControllerTest {
                                 new UsernamePasswordAuthenticationToken(
                                         user,
                                         null,
-                                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                        authorities
                                 )
                         )))
                 .andExpect(status().isOk());
@@ -119,6 +132,10 @@ public class PaymentControllerTest {
     void shouldReturn404WhenPaymentDoesNotExist(String role) throws Exception {
         Integer paymentId = 1;
 
+        Collection<? extends GrantedAuthority> authorities = roleHierarchy.getReachableGrantedAuthorities(
+                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+        );
+
         when(service.findById(any(), anyInt()))
                 .thenThrow(new EntityNotFound("Payment not found"));
 
@@ -127,7 +144,7 @@ public class PaymentControllerTest {
                                 new UsernamePasswordAuthenticationToken(
                                         user,
                                         null,
-                                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                        authorities
                                 )
                         )))
                 .andExpect(status().isNotFound());
@@ -152,6 +169,10 @@ public class PaymentControllerTest {
                 list.size()
         );
 
+        Collection<? extends GrantedAuthority> authorities = roleHierarchy.getReachableGrantedAuthorities(
+                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+        );
+
         when(service.history(any(), any(), any(), any()))
                 .thenReturn(page);
 
@@ -160,7 +181,7 @@ public class PaymentControllerTest {
                                 new UsernamePasswordAuthenticationToken(
                                         user,
                                         null,
-                                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                        authorities
                                 )
                         )))
                 .andExpect(status().isOk())

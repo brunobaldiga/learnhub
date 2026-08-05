@@ -63,6 +63,7 @@ public class SectionService {
     }
 
     public LessonResponse findLessonById(Integer lessonId) {
+        // todo: check if course is public or user is the owner
         return lessonMapper.toDto(findLessonEntityById(lessonId));
     }
 

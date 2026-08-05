@@ -31,7 +31,7 @@ public class PaymentController {
 
     private final PaymentService service;
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/{courseId}")
     @Operation(
             summary = "Purchase a course",
@@ -46,7 +46,7 @@ public class PaymentController {
                 .body(service.purchase(user, courseId));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping
     @Operation(
             summary = "Get payment history",
@@ -61,7 +61,7 @@ public class PaymentController {
         return ResponseEntity.ok(service.history(user, startDate, endDate, pageable));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/{paymentId}")
     @Operation(
             summary = "Get payment details",

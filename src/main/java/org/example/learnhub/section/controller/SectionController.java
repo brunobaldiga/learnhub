@@ -24,10 +24,9 @@ import org.springframework.web.bind.annotation.*;
 )
 @SecurityRequirement(name = "bearerAuth")
 public class SectionController {
-
     private final SectionService service;
 
-    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('CREATOR')")
     @PostMapping("/{sectionId}/lessons")
     @Operation(
             summary = "Add lesson to section",
@@ -42,7 +41,7 @@ public class SectionController {
                 .body(service.createLesson(user, sectionId, request));
     }
 
-    @PreAuthorize("hasAnyRole('CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('CREATOR')")
     @DeleteMapping("/{sectionId}/lessons/{lessonId}")
     @Operation(
             summary = "Remove lesson from section",
@@ -57,6 +56,7 @@ public class SectionController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/lessons/{lessonId}")
     @Operation(
             summary = "Get lesson details",

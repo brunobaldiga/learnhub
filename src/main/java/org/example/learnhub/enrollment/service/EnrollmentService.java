@@ -75,7 +75,7 @@ public class EnrollmentService {
         Enrollment enrollment = repository.findByCourseIdAndUserId(lesson.getSection().getCourse().getId(), user.getId())
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
 
-        Optional<LessonProgress> existing = repository.findByLessonIdAndEnrollmentId(lessonId, enrollment.getId());
+        Optional<LessonProgress> existing = lessonProgressRepository.findByLessonIdAndEnrollmentId(lessonId, enrollment.getId());
 
         if (existing.isEmpty()) {
             LessonProgress newLessonProgress = lessonProgressMapper.toLessonProgress(request, enrollment, lesson);
