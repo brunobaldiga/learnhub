@@ -2,21 +2,20 @@ package org.example.learnhub.enrollment.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.enrollment.dto.CertificateResponse;
 import org.example.learnhub.enrollment.dto.EnrollmentResponse;
-import org.example.learnhub.enrollment.entity.Enrollment;
-import org.example.learnhub.enrollment.entity.LessonProgress;
-import org.example.learnhub.enrollment.repository.LessonProgressRepository;
-import org.example.learnhub.exception.CourseAccessDenied;
-import org.example.learnhub.exception.InvalidLessonProgressException;
-import org.example.learnhub.gateway.CourseGateway;
-import org.example.learnhub.enrollment.repository.EnrollmentRepository;
-import org.example.learnhub.exception.EntityNotFound;
-import org.example.learnhub.exception.UserAlreadyEnrolled;
-import org.example.learnhub.gateway.EnrollmentGateway;
-import org.example.learnhub.gateway.LessonGateway;
-import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.enrollment.dto.ProgressRequest;
 import org.example.learnhub.enrollment.dto.ProgressResponse;
+import org.example.learnhub.enrollment.entity.Certificate;
+import org.example.learnhub.enrollment.entity.Enrollment;
+import org.example.learnhub.enrollment.entity.LessonProgress;
+import org.example.learnhub.enrollment.repository.CertificateRepository;
+import org.example.learnhub.enrollment.repository.EnrollmentRepository;
+import org.example.learnhub.enrollment.repository.LessonProgressRepository;
+import org.example.learnhub.exception.*;
+import org.example.learnhub.gateway.CourseGateway;
+import org.example.learnhub.gateway.LessonGateway;
+import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.section.entity.Lesson;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -38,15 +37,17 @@ public class EnrollmentService {
     private final LessonGateway lessonGateway;
     private final LessonProgressMapper lessonProgressMapper;
     private final LessonProgressRepository lessonProgressRepository;
+    private final CertificateRepository certificateRepository;
 
     public void enroll(User user, Integer courseId) {
         Course course = courseGateway.findCourseById(user, courseId);
 
-        if (!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId)) throw new CourseAccessDenied("User haven't bought the course.");
+        if(!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId))
+            throw new CourseAccessDenied("User haven't bought the course.");
 
         Optional<Enrollment> existingCourseProgress = repository.findByUserAndCourse(user, course);
 
-        if (existingCourseProgress.isPresent()) throw new UserAlreadyEnrolled("User is already enrolled.");
+        if(existingCourseProgress.isPresent()) throw new UserAlreadyEnrolled("User is already enrolled.");
 
         Enrollment courseProgress = Enrollment.builder()
                 .user(user)
@@ -77,7 +78,7 @@ public class EnrollmentService {
 
         Optional<LessonProgress> existing = lessonProgressRepository.findByLessonIdAndEnrollmentId(lessonId, enrollment.getId());
 
-        if (existing.isEmpty()) {
+        if(existing.isEmpty()) {
             LessonProgress newLessonProgress = lessonProgressMapper.toLessonProgress(request, enrollment, lesson);
 
             lessonProgressRepository.save(newLessonProgress);
@@ -95,8 +96,10 @@ public class EnrollmentService {
         long elapsedSeconds = Duration.between(lessonProgress.getUpdatedAt(), LocalDateTime.now()).toSeconds();
         int maxAllowed = lessonProgress.getLastPositionInSeconds() + (int) elapsedSeconds + 10;
 
-        if (request.lastPositionInSeconds() > maxAllowed) throw new InvalidLessonProgressException("Progress exceeds the maximum allowed position.");
-        if (request.lastPositionInSeconds() > lesson.getDuration()) throw new InvalidLessonProgressException("Progress cannot exceed the lesson duration.");
+        if(request.lastPositionInSeconds() > maxAllowed)
+            throw new InvalidLessonProgressException("Progress exceeds the maximum allowed position.");
+        if(request.lastPositionInSeconds() > lesson.getDuration())
+            throw new InvalidLessonProgressException("Progress cannot exceed the lesson duration.");
 
         lessonProgress.setUpdatedAt(LocalDateTime.now());
         lessonProgress.setLastPositionInSeconds(request.lastPositionInSeconds());
@@ -109,5 +112,19 @@ public class EnrollmentService {
                 (enrollment.getCompletedLessons() * 100.0) / enrollment.getTotalLessons(),
                 enrollment.getTotalLessons().equals(enrollment.getCompletedLessons())
         );
+    }
+
+    public CertificateResponse generateCertificate(User user, Integer enrollmentId) {
+        Enrollment enrollment = repository.findByIdAndUserId(enrollmentId, user.getId())
+                .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
+
+        if(enrollment.getCompletedLessons() < enrollment.getTotalLessons())
+            throw new CourseNotCompletedException("Cannot generate certificate, user did not finish the course.");
+
+        Optional<Certificate> certificate = certificateRepository.findByUserId(user.getId());
+
+        if(certificate.isPresent())
+            throw new DuplicateCertificateException("User cannot generate more than 1 certificate per course.");
+        return null;
     }
 }

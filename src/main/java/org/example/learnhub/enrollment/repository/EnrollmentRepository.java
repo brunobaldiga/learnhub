@@ -2,7 +2,6 @@ package org.example.learnhub.enrollment.repository;
 
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.enrollment.entity.Enrollment;
-import org.example.learnhub.enrollment.entity.LessonProgress;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +16,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Integer>
 
     Page<Enrollment> findByUserId(Integer userId, Pageable pageable);
 
-    Optional<Enrollment> findByIdAndUserId(Integer userId, Integer enrollmentId);
+    Optional<Enrollment> findByIdAndUserId(Integer enrollmentId, Integer userId);
 
     Optional<Enrollment> findByCourseIdAndUserId(Integer courseId, Integer userId);
 }

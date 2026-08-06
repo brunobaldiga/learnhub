@@ -32,6 +32,9 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false, updatable = false)
+    private String fullName;
+
     @Column(nullable = false)
     private String password;
 
@@ -51,7 +54,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (this.roleType == RoleType.ADMIN) {
+        if(this.roleType == RoleType.ADMIN) {
             return List.of(
                     new SimpleGrantedAuthority("ROLE_ADMIN"),
                     new SimpleGrantedAuthority("ROLE_CREATOR"),

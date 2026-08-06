@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-    name = "enrollments",
-    uniqueConstraints =
-    @UniqueConstraint(columnNames = {"user_id", "course_id"})
+        name = "enrollments",
+        uniqueConstraints =
+        @UniqueConstraint(columnNames = {"user_id", "course_id"})
 )
 @Builder
 @Getter
@@ -40,6 +40,6 @@ public class Enrollment {
     private Integer totalLessons;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(updatable = false, nullable = false)
     private LocalDateTime enrolledAt;
 }

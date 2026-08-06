@@ -4,10 +4,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.enrollment.dto.CertificateResponse;
 import org.example.learnhub.enrollment.dto.EnrollmentResponse;
-import org.example.learnhub.enrollment.service.EnrollmentService;
 import org.example.learnhub.enrollment.dto.ProgressRequest;
 import org.example.learnhub.enrollment.dto.ProgressResponse;
+import org.example.learnhub.enrollment.service.EnrollmentService;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/api/enrollments")
@@ -70,12 +74,21 @@ public class EnrollmentController {
             summary = "Generate certificate",
             description = "Generate a certificate upon course completion"
     )
-    public ResponseEntity<CertificateResponse> certificate(
-            @PathVariable Integer enrollmentId,
-            @RequestBody CertificateRequest request
+    public ResponseEntity<CertificateResponse> generateCertificate(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer enrollmentId
     ) {
+        CertificateResponse response = service.generateCertificate(user, enrollmentId);
+
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .()
+                .location(uri)
+                .body(response);
     }
 
 }
