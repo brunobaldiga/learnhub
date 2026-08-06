@@ -5,7 +5,7 @@ import java.util.List;
 public record SectionResponse(
         Integer id,
         String title,
-        Integer index,
+        Integer position,
         List<LessonResponse> lessons
 ) {
 }

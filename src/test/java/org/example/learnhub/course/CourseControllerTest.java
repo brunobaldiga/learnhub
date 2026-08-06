@@ -156,13 +156,13 @@ public class CourseControllerTest {
                         .content("""
                                 {
                                     "title": "Introduction",
-                                    "index": 0
+                                    "position": 0
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Introduction"))
-                .andExpect(jsonPath("$.index").value(0))
+                .andExpect(jsonPath("$.position").value(0))
                 .andExpect(jsonPath("$.lessons").isArray());
     }
 
@@ -238,7 +238,7 @@ public class CourseControllerTest {
                         .content("""
                             {
                                 "title":"Updated Section",
-                                "index":0
+                                "position":0
                             }
                             """))
                 .andExpect(status().isOk())

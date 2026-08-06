@@ -11,5 +11,5 @@ public record LessonRequest(
                 message = "Lesson URL must be between 10 and 255 characters long."
         )
         String contentUrl,
-        Integer index
+        Integer position
 ) {}

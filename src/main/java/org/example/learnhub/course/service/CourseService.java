@@ -115,7 +115,7 @@ public class CourseService {
         Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
 
         section.setTitle(request.title());
-        section.setIndex(request.index());
+        section.setPosition(request.position());
 
         sectionGateway.saveSection(section);
 

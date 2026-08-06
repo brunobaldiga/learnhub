@@ -188,7 +188,7 @@ public class CourseServiceTest {
         Section section = Section.builder()
                 .id(1)
                 .title("Section 1")
-                .index(0)
+                .position(0)
                 .course(course)
                 .build();
 
@@ -249,7 +249,7 @@ public class CourseServiceTest {
 
     @Test
     void shouldReturnSectionWhenUserIsOwner() {
-        Section section = Section.builder().id(1).title("Section 1").index(0).build();
+        Section section = Section.builder().id(1).title("Section 1").position(0).build();
         List<Section> sections = new ArrayList<>(List.of(section));
         SectionResponse sectionResponse = new SectionResponse(1, "Section 1", 0, List.of());
 
@@ -273,7 +273,7 @@ public class CourseServiceTest {
     void shouldReturnSectionWhenUserHasPaid() {
         User creator = User.builder().id(2).build();
 
-        Section section = Section.builder().id(1).title("Section 1").index(0).build();
+        Section section = Section.builder().id(1).title("Section 1").position(0).build();
         List<Section> sections = new ArrayList<>(List.of(section));
         SectionResponse sectionResponse = new SectionResponse(1, "Section 1", 0, List.of());
 
@@ -296,7 +296,7 @@ public class CourseServiceTest {
     void shouldReturn403WhenUserHasNotPaid() {
         User creator = User.builder().id(2).build();
 
-        Section section = Section.builder().id(1).title("Section 1").index(0).build();
+        Section section = Section.builder().id(1).title("Section 1").position(0).build();
         List<Section> sections = new ArrayList<>(List.of(section));
 
         Course course = Course.builder()
@@ -381,7 +381,7 @@ public class CourseServiceTest {
         Section section = Section.builder()
                 .id(1)
                 .title("Old")
-                .index(0)
+                .position(0)
                 .build();
 
         SectionRequest request = new SectionRequest(

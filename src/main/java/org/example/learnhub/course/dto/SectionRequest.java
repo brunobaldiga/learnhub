@@ -15,6 +15,6 @@ public record SectionRequest(
         String title,
 
         @Min(0) @Max(20)
-        Integer index
+        Integer position
 ) {
 }

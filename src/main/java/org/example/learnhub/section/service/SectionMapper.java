@@ -15,7 +15,7 @@ public class SectionMapper {
     public Section toSection(SectionRequest request, Course course) {
         return Section.builder()
                 .title(request.title())
-                .index(request.index())
+                .position(request.position())
                 .course(course)
                 .build();
     }
@@ -24,7 +24,7 @@ public class SectionMapper {
         return new SectionResponse(
                 section.getId(),
                 section.getTitle(),
-                section.getIndex(),
+                section.getPosition(),
                 section.getLessons().stream().map(lessonMapper::toDto).toList()
         );
     }

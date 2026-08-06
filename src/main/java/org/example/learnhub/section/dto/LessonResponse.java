@@ -5,6 +5,6 @@ import java.time.LocalDateTime;
 public record LessonResponse(
         Integer id,
         String contentUrl,
-        Integer index,
+        Integer position,
         LocalDateTime createdAt
 ) {}

@@ -69,7 +69,7 @@ public class SectionServiceTest {
         Lesson lesson = Lesson.builder()
                 .id(1)
                 .contentUrl(request.contentUrl())
-                .index(request.index())
+                .position(request.position())
                 .build();
 
         SectionResponse response = new SectionResponse(

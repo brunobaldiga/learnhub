@@ -10,7 +10,7 @@ public class LessonMapper {
     public Lesson toLesson(LessonRequest request) {
         return Lesson.builder()
                 .contentUrl(request.contentUrl())
-                .index(request.index())
+                .position(request.position())
                 .build();
     }
 
@@ -19,7 +19,7 @@ public class LessonMapper {
         return new LessonResponse(
                 lesson.getId(),
                 lesson.getContentUrl(),
-                lesson.getIndex(),
+                lesson.getPosition(),
                 lesson.getCreatedAt()
         );
     }
