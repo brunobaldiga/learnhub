@@ -3,7 +3,7 @@ CREATE TABLE users (
     username VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role_type VARCHAR(255) NOT NULL,
+    role_type VARCHAR(20) NOT NULL,
     keycloak_id VARCHAR(255),
     created_at TIMESTAMP(6) NOT NULL
 );
@@ -18,7 +18,7 @@ CREATE TABLE courses (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
     title VARCHAR(255) NOT NULL,
-    status VARCHAR(255) NOT NULL,
+    status VARCHAR(20) NOT NULL,
     price NUMERIC(38,2) NOT NULL,
     sales_amount INTEGER NOT NULL,
     average_rating DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -56,7 +56,7 @@ CREATE TABLE course_reviews (
     course_id INTEGER NOT NULL,
     author_id INTEGER NOT NULL,
     rating INTEGER NOT NULL,
-    comment VARCHAR(100) NOT NULL,
+    comment VARCHAR(1000) NOT NULL,
     created_at TIMESTAMP(6) NOT NULL,
 
     CONSTRAINT fk_course_review_course
@@ -70,7 +70,7 @@ CREATE TABLE course_reviews (
             ON DELETE CASCADE,
 
     CONSTRAINT chk_course_review_rating
-        CHECK (rating >= 0 AND rating <= 5),
+        CHECK (rating BETWEEN 1 AND 5),
 
     CONSTRAINT uk_course_review_author_course
         UNIQUE (author_id, course_id)
@@ -91,7 +91,7 @@ CREATE TABLE payments (
     course_id INTEGER NOT NULL,
     course_title VARCHAR(255) NOT NULL,
     course_price NUMERIC(38,2) NOT NULL,
-    amount NUMERIC(38,2) NOT NULL,
+    amount NUMERIC(10,2) NOT NULL,
     currency VARCHAR(50) NOT NULL,
     created_at TIMESTAMP(6) NOT NULL,
 
@@ -116,7 +116,7 @@ CREATE INDEX idx_payments_created_at
 CREATE TABLE sections (
     id SERIAL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    "index" INTEGER NOT NULL,
+    position INTEGER NOT NULL,
     course_id INTEGER NOT NULL,
     created_at TIMESTAMP(6) NOT NULL,
 
@@ -126,14 +126,14 @@ CREATE TABLE sections (
             ON DELETE CASCADE,
 
     CONSTRAINT uk_section_course_index
-        UNIQUE(course_id, "index")
+        UNIQUE(course_id, position)
 );
 CREATE TABLE lessons (
     id SERIAL PRIMARY KEY,
     section_id INTEGER NOT NULL,
     content_url VARCHAR(1000) NOT NULL,
     duration INTEGER NOT NULL,
-    "index" INTEGER NOT NULL,
+    position INTEGER NOT NULL,
     created_at TIMESTAMP(6) NOT NULL,
 
     CONSTRAINT fk_lesson_section
@@ -145,7 +145,7 @@ CREATE TABLE lessons (
         CHECK (duration > 0),
 
     CONSTRAINT uk_lesson_section_index
-        UNIQUE(section_id, "index")
+        UNIQUE(section_id, position)
 );
 
 CREATE TABLE lesson_progress (
@@ -181,6 +181,53 @@ CREATE INDEX idx_lesson_progress_enrollment
 
 CREATE INDEX idx_lesson_progress_lesson
     ON lesson_progress(lesson_id);
+
+CREATE INDEX idx_courses_user
+    ON courses(user_id);
+
+CREATE INDEX idx_sections_course
+    ON sections(course_id);
+
+CREATE INDEX idx_lessons_section
+    ON lessons(section_id);
+
+CREATE INDEX idx_enrollments_user
+    ON enrollments(user_id);
+
+CREATE INDEX idx_enrollments_course
+    ON enrollments(course_id);
+
+CREATE TABLE certificates (
+    id UUID PRIMARY KEY,
+
+    enrollment_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+
+    full_name_at_issuance VARCHAR(255) NOT NULL,
+    course_title_at_issuance VARCHAR(255) NOT NULL,
+    course_length_in_hours_at_issuance INTEGER NOT NULL,
+
+    issued_at DATE NOT NULL,
+
+    CONSTRAINT fk_certificate_enrollment
+        FOREIGN KEY (enrollment_id)
+            REFERENCES enrollments(id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_certificate_user
+        FOREIGN KEY (user_id)
+            REFERENCES users(id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT uk_certificate_enrollment_user
+        UNIQUE (enrollment_id, user_id)
+);
+
+CREATE INDEX idx_certificates_user
+    ON certificates(user_id);
+
+CREATE INDEX idx_certificates_enrollment
+    ON certificates(enrollment_id);
 
 INSERT INTO users (
     username,
@@ -250,7 +297,7 @@ VALUES
 
 INSERT INTO sections (
     title,
-    "index",
+    position,
     course_id,
     created_at
 )
@@ -296,7 +343,7 @@ INSERT INTO lessons (
     section_id,
     content_url,
     duration,
-    "index",
+    position,
     created_at
 )
 VALUES

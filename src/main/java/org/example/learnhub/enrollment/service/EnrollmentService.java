@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +39,7 @@ public class EnrollmentService {
     private final LessonProgressMapper lessonProgressMapper;
     private final LessonProgressRepository lessonProgressRepository;
     private final CertificateRepository certificateRepository;
+    private final CertificateMapper certificateMapper;
 
     public void enroll(User user, Integer courseId) {
         Course course = courseGateway.findCourseById(user, courseId);
@@ -121,10 +123,20 @@ public class EnrollmentService {
         if(enrollment.getCompletedLessons() < enrollment.getTotalLessons())
             throw new CourseNotCompletedException("Cannot generate certificate, user did not finish the course.");
 
-        Optional<Certificate> certificate = certificateRepository.findByUserId(user.getId());
-
-        if(certificate.isPresent())
+        if(certificateRepository.existsByEnrollmentIdAndUserId(enrollment.getId()))
             throw new DuplicateCertificateException("User cannot generate more than 1 certificate per course.");
-        return null;
+
+        Certificate certificate = certificateMapper.toCertificate(user, enrollment);
+
+        certificateRepository.save(certificate);
+
+        return certificateMapper.toDto(certificate);
+    }
+
+    public CertificateResponse findCertificateById(UUID certificateId) {
+        return certificateMapper.toDto(
+                certificateRepository.findById(certificateId)
+                        .orElseThrow(() -> new EntityNotFound("Certificate not found."))
+        );
     }
 }

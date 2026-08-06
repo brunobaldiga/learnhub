@@ -21,7 +21,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             CourseAccessDenied.class,
             ReviewOwnershipException.class,
-            AuthorizationDeniedException.class
+            AuthorizationDeniedException.class,
+            CourseNotCompletedException.class
     })
     public ResponseEntity<ApiError> handleForbidden(Exception ex) {
         return buildError(HttpStatus.FORBIDDEN, ex.getMessage());
@@ -43,7 +44,8 @@ public class GlobalExceptionHandler {
             UserAlreadyEnrolled.class,
             UsernameAlreadyInUse.class,
             DuplicatePurchaseException.class,
-            DuplicateReviewException.class
+            DuplicateReviewException.class,
+            DuplicateCertificateException.class,
     })
     public ResponseEntity<ApiError> handleConflict(RuntimeException ex) {
         return buildError(HttpStatus.CONFLICT, ex.getMessage());

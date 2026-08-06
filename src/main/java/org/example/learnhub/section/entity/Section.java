@@ -25,7 +25,7 @@ public class Section {
     private String title;
 
     @Column(nullable = false)
-    private Integer index;
+    private Integer position;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "course_id", nullable = false)

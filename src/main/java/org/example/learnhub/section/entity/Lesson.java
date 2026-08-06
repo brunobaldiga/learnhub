@@ -33,7 +33,7 @@ public class Lesson {
     private Integer duration;
 
     @Column(nullable = false)
-    private Integer index;
+    private Integer position;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

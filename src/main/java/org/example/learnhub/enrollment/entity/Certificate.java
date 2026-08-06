@@ -32,7 +32,7 @@ public class Certificate {
     private String fullNameAtIssuance;
 
     @Column(updatable = false, nullable = false)
-    private String courseNameAtIssuance;
+    private String courseTitleAtIssuance;
 
     @Column(updatable = false, nullable = false)
     private Integer courseLengthInHoursAtIssuance;

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/enrollments")
@@ -89,6 +90,18 @@ public class EnrollmentController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .location(uri)
                 .body(response);
+    }
+
+    @GetMapping("/{enrollmentId}/certificate/{certificateId}")
+    @Operation(
+            summary = "Get certificate details",
+            description = "Returns details of a specific certificate"
+    )
+    public ResponseEntity<CertificateResponse> findCertificateById(
+            @PathVariable UUID certificateId
+    ) {
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .body(service.findCertificateById(certificateId));
     }
 
 }
