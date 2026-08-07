@@ -4,10 +4,9 @@ import org.example.learnhub.enrollment.entity.Certificate;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface CertificateRepository extends JpaRepository<Certificate, UUID> {
-    boolean existsByEnrollmentIdAndUserId(Integer enrollmentId);
+    boolean existsByEnrollmentId(Integer enrollmentId);
 }

@@ -123,7 +123,7 @@ public class EnrollmentService {
         if(enrollment.getCompletedLessons() < enrollment.getTotalLessons())
             throw new CourseNotCompletedException("Cannot generate certificate, user did not finish the course.");
 
-        if(certificateRepository.existsByEnrollmentIdAndUserId(enrollment.getId()))
+        if(certificateRepository.existsByEnrollmentId(enrollment.getId()))
             throw new DuplicateCertificateException("User cannot generate more than 1 certificate per course.");
 
         Certificate certificate = certificateMapper.toCertificate(user, enrollment);
