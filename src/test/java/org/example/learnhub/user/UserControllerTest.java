@@ -17,13 +17,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -49,6 +52,8 @@ public class UserControllerTest {
 
     @MockitoBean
     private TokenService tokenService;
+    @Autowired
+    private RoleHierarchy roleHierarchy;
 
     @Test
     void shouldReturn201WhenUserRegisters() throws Exception {
@@ -90,6 +95,10 @@ public class UserControllerTest {
     void shouldReturn200WhenUserRequestsOwnProfile(String role) throws Exception {
         User user = User.builder().id(1).build();
 
+        Collection<? extends GrantedAuthority> authorities = roleHierarchy.getReachableGrantedAuthorities(
+                List.of(new SimpleGrantedAuthority("ROLE_" + role))
+        );
+
         when(service.findById(any()))
                 .thenReturn(
                         new UserResponse(
@@ -102,7 +111,7 @@ public class UserControllerTest {
 
         mockMvc.perform(get("/api/users/me")
                         .with(authentication(new UsernamePasswordAuthenticationToken(
-                                user, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                user, null, authorities
                         )))
                 ).andExpect(status().isOk());
     }
@@ -119,6 +128,10 @@ public class UserControllerTest {
                 .id(1)
                 .build();
 
+        Collection<? extends GrantedAuthority> authorities = roleHierarchy.getReachableGrantedAuthorities(
+                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+
         when(service.findById(any()))
                 .thenThrow(new EntityNotFound("User not found"));
 
@@ -127,7 +140,7 @@ public class UserControllerTest {
                                 new UsernamePasswordAuthenticationToken(
                                         user,
                                         null,
-                                        List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                                        authorities
                                 )
                         )))
                 .andExpect(status().isNotFound());

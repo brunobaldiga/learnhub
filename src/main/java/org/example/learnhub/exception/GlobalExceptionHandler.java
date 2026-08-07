@@ -18,11 +18,11 @@ import java.util.List;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-
     @ExceptionHandler({
             CourseAccessDenied.class,
             ReviewOwnershipException.class,
-            AuthorizationDeniedException.class
+            AuthorizationDeniedException.class,
+            CourseNotCompletedException.class
     })
     public ResponseEntity<ApiError> handleForbidden(Exception ex) {
         return buildError(HttpStatus.FORBIDDEN, ex.getMessage());
@@ -44,7 +44,8 @@ public class GlobalExceptionHandler {
             UserAlreadyEnrolled.class,
             UsernameAlreadyInUse.class,
             DuplicatePurchaseException.class,
-            DuplicateReviewException.class
+            DuplicateReviewException.class,
+            DuplicateCertificateException.class,
     })
     public ResponseEntity<ApiError> handleConflict(RuntimeException ex) {
         return buildError(HttpStatus.CONFLICT, ex.getMessage());
@@ -52,7 +53,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             SelfReviewNotAllowedException.class,
-            CourseReviewNotAllowedException.class
+            CourseReviewNotAllowedException.class,
+            InvalidLessonProgressException.class
     })
     public ResponseEntity<ApiError> handleBadRequest(RuntimeException ex) {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage());

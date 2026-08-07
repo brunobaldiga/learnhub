@@ -38,6 +38,6 @@ public class SectionGatewayImpl implements SectionGateway {
 
     @Override
     public Section findByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
-        return service.findEntitySectionByIdAndCourseCreatorId(sectionId, creatorId);
+        return service.findSectionEntityByIdAndCourseCreatorId(sectionId, creatorId);
     }
 }

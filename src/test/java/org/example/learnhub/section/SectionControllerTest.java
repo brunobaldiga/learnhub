@@ -5,7 +5,7 @@ import org.example.learnhub.config.TokenService;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.section.controller.SectionController;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.dto.VideoResponse;
+import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.section.service.SectionService;
 import org.example.learnhub.user.repository.UserRepository;
@@ -48,17 +48,17 @@ public class SectionControllerTest {
 
     @Test
     @WithMockUser(roles = "CREATOR")
-    void shouldReturn201WhenCreatorCreatesVideo() throws Exception {
-        when(service.createVideo(any(), any(), any()))
+    void shouldReturn201WhenCreatorCreatesLesson() throws Exception {
+        when(service.createLesson(any(), any(), any()))
                 .thenReturn(
                         new SectionResponse(
                                 1,
                                 "Section 1",
                                 0,
                                 List.of(
-                                        new VideoResponse(
+                                        new LessonResponse(
                                                 1,
-                                                "https://youtube.com/video",
+                                                "https://youtube.com/lesson",
                                                 0,
                                                 LocalDateTime.now()
                                         )
@@ -66,12 +66,12 @@ public class SectionControllerTest {
                         )
                 );
 
-        mockMvc.perform(post("/api/sections/1/videos")
+        mockMvc.perform(post("/api/sections/1/lessons")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
-                            "videoUrl":"https://youtube.com/video",
+                            "contentUrl":"https://youtube.com/video",
                             "index":0
                         }
                         """))
@@ -80,13 +80,13 @@ public class SectionControllerTest {
 
     @Test
     @WithMockUser(roles = "USER")
-    void shouldReturn403WhenUserCreatesVideo() throws Exception {
-        mockMvc.perform(post("/api/sections/1/videos")
+    void shouldReturn403WhenUserCreatesLesson() throws Exception {
+        mockMvc.perform(post("/api/sections/1/lessons")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
-                            "videoUrl":"https://youtube.com/video",
+                            "contentUrl":"https://youtube.com/video",
                             "index":0
                         }
                         """))
@@ -96,15 +96,15 @@ public class SectionControllerTest {
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn404WhenSectionDoesNotExistOnCreate() throws Exception {
-        when(service.createVideo(any(), any(), any()))
+        when(service.createLesson(any(), any(), any()))
                 .thenThrow(new EntityNotFound("Section not found"));
 
-        mockMvc.perform(post("/api/sections/1/videos")
+        mockMvc.perform(post("/api/sections/1/lessons")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                         {
-                            "videoUrl":"https://youtube.com/video",
+                            "contentUrl":"https://youtube.com/video",
                             "index":0
                         }
                         """))
@@ -113,16 +113,16 @@ public class SectionControllerTest {
 
     @Test
     @WithMockUser(roles = "CREATOR")
-    void shouldReturn200WhenCreatorDeletesVideo() throws Exception {
-        mockMvc.perform(delete("/api/sections/1/videos/1")
+    void shouldReturn200WhenCreatorDeletesLesson() throws Exception {
+        mockMvc.perform(delete("/api/sections/1/lessons/1")
                         .with(csrf()))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     @WithMockUser(roles = "USER")
-    void shouldReturn403WhenUserDeletesVideo() throws Exception {
-        mockMvc.perform(delete("/api/sections/1/videos/1")
+    void shouldReturn403WhenUserDeletesLesson() throws Exception {
+        mockMvc.perform(delete("/api/sections/1/lessons/1")
                         .with(csrf()))
                 .andExpect(status().isForbidden());
     }

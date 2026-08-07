@@ -2,9 +2,9 @@ package org.example.learnhub.section.dto;
 
 import java.time.LocalDateTime;
 
-public record VideoResponse(
+public record LessonResponse(
         Integer id,
-        String videoUrl,
-        Integer index,
+        String contentUrl,
+        Integer position,
         LocalDateTime createdAt
 ) {}

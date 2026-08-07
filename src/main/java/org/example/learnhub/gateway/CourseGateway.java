@@ -6,5 +6,5 @@ import org.example.learnhub.user.entity.User;
 public interface CourseGateway {
     Course findCourseById(User user, Integer courseId);
 
-    Integer countVideosByCourseId(Integer courseId);
+    Integer countLessonsByCourseId(Integer courseId);
 }

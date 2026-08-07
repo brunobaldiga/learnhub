@@ -25,7 +25,7 @@ public class Section {
     private String title;
 
     @Column(nullable = false)
-    private Integer index;
+    private Integer position;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "course_id", nullable = false)
@@ -33,7 +33,7 @@ public class Section {
 
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Video> videos = new ArrayList<>();
+    private List<Lesson> lessons = new ArrayList<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

@@ -70,8 +70,8 @@ public class CourseService {
                 .orElseThrow(() -> new EntityNotFound("Course not found."));
     }
 
-    public Integer countVideosByCourseId(Integer courseId) {
-        return repository.countVideosByCourseId(courseId);
+    public Integer countLessonsByCourseId(Integer courseId) {
+        return repository.countLessonsByCourseId(courseId);
     }
 
     public CourseResponse updateCourseById(User user, Integer courseId, UpdateCourseRequest request) {
@@ -115,7 +115,7 @@ public class CourseService {
         Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
 
         section.setTitle(request.title());
-        section.setIndex(request.index());
+        section.setPosition(request.position());
 
         sectionGateway.saveSection(section);
 

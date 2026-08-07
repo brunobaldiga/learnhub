@@ -15,6 +15,8 @@ public class CourseMapper {
         return Course.builder()
                 .title(request.title())
                 .status(CourseStatus.PRIVATE)
+                .averageRating(0.0)
+                .totalReviews(0)
                 .build();
     }
 

@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 )
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
-
     private final UserService service;
 
     @PostMapping("/register")
@@ -53,7 +52,7 @@ public class UserController {
         return ResponseEntity.ok(service.login(request));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/me")
     @Operation(
             summary = "Get current user profile",

@@ -1,6 +1,7 @@
 package org.example.learnhub.enrollment.infra;
 
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.enrollment.entity.Enrollment;
 import org.example.learnhub.enrollment.service.EnrollmentService;
 import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.user.entity.User;

@@ -156,14 +156,14 @@ public class CourseControllerTest {
                         .content("""
                                 {
                                     "title": "Introduction",
-                                    "index": 0
+                                    "position": 0
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Introduction"))
-                .andExpect(jsonPath("$.index").value(0))
-                .andExpect(jsonPath("$.videos").isArray());
+                .andExpect(jsonPath("$.position").value(0))
+                .andExpect(jsonPath("$.lessons").isArray());
     }
 
     @Test
@@ -232,13 +232,13 @@ public class CourseControllerTest {
                         List.of()
                 ));
 
-        mockMvc.perform(put("/api/courses/1/section/1")
+        mockMvc.perform(put("/api/courses/section/1")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                             {
                                 "title":"Updated Section",
-                                "index":0
+                                "position":0
                             }
                             """))
                 .andExpect(status().isOk())
@@ -248,7 +248,7 @@ public class CourseControllerTest {
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn204WhenDeletingSection() throws Exception {
-        mockMvc.perform(delete("/api/courses/1/section/1")
+        mockMvc.perform(delete("/api/courses/section/1")
                         .with(csrf()))
                 .andExpect(status().isNoContent());
 

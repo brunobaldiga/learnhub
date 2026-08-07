@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.learnhub.payment.dto.PurchaseResponse;
 import org.example.learnhub.payment.service.PaymentService;
 import org.example.learnhub.user.entity.User;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,7 @@ public class PaymentController {
 
     private final PaymentService service;
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/{courseId}")
     @Operation(
             summary = "Purchase a course",
@@ -45,7 +46,7 @@ public class PaymentController {
                 .body(service.purchase(user, courseId));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping
     @Operation(
             summary = "Get payment history",
@@ -55,12 +56,16 @@ public class PaymentController {
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
+<<<<<<< HEAD
             Pageable pageable
+=======
+            @ParameterObject Pageable pageable
+>>>>>>> dev-backend
     ) {
         return ResponseEntity.ok(service.history(user, startDate, endDate, pageable));
     }
 
-    @PreAuthorize("hasAnyRole('USER', 'CREATOR', 'ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/{paymentId}")
     @Operation(
             summary = "Get payment details",
