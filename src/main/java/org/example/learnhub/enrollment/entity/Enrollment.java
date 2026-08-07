@@ -10,15 +10,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-<<<<<<< HEAD
-    name = "enrollments",
-    uniqueConstraints =
-    @UniqueConstraint(columnNames = {"user_id", "course_id"})
-=======
         name = "enrollments",
         uniqueConstraints =
         @UniqueConstraint(columnNames = {"user_id", "course_id"})
->>>>>>> dev-backend
 )
 @Builder
 @Getter

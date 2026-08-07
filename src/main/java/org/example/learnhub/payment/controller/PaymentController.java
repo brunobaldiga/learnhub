@@ -17,7 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -56,11 +55,7 @@ public class PaymentController {
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) LocalDate startDate,
             @RequestParam(required = false) LocalDate endDate,
-<<<<<<< HEAD
-            Pageable pageable
-=======
             @ParameterObject Pageable pageable
->>>>>>> dev-backend
     ) {
         return ResponseEntity.ok(service.history(user, startDate, endDate, pageable));
     }
