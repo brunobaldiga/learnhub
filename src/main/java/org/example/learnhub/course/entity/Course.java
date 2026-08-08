@@ -11,7 +11,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Entity
 @Table(name = "courses")
@@ -51,6 +50,7 @@ public class Course {
     private Double averageRating;
 
     @Column(nullable = false)
+    @Builder.Default
     private Integer totalReviews = 0;
 
     @CreationTimestamp

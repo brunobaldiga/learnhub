@@ -2,6 +2,7 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
     role_type VARCHAR(20) NOT NULL,
     keycloak_id VARCHAR(255),
@@ -232,6 +233,7 @@ CREATE INDEX idx_certificates_enrollment
 INSERT INTO users (
     username,
     email,
+    full_name,
     password,
     role_type,
     keycloak_id,
@@ -241,6 +243,7 @@ VALUES
     (
         'user',
         'user@learnhub.com',
+        'John Doe',
         '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi7x6TSGT.bVfVki71RJKVQ1BM8DT8e',
         'USER',
         NULL,
@@ -249,6 +252,7 @@ VALUES
     (
         'creator',
         'creator@learnhub.com',
+        'Jane Doe',
         '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi7x6TSGT.bVfVki71RJKVQ1BM8DT8e',
         'CREATOR',
         NULL,
@@ -257,6 +261,7 @@ VALUES
     (
         'admin',
         'admin@learnhub.com',
+        'Admin',
         '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi7x6TSGT.bVfVki71RJKVQ1BM8DT8e',
         'ADMIN',
         NULL,
