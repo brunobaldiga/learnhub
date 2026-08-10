@@ -59,7 +59,11 @@ public class EnrollmentController {
         return ResponseEntity.ok(service.findEnrollmentById(user.getId(), enrollmentId));
     }
 
-    @PatchMapping("/lesson/{lessonId}/progress")
+    @PatchMapping("/lessons/{lessonId}/progress")
+    @Operation(
+            summary = "Updates lesson progress",
+            description = "Update user enrolled lesson progress"
+    )
     public ResponseEntity<ProgressResponse> progress(
             @RequestBody ProgressRequest request,
             @PathVariable Integer lessonId,
@@ -70,7 +74,7 @@ public class EnrollmentController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @PostMapping("/{enrollmentId}/certificate")
+    @PostMapping("/{enrollmentId}/certificates")
     @Operation(
             summary = "Generate certificate",
             description = "Generate a certificate upon course completion"
@@ -92,7 +96,7 @@ public class EnrollmentController {
                 .body(response);
     }
 
-    @GetMapping("/{enrollmentId}/certificate/{certificateId}")
+    @GetMapping("/certificates/{certificateId}")
     @Operation(
             summary = "Get certificate details",
             description = "Returns details of a specific certificate"
@@ -100,7 +104,7 @@ public class EnrollmentController {
     public ResponseEntity<CertificateResponse> findCertificateById(
             @PathVariable UUID certificateId
     ) {
-        return ResponseEntity.status(HttpStatus.FOUND)
+        return ResponseEntity.status(HttpStatus.OK)
                 .body(service.findCertificateById(certificateId));
     }
 

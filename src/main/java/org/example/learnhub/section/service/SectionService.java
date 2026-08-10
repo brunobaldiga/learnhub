@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.entity.Lesson;
 import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.section.repository.LessonRepository;
@@ -63,7 +63,6 @@ public class SectionService {
     }
 
     public LessonResponse findLessonById(Integer lessonId) {
-        // todo: check if course is public or user is the owner
         return lessonMapper.toDto(findLessonEntityById(lessonId));
     }
 

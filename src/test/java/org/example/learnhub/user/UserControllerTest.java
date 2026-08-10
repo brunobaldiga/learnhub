@@ -101,6 +101,7 @@ public class UserControllerTest {
                         new UserResponse(
                                 "john@email.com",
                                 "john",
+                                "John Doe",
                                 RoleType.USER,
                                 LocalDateTime.now()
                         )

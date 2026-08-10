@@ -22,6 +22,14 @@ public record UserRegisterRequest(
         @NotBlank(message = "Email cannot be blank.")
         String email,
 
+        @NotBlank
+        @Size(min = 3, max = 50, message = "Full name must be between 3 and 50 characters long.")
+        @Pattern(
+                regexp = "^[\\p{L}]+(?:[ '\\-][\\p{L}]+)*$",
+                message = "Full name can only contain letters, spaces, apostrophes and hyphens."
+        )
+        String fullName,
+
         @Pattern(
                 regexp = "^[^\\s]+$",
                 message = "Password cannot contain spaces."
@@ -33,4 +41,5 @@ public record UserRegisterRequest(
                 message = "Password must be between 6 and 20 characters long."
         )
         String password
-) {}
+) {
+}

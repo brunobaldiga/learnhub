@@ -68,6 +68,7 @@ public class UserServiceTest {
         UserRegisterRequest request = new UserRegisterRequest(
                 "john",
                 "john@email.com",
+                "John Doe",
                 "123456"
         );
 
@@ -94,6 +95,7 @@ public class UserServiceTest {
         UserRegisterRequest request = new UserRegisterRequest(
                 "john",
                 "john@email.com",
+                "John Doe",
                 "123456"
         );
 
@@ -109,6 +111,7 @@ public class UserServiceTest {
         UserRegisterRequest request = new UserRegisterRequest(
                 "john",
                 "john@email.com",
+                "John Doe",
                 "123456"
         );
 
@@ -142,6 +145,7 @@ public class UserServiceTest {
         UserResponse response = new UserResponse(
                 user.getEmail(),
                 user.getUsername(),
+                user.getFullName(),
                 user.getRoleType(),
                 LocalDateTime.now()
         );

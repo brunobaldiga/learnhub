@@ -130,7 +130,7 @@ public class CourseController {
     }
 
     @PreAuthorize("hasRole('CREATOR')")
-    @PutMapping("/section/{sectionId}")
+    @PutMapping("/sections/{sectionId}")
     @Operation(
             summary = "Update section",
             description = "Updates an existing section from a course"
@@ -144,7 +144,7 @@ public class CourseController {
     }
 
     @PreAuthorize("hasRole('CREATOR')")
-    @DeleteMapping("/section/{sectionId}")
+    @DeleteMapping("/sections/{sectionId}")
     @Operation(
             summary = "Delete section",
             description = "Deletes an existing section from a course"

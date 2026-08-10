@@ -17,7 +17,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -28,7 +27,6 @@ import java.time.LocalDateTime;
 )
 @SecurityRequirement(name = "bearerAuth")
 public class PaymentController {
-
     private final PaymentService service;
 
     @PreAuthorize("hasRole('USER')")
