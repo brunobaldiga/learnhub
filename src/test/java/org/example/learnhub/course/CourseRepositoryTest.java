@@ -12,9 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -26,7 +26,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 public class CourseRepositoryTest {
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
     @Autowired
     private TestEntityManager entityManager;
@@ -122,11 +122,7 @@ public class CourseRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Course> result =
-                repository.findByIdAndStatus(
-                        course.getId(),
-                        CourseStatus.PUBLIC
-                );
+        Optional<Course> result = repository.findByIdAndStatus(course.getId(), CourseStatus.PUBLIC);
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(course.getId());
@@ -158,11 +154,7 @@ public class CourseRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Course> result =
-                repository.findByIdAndStatus(
-                        course.getId(),
-                        CourseStatus.PUBLIC
-                );
+        Optional<Course> result = repository.findByIdAndStatus(course.getId(), CourseStatus.PUBLIC);
 
         assertThat(result).isEmpty();
     }
@@ -192,11 +184,7 @@ public class CourseRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Course> result =
-                repository.findByIdAndCreatorId(
-                        course.getId(),
-                        creator.getId()
-                );
+        Optional<Course> result = repository.findByIdAndCreatorId(course.getId(), creator.getId());
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(course.getId());
@@ -237,11 +225,7 @@ public class CourseRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Course> result =
-                repository.findByIdAndCreatorId(
-                        course.getId(),
-                        otherUser.getId()
-                );
+        Optional<Course> result = repository.findByIdAndCreatorId(course.getId(), otherUser.getId());
 
         assertThat(result).isEmpty();
     }

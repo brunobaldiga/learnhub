@@ -2,9 +2,7 @@ package org.example.learnhub.payment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.payment.dto.CurrencyType;
-import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
@@ -33,9 +31,6 @@ public class Payment {
 
     @Column(nullable = false)
     private BigDecimal coursePrice;
-
-    @Column(nullable = false)
-    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

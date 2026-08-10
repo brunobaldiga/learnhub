@@ -10,8 +10,6 @@ import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.service.CourseReviewService;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.user.dto.RoleType;
-import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +29,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CourseController.class)
 @Import(SecurityConfiguration.class)
@@ -72,11 +70,11 @@ public class CourseControllerTest {
         ));
 
         mockMvc.perform(post("/api/courses")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                            {"title": "Java Course"}
-                        """))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {"title": "Java Course"}
+                                """))
                 .andExpect(status().isCreated());
     }
 
@@ -84,10 +82,10 @@ public class CourseControllerTest {
     @WithMockUser(roles = "USER")
     void shouldReturn403WhenUserTriesToCreateCourse() throws Exception {
         mockMvc.perform(post("/api/courses")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                            {"title": "Java"}
-                        """))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                    {"title": "Java"}
+                                """))
                 .andExpect(status().isForbidden());
     }
 
@@ -95,9 +93,9 @@ public class CourseControllerTest {
     @WithMockUser(roles = "CREATOR")
     void shouldReturn400WhenTitleIsMissing() throws Exception {
         mockMvc.perform(post("/api/courses")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}")
-                .with(csrf()))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .with(csrf()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[0].field").value("title"))
                 .andExpect(jsonPath("$.errors[0].message").value("Title cannot be blank."));
@@ -173,31 +171,27 @@ public class CourseControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {
-                                "title": "Java Course"
-                            }
-                            """))
+                                {
+                                    "title": "Java Course"
+                                }
+                                """))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "USER")
     void shouldReturn200WhenSearchingCourses() throws Exception {
-        when(service.search(any(), any()))
-                .thenReturn(Page.empty());
+        when(service.search(any(), any())).thenReturn(Page.empty());
 
-        mockMvc.perform(get("/api/courses/search"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/courses/search")).andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn200WhenListingCreatorCourses() throws Exception {
-        when(service.findCourses(any(), any(), any()))
-                .thenReturn(Page.empty());
+        when(service.findCourses(any(), any(), any())).thenReturn(Page.empty());
 
-        mockMvc.perform(get("/api/courses"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/courses")).andExpect(status().isOk());
     }
 
     @Test
@@ -236,11 +230,11 @@ public class CourseControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {
-                                "title":"Updated Section",
-                                "position":0
-                            }
-                            """))
+                                {
+                                    "title":"Updated Section",
+                                    "position":0
+                                }
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Updated Section"));
     }
@@ -248,12 +242,9 @@ public class CourseControllerTest {
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn204WhenDeletingSection() throws Exception {
-        mockMvc.perform(delete("/api/courses/section/1")
-                        .with(csrf()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/courses/section/1").with(csrf())).andExpect(status().isNoContent());
 
-        verify(service)
-                .deleteCourseSection(any(), eq(1));
+        verify(service).deleteCourseSection(any(), eq(1));
     }
 
     @Test
@@ -289,11 +280,11 @@ public class CourseControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                            {
-                                "rating":5,
-                                "comment":"Excellent course!"
-                            }
-                            """))
+                                {
+                                    "rating":5,
+                                    "comment":"Excellent course!"
+                                }
+                                """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.authorUsername").value("John"))
                 .andExpect(jsonPath("$.rating").value(5));
@@ -302,21 +293,16 @@ public class CourseControllerTest {
     @Test
     @WithMockUser(roles = "USER")
     void shouldReturn200WhenListingCourseReviews() throws Exception {
-        when(courseReviewService.findCourseReviews(any(), any()))
-                .thenReturn(Page.empty());
+        when(courseReviewService.findCourseReviews(any(), any())).thenReturn(Page.empty());
 
-        mockMvc.perform(get("/api/courses/1/reviews"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/api/courses/1/reviews")).andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = "USER")
     void shouldReturn204WhenDeletingCourseReview() throws Exception {
-        mockMvc.perform(delete("/api/courses/1/reviews/1")
-                        .with(csrf()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/courses/1/reviews/1").with(csrf())).andExpect(status().isNoContent());
 
-        verify(courseReviewService)
-                .deleteReviewById(any(), eq(1), eq(1));
+        verify(courseReviewService).deleteReviewById(any(), eq(1), eq(1));
     }
 }

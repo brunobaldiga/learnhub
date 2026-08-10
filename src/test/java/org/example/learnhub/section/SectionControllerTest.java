@@ -4,8 +4,8 @@ import org.example.learnhub.config.SecurityConfiguration;
 import org.example.learnhub.config.TokenService;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.section.controller.SectionController;
-import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.dto.LessonResponse;
+import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.section.service.SectionService;
 import org.example.learnhub.user.repository.UserRepository;
@@ -70,11 +70,11 @@ public class SectionControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                        {
-                            "contentUrl":"https://youtube.com/video",
-                            "index":0
-                        }
-                        """))
+                                {
+                                    "contentUrl":"https://youtube.com/video",
+                                    "index":0
+                                }
+                                """))
                 .andExpect(status().isCreated());
     }
 
@@ -85,45 +85,40 @@ public class SectionControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                        {
-                            "contentUrl":"https://youtube.com/video",
-                            "index":0
-                        }
-                        """))
+                                {
+                                    "contentUrl":"https://youtube.com/video",
+                                    "index":0
+                                }
+                                """))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn404WhenSectionDoesNotExistOnCreate() throws Exception {
-        when(service.createLesson(any(), any(), any()))
-                .thenThrow(new EntityNotFound("Section not found"));
+        when(service.createLesson(any(), any(), any())).thenThrow(new EntityNotFound("Section not found"));
 
         mockMvc.perform(post("/api/sections/1/lessons")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                        {
-                            "contentUrl":"https://youtube.com/video",
-                            "index":0
-                        }
-                        """))
+                                {
+                                    "contentUrl":"https://youtube.com/video",
+                                    "index":0
+                                }
+                                """))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn200WhenCreatorDeletesLesson() throws Exception {
-        mockMvc.perform(delete("/api/sections/1/lessons/1")
-                        .with(csrf()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(delete("/api/sections/1/lessons/1").with(csrf())).andExpect(status().isNoContent());
     }
 
     @Test
     @WithMockUser(roles = "USER")
     void shouldReturn403WhenUserDeletesLesson() throws Exception {
-        mockMvc.perform(delete("/api/sections/1/lessons/1")
-                        .with(csrf()))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(delete("/api/sections/1/lessons/1").with(csrf())).andExpect(status().isForbidden());
     }
 }

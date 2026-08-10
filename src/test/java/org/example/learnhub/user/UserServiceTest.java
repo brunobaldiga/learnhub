@@ -77,14 +77,10 @@ public class UserServiceTest {
         when(mapper.toUser(request)).thenReturn(user);
         when(passwordEncoder.encode(request.password())).thenReturn("encoded-password");
 
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(user, null);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null);
 
-        when(authenticationManager.authenticate(any()))
-                .thenReturn(authentication);
-
-        when(tokenService.generateToken(user))
-                .thenReturn("jwt-token");
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(tokenService.generateToken(user)).thenReturn("jwt-token");
 
         TokenResponse result = service.register(request);
 
@@ -131,14 +127,10 @@ public class UserServiceTest {
                 "123456"
         );
 
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(user, null);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null);
 
-        when(authenticationManager.authenticate(any()))
-                .thenReturn(authentication);
-
-        when(tokenService.generateToken(user))
-                .thenReturn("jwt-token");
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(tokenService.generateToken(user)).thenReturn("jwt-token");
 
         TokenResponse result = service.login(request);
 
@@ -154,11 +146,8 @@ public class UserServiceTest {
                 LocalDateTime.now()
         );
 
-        when(repository.findById(1))
-                .thenReturn(Optional.of(user));
-
-        when(mapper.toDto(user))
-                .thenReturn(response);
+        when(repository.findById(1)).thenReturn(Optional.of(user));
+        when(mapper.toDto(user)).thenReturn(response);
 
         UserResponse result = service.findById(1);
 
@@ -167,8 +156,7 @@ public class UserServiceTest {
 
     @Test
     void shouldReturn404WhenUserDoesNotExist() {
-        when(repository.findById(any()))
-                .thenReturn(Optional.empty());
+        when(repository.findById(any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findById(1))
                 .isInstanceOf(EntityNotFound.class)

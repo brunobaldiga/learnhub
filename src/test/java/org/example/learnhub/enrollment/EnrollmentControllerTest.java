@@ -68,12 +68,12 @@ public class EnrollmentControllerTest {
         ));
 
         mockMvc.perform(get("/api/enrollments/{enrollmentId}", enrollmentId)
-                .with(authentication(
-                        new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)))
-                ))
-        )
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)))
+                        ))
+                )
 
-        .andExpect(status().isOk());
+                .andExpect(status().isOk());
     }
 
     @ParameterizedTest
@@ -81,9 +81,7 @@ public class EnrollmentControllerTest {
     void shouldReturn404WhenEnrollmentDoesNotExists(String role) throws Exception {
         Integer enrollmentId = 1;
 
-        when(service.findEnrollmentById(any(), any())).thenThrow(
-                new EntityNotFound("Enrollment not found")
-        );
+        when(service.findEnrollmentById(any(), any())).thenThrow(new EntityNotFound("Enrollment not found"));
 
         mockMvc.perform(get("/api/enrollments/{enrollmentId}", enrollmentId)
                 .with(authentication(
@@ -105,11 +103,11 @@ public class EnrollmentControllerTest {
         when(service.findEnrolledCourses(any(), anyInt(), anyInt())).thenReturn(page);
 
         mockMvc.perform(get("/api/enrollments")
-                .with(authentication(
-                        new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)))
-                ))
-            ).andExpect(status().isOk())
-             .andExpect(jsonPath("$.content", hasSize(1)))
+                        .with(authentication(
+                                new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)))
+                        ))
+                ).andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.number").value(0))
                 .andExpect(jsonPath("$.size").value(10));

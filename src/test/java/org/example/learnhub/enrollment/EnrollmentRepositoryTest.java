@@ -13,9 +13,9 @@ import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class EnrollmentRepositoryTest {
     @Container
     @ServiceConnection
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
     @Autowired
     private EnrollmentRepository repository;
@@ -62,8 +62,7 @@ public class EnrollmentRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Enrollment> result =
-                repository.findByUserAndCourse(user, course);
+        Optional<Enrollment> result = repository.findByUserAndCourse(user, course);
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(enrollment.getId());
@@ -102,34 +101,16 @@ public class EnrollmentRepositoryTest {
         Course savedCourse1 = entityManager.persist(course1);
         Course savedCourse2 = entityManager.persist(course2);
 
-        entityManager.persist(
-                Enrollment.builder()
-                        .user(savedUser)
-                        .course(savedCourse1)
-                        .totalLessons(10)
-                        .build()
-        );
-
-        entityManager.persist(
-                Enrollment.builder()
-                        .user(savedUser)
-                        .course(savedCourse2)
-                        .totalLessons(20)
-                        .build()
-        );
+        entityManager.persist(Enrollment.builder().user(savedUser).course(savedCourse1).totalLessons(10).build());
+        entityManager.persist(Enrollment.builder().user(savedUser).course(savedCourse2).totalLessons(20).build());
 
         entityManager.flush();
         entityManager.clear();
 
-        Page<Enrollment> result =
-                repository.findByUserId(
-                        savedUser.getId(),
-                        PageRequest.of(0, 10)
-                );
+        Page<Enrollment> result = repository.findByUserId(savedUser.getId(), PageRequest.of(0, 10));
 
         assertThat(result.getContent()).hasSize(2);
-        assertThat(result.getContent())
-                .extracting(enrollment -> enrollment.getCourse().getTitle())
+        assertThat(result.getContent()).extracting(enrollment -> enrollment.getCourse().getTitle())
                 .containsExactlyInAnyOrder("Java Course", "Spring Course");
     }
 
@@ -166,11 +147,7 @@ public class EnrollmentRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Enrollment> result =
-                repository.findByIdAndUserId(
-                        savedEnrollment.getId(),
-                        savedUser.getId()
-                );
+        Optional<Enrollment> result = repository.findByIdAndUserId(savedEnrollment.getId(), savedUser.getId());
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(savedEnrollment.getId());
@@ -198,22 +175,14 @@ public class EnrollmentRepositoryTest {
 
         Course savedCourse = entityManager.persist(course);
 
-        Enrollment enrollment = Enrollment.builder()
-                .user(savedUser)
-                .course(savedCourse)
-                .totalLessons(10)
-                .build();
+        Enrollment enrollment = Enrollment.builder().user(savedUser).course(savedCourse).totalLessons(10).build();
 
         Enrollment savedEnrollment = entityManager.persist(enrollment);
 
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Enrollment> result =
-                repository.findByCourseIdAndUserId(
-                        savedCourse.getId(),
-                        savedUser.getId()
-                );
+        Optional<Enrollment> result = repository.findByCourseIdAndUserId(savedCourse.getId(), savedUser.getId());
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(savedEnrollment.getId());

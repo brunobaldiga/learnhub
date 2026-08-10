@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.ImportResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +35,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -136,8 +134,7 @@ public class PaymentControllerTest {
                 List.of(new SimpleGrantedAuthority("ROLE_" + role))
         );
 
-        when(service.findById(any(), anyInt()))
-                .thenThrow(new EntityNotFound("Payment not found"));
+        when(service.findById(any(), anyInt())).thenThrow(new EntityNotFound("Payment not found"));
 
         mockMvc.perform(get("/api/payments/{paymentId}", paymentId)
                         .with(authentication(
@@ -163,18 +160,13 @@ public class PaymentControllerTest {
 
         List<PurchaseResponse> list = List.of(response);
 
-        Page<PurchaseResponse> page = new PageImpl<>(
-                list,
-                PageRequest.of(0, 10),
-                list.size()
-        );
+        Page<PurchaseResponse> page = new PageImpl<>(list, PageRequest.of(0, 10), list.size());
 
         Collection<? extends GrantedAuthority> authorities = roleHierarchy.getReachableGrantedAuthorities(
                 List.of(new SimpleGrantedAuthority("ROLE_" + role))
         );
 
-        when(service.history(any(), any(), any(), any()))
-                .thenReturn(page);
+        when(service.history(any(), any(), any(), any())).thenReturn(page);
 
         mockMvc.perform(get("/api/payments")
                         .with(authentication(

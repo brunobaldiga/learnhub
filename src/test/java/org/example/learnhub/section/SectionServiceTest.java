@@ -8,7 +8,6 @@ import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Lesson;
 import org.example.learnhub.section.entity.Section;
-import org.example.learnhub.section.repository.LessonRepository;
 import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.section.service.LessonMapper;
 import org.example.learnhub.section.service.SectionMapper;
@@ -43,9 +42,6 @@ public class SectionServiceTest {
     @Mock
     private LessonMapper lessonMapper;
 
-    @Mock
-    private LessonRepository lessonRepository;
-
     @InjectMocks
     private SectionService service;
 
@@ -60,15 +56,9 @@ public class SectionServiceTest {
 
     @Test
     void shouldCreateLessonSuccessfully() {
-        Section section = Section.builder()
-                .id(1)
-                .lessons(new ArrayList<>())
-                .build();
+        Section section = Section.builder().id(1).lessons(new ArrayList<>()).build();
 
-        LessonRequest request = new LessonRequest(
-                "https://youtube.com/video",
-                0
-        );
+        LessonRequest request = new LessonRequest("https://youtube.com/video", 0);
 
         Lesson lesson = Lesson.builder()
                 .id(1)
@@ -90,9 +80,7 @@ public class SectionServiceTest {
                 )
         );
 
-        when(repository.findByIdAndCourseCreatorId(1, user.getId()))
-                .thenReturn(Optional.of(section));
-
+        when(repository.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(Optional.of(section));
         when(lessonMapper.toLesson(request)).thenReturn(lesson);
         when(mapper.toDto(section)).thenReturn(response);
 
@@ -106,13 +94,9 @@ public class SectionServiceTest {
 
     @Test
     void shouldReturn404WhenSectionNotFoundOnCreateLesson() {
-        LessonRequest request = new LessonRequest(
-                "https://youtube.com/video",
-                0
-        );
+        LessonRequest request = new LessonRequest("https://youtube.com/video", 0);
 
-        when(repository.findByIdAndCourseCreatorId(any(), any()))
-                .thenReturn(Optional.empty());
+        when(repository.findByIdAndCourseCreatorId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.createLesson(user, 1, request))
                 .isInstanceOf(EntityNotFound.class)
@@ -121,15 +105,9 @@ public class SectionServiceTest {
 
     @Test
     void shouldDeleteLessonSuccessfully() {
-        Lesson lesson = Lesson.builder()
-                .id(1)
-                .build();
+        Lesson lesson = Lesson.builder().id(1).build();
 
-        Section section = Section.builder()
-                .id(1)
-                .lessons(new ArrayList<>(List.of(lesson)))
-                .build();
-
+        Section section = Section.builder().id(1).lessons(new ArrayList<>(List.of(lesson))).build();
 
         when(repository.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(Optional.of(section));
 
@@ -141,8 +119,7 @@ public class SectionServiceTest {
 
     @Test
     void shouldReturn404WhenSectionNotFoundOnDeleteLesson() {
-        when(repository.findByIdAndCourseCreatorId(any(), any()))
-                .thenReturn(Optional.empty());
+        when(repository.findByIdAndCourseCreatorId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.deleteLesson(user, 1, 1))
                 .isInstanceOf(EntityNotFound.class)
@@ -151,9 +128,7 @@ public class SectionServiceTest {
 
     @Test
     void shouldSaveSectionSuccessfully() {
-        Section section = Section.builder()
-                .id(1)
-                .build();
+        Section section = Section.builder().id(1).build();
 
         when(repository.save(section)).thenReturn(section);
 
@@ -166,15 +141,9 @@ public class SectionServiceTest {
 
     @Test
     void shouldCreateSectionSuccessfully() {
-        SectionRequest request = new SectionRequest(
-                "Section 1",
-                0
-        );
+        SectionRequest request = new SectionRequest("Section 1", 0);
 
-        Section section = Section.builder()
-                .id(1)
-                .course(course)
-                .build();
+        Section section = Section.builder().id(1).course(course).build();
 
         when(mapper.toSection(request, course)).thenReturn(section);
         when(repository.save(section)).thenReturn(section);
@@ -189,27 +158,20 @@ public class SectionServiceTest {
 
     @Test
     void shouldReturnSectionSuccessfully() {
-        Section section = Section.builder()
-                .id(1)
-                .course(course)
-                .build();
+        Section section = Section.builder().id(1).course(course).build();
 
-        when(repository.findByIdAndCourseCreatorId(1, user.getId()))
-                .thenReturn(Optional.of(section));
+        when(repository.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(Optional.of(section));
 
-        Section result =
-                service.findSectionEntityByIdAndCourseCreatorId(1, user.getId());
+        Section result = service.findSectionEntityByIdAndCourseCreatorId(1, user.getId());
 
         assertThat(result).isEqualTo(section);
 
-        verify(repository)
-                .findByIdAndCourseCreatorId(1, user.getId());
+        verify(repository).findByIdAndCourseCreatorId(1, user.getId());
     }
 
     @Test
     void shouldReturn404WhenSectionDoesNotExist() {
-        when(repository.findByIdAndCourseCreatorId(any(), any()))
-                .thenReturn(Optional.empty());
+        when(repository.findByIdAndCourseCreatorId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
                 service.findSectionEntityByIdAndCourseCreatorId(1, user.getId()))
@@ -219,9 +181,7 @@ public class SectionServiceTest {
 
     @Test
     void shouldDeleteSectionSuccessfully() {
-        Section section = Section.builder()
-                .id(1)
-                .build();
+        Section section = Section.builder().id(1).build();
 
         service.deleteSection(section);
 

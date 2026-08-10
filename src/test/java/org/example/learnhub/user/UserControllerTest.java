@@ -21,7 +21,6 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -57,36 +56,34 @@ public class UserControllerTest {
 
     @Test
     void shouldReturn201WhenUserRegisters() throws Exception {
-        when(service.register(any()))
-                .thenReturn(new TokenResponse("jwt-token"));
+        when(service.register(any())).thenReturn(new TokenResponse("jwt-token"));
 
         mockMvc.perform(post("/api/users/register")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                        {
-                            "username":"john",
-                            "email":"john@email.com",
-                            "password":"123456"
-                        }
-                        """))
+                                {
+                                    "username":"john",
+                                    "email":"john@email.com",
+                                    "password":"123456"
+                                }
+                                """))
                 .andExpect(status().isCreated());
     }
 
     @Test
     void shouldReturn200WhenUserLogsIn() throws Exception {
-        when(service.login(any()))
-                .thenReturn(new TokenResponse("jwt-token"));
+        when(service.login(any())).thenReturn(new TokenResponse("jwt-token"));
 
         mockMvc.perform(post("/api/users/login")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                        {
-                            "identifier":"john@email.com",
-                            "password":"123456"
-                        }
-                        """))
+                                {
+                                    "identifier":"john@email.com",
+                                    "password":"123456"
+                                }
+                                """))
                 .andExpect(status().isOk());
     }
 
@@ -110,16 +107,15 @@ public class UserControllerTest {
                 );
 
         mockMvc.perform(get("/api/users/me")
-                        .with(authentication(new UsernamePasswordAuthenticationToken(
-                                user, null, authorities
-                        )))
-                ).andExpect(status().isOk());
+                .with(authentication(new UsernamePasswordAuthenticationToken(
+                        user, null, authorities
+                )))
+        ).andExpect(status().isOk());
     }
 
     @Test
     void shouldReturn403WhenAnonymousUserRequestsProfile() throws Exception {
-        mockMvc.perform(get("/api/users/me"))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/users/me")).andExpect(status().isForbidden());
     }
 
     @Test
@@ -132,8 +128,7 @@ public class UserControllerTest {
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
 
-        when(service.findById(any()))
-                .thenThrow(new EntityNotFound("User not found"));
+        when(service.findById(any())).thenThrow(new EntityNotFound("User not found"));
 
         mockMvc.perform(get("/api/users/me")
                         .with(authentication(

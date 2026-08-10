@@ -2,9 +2,9 @@ package org.example.learnhub.payment;
 
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
+import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
-import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.payment.dto.CurrencyType;
 import org.example.learnhub.payment.dto.PurchaseResponse;
 import org.example.learnhub.payment.entity.Payment;
@@ -85,7 +85,6 @@ public class PaymentServiceTest {
                 .courseId(course.getId())
                 .courseTitle(course.getTitle())
                 .coursePrice(course.getPrice())
-                .amount(course.getPrice())
                 .currency(CurrencyType.USD)
                 .build();
 
@@ -132,12 +131,7 @@ public class PaymentServiceTest {
                 1
         );
 
-        when(repository.findAll(
-                any(Specification.class),
-                any(Pageable.class)
-        )).thenReturn(payments);
-
-
+        when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(payments);
         when(mapper.toDto(payment)).thenReturn(response);
 
         Page<PurchaseResponse> result = service.history(
@@ -167,9 +161,7 @@ public class PaymentServiceTest {
                 LocalDateTime.now()
         );
 
-        when(repository.findByIdAndUserId(user.getId(), 1))
-                .thenReturn(Optional.of(payment));
-
+        when(repository.findByIdAndUserId(user.getId(), 1)).thenReturn(Optional.of(payment));
         when(mapper.toDto(payment)).thenReturn(response);
 
         PurchaseResponse result = service.findById(user, 1);
@@ -179,8 +171,7 @@ public class PaymentServiceTest {
 
     @Test
     void shouldReturn404WhenPaymentNotFound() {
-        when(repository.findByIdAndUserId(any(), any()))
-                .thenReturn(Optional.empty());
+        when(repository.findByIdAndUserId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findById(user, 1))
                 .isInstanceOf(EntityNotFound.class)
@@ -189,8 +180,7 @@ public class PaymentServiceTest {
 
     @Test
     void shouldReturnTrueWhenPaymentExistsForCourse() {
-        when(repository.existsByUserIdAndCourseId(1, 1))
-                .thenReturn(true);
+        when(repository.existsByUserIdAndCourseId(1, 1)).thenReturn(true);
 
         boolean result = repository.existsByUserIdAndCourseId(1, 1);
 
@@ -199,8 +189,7 @@ public class PaymentServiceTest {
 
     @Test
     void shouldReturnFalseWhenPaymentDoesNotExistForCourse() {
-        when(repository.existsByUserIdAndCourseId(1, 1))
-                .thenReturn(false);
+        when(repository.existsByUserIdAndCourseId(1, 1)).thenReturn(false);
 
         boolean result = repository.existsByUserIdAndCourseId(1, 1);
 

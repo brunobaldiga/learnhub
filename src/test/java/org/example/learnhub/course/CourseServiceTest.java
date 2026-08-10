@@ -3,14 +3,14 @@ package org.example.learnhub.course;
 import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
+import org.example.learnhub.course.repository.CourseRepository;
+import org.example.learnhub.course.service.CourseMapper;
+import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.exception.CourseAccessDenied;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.exception.MaxSectionsReached;
 import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.gateway.SectionGateway;
-import org.example.learnhub.course.repository.CourseRepository;
-import org.example.learnhub.course.service.CourseMapper;
-import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.section.service.SectionMapper;
@@ -71,9 +71,7 @@ public class CourseServiceTest {
 
     @Test
     void shouldCreateCourseSuccessfully() {
-        CourseRequest request = new CourseRequest(
-            "Java Course"
-        );
+        CourseRequest request = new CourseRequest("Java Course");
 
         Course course = Course.builder()
                 .id(1)
@@ -84,7 +82,14 @@ public class CourseServiceTest {
                 .build();
 
         CourseResponse response = new CourseResponse(
-                1, user.getId(), user.getUsername(), course.getTitle(), course.getStatus(), course.getPrice(), 0, LocalDateTime.now()
+                1,
+                user.getId(),
+                user.getUsername(),
+                course.getTitle(),
+                course.getStatus(),
+                course.getPrice(),
+                0,
+                LocalDateTime.now()
         );
 
         when(mapper.toCourse(request)).thenReturn(course);
@@ -107,7 +112,14 @@ public class CourseServiceTest {
                 .build();
 
         CourseResponse response = new CourseResponse(
-                1, 1, "John", "Java Course", CourseStatus.PUBLIC, BigDecimal.ZERO, 0, LocalDateTime.now()
+                1,
+                1,
+                "John",
+                "Java Course",
+                CourseStatus.PUBLIC,
+                BigDecimal.ZERO,
+                0,
+                LocalDateTime.now()
         );
 
         when(mapper.toDto(course)).thenReturn(response);
@@ -136,11 +148,9 @@ public class CourseServiceTest {
                 .title("Java Course")
                 .status(CourseStatus.PRIVATE)
                 .price(BigDecimal.ZERO)
-            .build();
+                .build();
 
-        UpdateCourseRequest request = new UpdateCourseRequest(
-                "Updated Java Course", CourseStatus.PUBLIC, BigDecimal.valueOf(20)
-        );
+        UpdateCourseRequest request = new UpdateCourseRequest("Updated Java Course", CourseStatus.PUBLIC, BigDecimal.valueOf(20));
 
         CourseResponse response = new CourseResponse(
                 1,
@@ -165,9 +175,7 @@ public class CourseServiceTest {
 
     @Test
     void shouldReturn404WhenCourseNotFoundOnUpdate() {
-        UpdateCourseRequest request = new UpdateCourseRequest(
-                "Updated Java Course", CourseStatus.PUBLIC, BigDecimal.valueOf(20)
-        );
+        UpdateCourseRequest request = new UpdateCourseRequest("Updated Java Course", CourseStatus.PUBLIC, BigDecimal.valueOf(20));
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.empty());
 
@@ -179,27 +187,13 @@ public class CourseServiceTest {
 
     @Test
     void shouldCreateSectionSuccessfully() {
-        Course course = Course.builder()
-                .id(1)
-                .creator(user)
-                .sections(new ArrayList<>())
-            .build();
+        Course course = Course.builder().id(1).creator(user).sections(new ArrayList<>()).build();
 
-        Section section = Section.builder()
-                .id(1)
-                .title("Section 1")
-                .position(0)
-                .course(course)
-                .build();
+        Section section = Section.builder().id(1).title("Section 1").position(0).course(course).build();
 
-        SectionRequest request = new SectionRequest(
-                "Section 1",
-                0
-        );
+        SectionRequest request = new SectionRequest("Section 1", 0);
 
-        SectionResponse response = new SectionResponse(
-                1, "Section 1", 0, List.of()
-        );
+        SectionResponse response = new SectionResponse(1, "Section 1", 0, List.of());
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
         when(sectionGateway.createSection(any(), any())).thenReturn(section);
@@ -215,16 +209,9 @@ public class CourseServiceTest {
     void shouldReturn409WhenSectionLimitReached() {
         List<Section> sections = new ArrayList<>(Collections.nCopies(20, new Section()));
 
-        Course course = Course.builder()
-                .id(1)
-                .creator(user)
-                .sections(sections)
-        .build();
+        Course course = Course.builder().id(1).creator(user).sections(sections).build();
 
-        SectionRequest request = new SectionRequest(
-                "Section 21",
-                21
-        );
+        SectionRequest request = new SectionRequest("Section 21", 21);
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
 
@@ -235,10 +222,7 @@ public class CourseServiceTest {
 
     @Test
     void shouldReturn404WhenCourseNotFoundOnSectionCreate() {
-        SectionRequest request = new SectionRequest(
-                "Section 21",
-                21
-        );
+        SectionRequest request = new SectionRequest("Section 21", 21);
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.empty());
 
@@ -253,11 +237,7 @@ public class CourseServiceTest {
         List<Section> sections = new ArrayList<>(List.of(section));
         SectionResponse sectionResponse = new SectionResponse(1, "Section 1", 0, List.of());
 
-        Course course = Course.builder()
-                .id(1)
-                .creator(user)
-                .sections(sections)
-                .build();
+        Course course = Course.builder().id(1).creator(user).sections(sections).build();
 
 
         when(repository.findByIdAndStatus(any(), any())).thenReturn(Optional.of(course));
@@ -277,11 +257,7 @@ public class CourseServiceTest {
         List<Section> sections = new ArrayList<>(List.of(section));
         SectionResponse sectionResponse = new SectionResponse(1, "Section 1", 0, List.of());
 
-        Course course = Course.builder()
-                .id(1)
-                .creator(creator)
-                .sections(sections)
-                .build();
+        Course course = Course.builder().id(1).creator(creator).sections(sections).build();
 
         when(repository.findByIdAndStatus(any(), any())).thenReturn(Optional.of(course));
         when(paymentGateway.existsByUserIdAndCourseId(any(), any())).thenReturn(true);
@@ -299,11 +275,7 @@ public class CourseServiceTest {
         Section section = Section.builder().id(1).title("Section 1").position(0).build();
         List<Section> sections = new ArrayList<>(List.of(section));
 
-        Course course = Course.builder()
-                .id(1)
-                .creator(creator)
-                .sections(sections)
-                .build();
+        Course course = Course.builder().id(1).creator(creator).sections(sections).build();
 
         when(repository.findByIdAndStatus(any(), any())).thenReturn(Optional.of(course));
         when(paymentGateway.existsByUserIdAndCourseId(any(), any())).thenReturn(false);
@@ -316,13 +288,13 @@ public class CourseServiceTest {
 
     @Test
     void shouldSearchCoursesSuccessfully() {
-        Course course = Course.builder()
-                .id(1)
-                .title("Java")
-                .build();
+        Course course = Course.builder().id(1).title("Java").build();
 
         CourseResponse response = new CourseResponse(
-                1, 1, "John", "Java",
+                1,
+                1,
+                "John",
+                "Java",
                 CourseStatus.PUBLIC,
                 BigDecimal.ZERO,
                 0,
@@ -342,13 +314,12 @@ public class CourseServiceTest {
 
     @Test
     void shouldFindOwnedCoursesSuccessfully() {
-        Course course = Course.builder()
-                .id(1)
-                .creator(user)
-                .build();
+        Course course = Course.builder().id(1).creator(user).build();
 
         CourseResponse response = new CourseResponse(
-                1, 1, "John",
+                1,
+                1,
+                "John",
                 "Java",
                 CourseStatus.PUBLIC,
                 BigDecimal.ZERO,
@@ -378,22 +349,11 @@ public class CourseServiceTest {
 
     @Test
     void shouldUpdateSectionSuccessfully() {
-        Section section = Section.builder()
-                .id(1)
-                .title("Old")
-                .position(0)
-                .build();
+        Section section = Section.builder().id(1).title("Old").position(0).build();
 
-        SectionRequest request = new SectionRequest(
-                "New Title",
-                1
-        );
+        SectionRequest request = new SectionRequest("New Title", 1);
 
-        SectionResponse response = new SectionResponse(
-                1,
-                "New Title",
-                1,
-                List.of()
+        SectionResponse response = new SectionResponse(1, "New Title", 1, List.of()
         );
 
         when(sectionGateway.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(section);
@@ -408,9 +368,7 @@ public class CourseServiceTest {
 
     @Test
     void shouldDeleteSectionSuccessfully() {
-        Section section = Section.builder()
-                .id(1)
-                .build();
+        Section section = Section.builder().id(1).build();
 
         when(sectionGateway.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(section);
 
