@@ -139,4 +139,7 @@ public class EnrollmentService {
                         .orElseThrow(() -> new EntityNotFound("Certificate not found."))
         );
     }
+
+    public Enrollment findEnrollmentEntityByUserId(Integer userId) {
+    }
 }

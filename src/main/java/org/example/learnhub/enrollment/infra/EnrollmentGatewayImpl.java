@@ -16,4 +16,9 @@ public class EnrollmentGatewayImpl implements EnrollmentGateway {
     public void enroll(User user, Integer id) {
         service.enroll(user, id);
     }
+
+    @Override
+    public Enrollment findEnrollmentByUserId(Integer userId) {
+        return service.findEnrollmentEntityByUserId(userId);
+    }
 }

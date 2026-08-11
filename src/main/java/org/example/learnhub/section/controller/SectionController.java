@@ -15,6 +15,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/sections")
 @RequiredArgsConstructor
@@ -57,6 +59,20 @@ public class SectionController {
     }
 
     @PreAuthorize("hasRole('USER')")
+    @GetMapping("/{sectionId}/lessons")
+    @Operation(
+            summary = "List section lessons",
+            description = "Returns all lessons belonging to the specified section"
+    )
+    public ResponseEntity<List<LessonResponse>> findSectionLessons(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer sectionId
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findSectionLessons(user, sectionId));
+    }
+
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/lessons/{lessonId}")
     @Operation(
             summary = "Get lesson details",
@@ -65,7 +81,9 @@ public class SectionController {
     public ResponseEntity<LessonResponse> findLessonById(
             @PathVariable Integer lessonId
     ) {
-        return ResponseEntity.status(HttpStatus.FOUND)
+        return ResponseEntity.status(HttpStatus.OK)
                 .body(service.findLessonById(lessonId));
     }
+
+
 }

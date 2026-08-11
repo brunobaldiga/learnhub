@@ -3,7 +3,9 @@ package org.example.learnhub.section.service;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.enrollment.entity.Enrollment;
 import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
@@ -14,6 +16,8 @@ import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.user.entity.User;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class SectionService {
@@ -21,6 +25,7 @@ public class SectionService {
     private final LessonRepository lessonRepository;
     private final SectionMapper mapper;
     private final LessonMapper lessonMapper;
+    private final EnrollmentGateway enrollmentGateway;
 
     public Section saveSection(Section section) {
         return repository.save(section);
@@ -34,11 +39,9 @@ public class SectionService {
 
     public SectionResponse createLesson(User user, Integer sectionId, LessonRequest request) {
         Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
-
         Lesson lesson = lessonMapper.toLesson(request);
-        lesson.setSection(section);
 
-        section.getLessons().add(lesson);
+        section.addLesson(lesson);
 
         repository.save(section);
 
@@ -69,5 +72,12 @@ public class SectionService {
     public Lesson findLessonEntityById(Integer lessonId) {
         return lessonRepository.findById(lessonId).orElseThrow(
                 () -> new EntityNotFound("Lesson not found."));
+    }
+
+    public List<LessonResponse> findSectionLessons(User user, Integer sectionId) {
+        Section section = repository.findById(sectionId)
+                .orElseThrow(() -> new EntityNotFound("Section not found"));
+
+        Enrollment enrollment = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), )
     }
 }

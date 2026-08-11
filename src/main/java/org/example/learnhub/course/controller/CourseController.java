@@ -161,7 +161,7 @@ public class CourseController {
     @GetMapping("/{courseId}/sections")
     @Operation(
             summary = "List course sections",
-            description = "Returns all sections belonging to a course"
+            description = "Returns all sections belonging to the specified course"
     )
     public ResponseEntity<List<SectionResponse>> findCourseSections(
             @AuthenticationPrincipal User user,
