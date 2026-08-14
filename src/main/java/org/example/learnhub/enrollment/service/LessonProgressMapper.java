@@ -11,12 +11,14 @@ import java.time.LocalDateTime;
 @Component
 public class LessonProgressMapper {
     public LessonProgress toLessonProgress(ProgressRequest request, Enrollment enrollment, Lesson lesson) {
+        LocalDateTime now = LocalDateTime.now();
+
         return LessonProgress.builder()
                 .lastPositionInSeconds(request.lastPositionInSeconds())
                 .enrollment(enrollment)
                 .lesson(lesson)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
     }
 }

@@ -133,7 +133,7 @@ public class EnrollmentServiceTest {
         EnrollmentResponse response = new EnrollmentResponse(1, 1, "Java Course", "Creator", 10, 0, 0.0, LocalDateTime.now());
 
         when(repository.findByUserId(any(), any())).thenReturn(enrollments);
-        when(mapper.toDto(any())).thenReturn(response);
+        when(mapper.toDto(any(), any())).thenReturn(response);
 
         Page<EnrollmentResponse> result = service.findEnrolledCourses(1, 0, 10);
 
@@ -142,7 +142,7 @@ public class EnrollmentServiceTest {
         assertThat(result.getContent().get(0)).isEqualTo(response);
 
         verify(repository).findByUserId(eq(1), any(Pageable.class));
-        verify(mapper).toDto(enrollment);
+        verify(mapper).toDto(enrollment, 0);
     }
 
     @Test
@@ -151,14 +151,14 @@ public class EnrollmentServiceTest {
         EnrollmentResponse response = new EnrollmentResponse(1, 1, "Java Course", "Creator", 10, 0, 0.0, LocalDateTime.now());
 
         when(repository.findByIdAndUserId(any(), any())).thenReturn(Optional.of(enrollment));
-        when(mapper.toDto(any())).thenReturn(response);
+        when(mapper.toDto(any(), any())).thenReturn(response);
 
         EnrollmentResponse result = service.findEnrollmentById(user.getId(), enrollment.getId());
 
         assertThat(result).isEqualTo(response);
 
         verify(repository).findByIdAndUserId(user.getId(), enrollment.getId());
-        verify(mapper).toDto(enrollment);
+        verify(mapper).toDto(enrollment, 0);
     }
 
     @Test
@@ -172,9 +172,9 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldCreateLessonProgressSuccessfully() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).completedLessons(3).build();
-        ProgressRequest request = org.mockito.Mockito.mock(ProgressRequest.class);
-        LessonProgress lessonProgress = org.mockito.Mockito.mock(LessonProgress.class);
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        ProgressRequest request = mock(ProgressRequest.class);
+        LessonProgress lessonProgress = mock(LessonProgress.class);
 
         when(lessonGateway.findLessonById(1)).thenReturn(lesson);
         when(repository.findByCourseIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
@@ -191,7 +191,7 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldReturn404WhenProgressEnrollmentDoesNotExist() {
-        ProgressRequest request = org.mockito.Mockito.mock(ProgressRequest.class);
+        ProgressRequest request = mock(ProgressRequest.class);
 
         when(lessonGateway.findLessonById(1)).thenReturn(lesson);
         when(repository.findByCourseIdAndUserId(1, user.getId())).thenReturn(Optional.empty());
@@ -206,9 +206,9 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldUpdateLessonProgressSuccessfully() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).completedLessons(3).build();
-        LessonProgress lessonProgress = org.mockito.Mockito.mock(LessonProgress.class);
-        ProgressRequest request = org.mockito.Mockito.mock(ProgressRequest.class);
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        LessonProgress lessonProgress = mock(LessonProgress.class);
+        ProgressRequest request = mock(ProgressRequest.class);
 
         when(lessonGateway.findLessonById(1)).thenReturn(lesson);
         when(repository.findByCourseIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
@@ -228,9 +228,9 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldReturnInvalidProgressWhenPositionExceedsMaximumAllowed() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).completedLessons(3).build();
-        LessonProgress lessonProgress = org.mockito.Mockito.mock(LessonProgress.class);
-        ProgressRequest request = org.mockito.Mockito.mock(ProgressRequest.class);
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        LessonProgress lessonProgress = mock(LessonProgress.class);
+        ProgressRequest request = mock(ProgressRequest.class);
 
         when(lessonGateway.findLessonById(1)).thenReturn(lesson);
         when(repository.findByCourseIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
@@ -248,9 +248,9 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldReturnInvalidProgressWhenPositionExceedsLessonDuration() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).completedLessons(3).build();
-        LessonProgress lessonProgress = org.mockito.Mockito.mock(LessonProgress.class);
-        ProgressRequest request = org.mockito.Mockito.mock(ProgressRequest.class);
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        LessonProgress lessonProgress = mock(LessonProgress.class);
+        ProgressRequest request = mock(ProgressRequest.class);
 
         when(lessonGateway.findLessonById(1)).thenReturn(lesson);
         when(repository.findByCourseIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
@@ -268,9 +268,9 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldGenerateCertificateSuccessfully() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).completedLessons(10).build();
-        Certificate certificate = org.mockito.Mockito.mock(Certificate.class);
-        CertificateResponse response = org.mockito.Mockito.mock(CertificateResponse.class);
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        Certificate certificate = mock(Certificate.class);
+        CertificateResponse response = mock(CertificateResponse.class);
 
         when(repository.findByIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
         when(certificateRepository.existsByEnrollmentId(1)).thenReturn(false);
@@ -301,7 +301,7 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldReturnExceptionWhenCourseIsNotCompleted() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).completedLessons(5).build();
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
 
         when(repository.findByIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
 
@@ -315,7 +315,7 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldReturnExceptionWhenCertificateAlreadyExists() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).completedLessons(10).build();
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
 
         when(repository.findByIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
         when(certificateRepository.existsByEnrollmentId(1)).thenReturn(true);
@@ -331,8 +331,8 @@ public class EnrollmentServiceTest {
     @Test
     void shouldReturnCertificateSuccessfully() {
         UUID certificateId = UUID.randomUUID();
-        Certificate certificate = org.mockito.Mockito.mock(Certificate.class);
-        CertificateResponse response = org.mockito.Mockito.mock(CertificateResponse.class);
+        Certificate certificate = mock(Certificate.class);
+        CertificateResponse response = mock(CertificateResponse.class);
 
         when(certificateRepository.findById(certificateId)).thenReturn(Optional.of(certificate));
         when(certificateMapper.toDto(certificate)).thenReturn(response);

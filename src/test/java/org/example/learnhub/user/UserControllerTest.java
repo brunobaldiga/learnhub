@@ -65,6 +65,7 @@ public class UserControllerTest {
                                 {
                                     "username":"john",
                                     "email":"john@email.com",
+                                    "fullName": "John Doe",
                                     "password":"123456"
                                 }
                                 """))

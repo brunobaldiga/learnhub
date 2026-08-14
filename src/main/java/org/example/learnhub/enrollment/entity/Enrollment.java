@@ -7,6 +7,8 @@ import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -33,11 +35,10 @@ public class Enrollment {
     private Course course;
 
     @Column(nullable = false)
-    @Builder.Default
-    private Integer completedLessons = 0;
-
-    @Column(nullable = false)
     private Integer totalLessons;
+
+    @OneToMany(mappedBy = "enrollment", fetch = FetchType.LAZY)
+    private List<LessonProgress> lessonProgresses = new ArrayList<>();
 
     @CreationTimestamp
     @Column(updatable = false, nullable = false)

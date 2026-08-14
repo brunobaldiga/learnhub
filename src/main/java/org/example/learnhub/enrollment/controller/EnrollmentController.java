@@ -59,12 +59,25 @@ public class EnrollmentController {
         return ResponseEntity.ok(service.findEnrollmentById(user.getId(), enrollmentId));
     }
 
+    @PostMapping("/lessons/{lessonId}/start")
+    @Operation(
+            summary = "Starts a lesson",
+            description = "Initializes enrolled user lesson progress"
+    )
+    public ResponseEntity<ProgressResponse> startLesson(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer lessonId
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.startLesson(user, lessonId));
+    }
+
     @PatchMapping("/lessons/{lessonId}/progress")
     @Operation(
             summary = "Updates lesson progress",
-            description = "Update user enrolled lesson progress"
+            description = "Updates enrolled user lesson progress"
     )
-    public ResponseEntity<ProgressResponse> progress(
+    public ResponseEntity<ProgressResponse> lessonProgress(
             @RequestBody ProgressRequest request,
             @PathVariable Integer lessonId,
             @AuthenticationPrincipal User user

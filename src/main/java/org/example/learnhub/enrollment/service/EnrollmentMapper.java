@@ -6,15 +6,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EnrollmentMapper {
-    public EnrollmentResponse toDto(Enrollment enrollment) {
+    public EnrollmentResponse toDto(Enrollment enrollment, Integer completedLessons) {
         return new EnrollmentResponse(
                 enrollment.getId(),
                 enrollment.getCourse().getId(),
                 enrollment.getCourse().getTitle(),
                 enrollment.getCourse().getCreator().getUsername(),
-                enrollment.getCompletedLessons(),
+                completedLessons,
                 enrollment.getTotalLessons(),
-                (((double) enrollment.getCompletedLessons() / enrollment.getTotalLessons()) * 100),
+                (((double) completedLessons / enrollment.getTotalLessons()) * 100),
                 enrollment.getEnrolledAt()
         );
 
