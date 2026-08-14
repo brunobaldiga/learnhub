@@ -4,9 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.service.SectionService;
 import org.example.learnhub.user.entity.User;
 import org.springframework.http.HttpStatus;
@@ -79,10 +79,11 @@ public class SectionController {
             description = "Returns lesson details by its identifier"
     )
     public ResponseEntity<LessonResponse> findLessonById(
+            @AuthenticationPrincipal User user,
             @PathVariable Integer lessonId
     ) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(service.findLessonById(lessonId));
+                .body(service.findLessonById(user, lessonId));
     }
 
 

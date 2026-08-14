@@ -192,12 +192,13 @@ public class CourseController {
             description = "Returns all the reviews for the specified course"
     )
     public ResponseEntity<Page<CourseReviewResponse>> findCourseReviews(
+            @PathVariable Integer courseId,
             CourseReviewFilter filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "25") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(courseReviewService.findCourseReviews(filter, pageable));
+        return ResponseEntity.ok(courseReviewService.findCourseReviews(courseId, filter, pageable));
     }
 
     @PreAuthorize("hasRole('USER')")

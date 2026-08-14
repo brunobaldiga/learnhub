@@ -7,6 +7,8 @@ import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.user.entity.User;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 @RequiredArgsConstructor
 public class EnrollmentGatewayImpl implements EnrollmentGateway {
@@ -18,7 +20,7 @@ public class EnrollmentGatewayImpl implements EnrollmentGateway {
     }
 
     @Override
-    public Enrollment findEnrollmentByUserId(Integer userId) {
-        return service.findEnrollmentEntityByUserId(userId);
+    public Optional<Enrollment> findEnrollmentByUserIdAndCourseId(Integer userId, Integer courseId) {
+        return service.findEnrollmentEntityByUserIdAndCourseId(userId, courseId);
     }
 }

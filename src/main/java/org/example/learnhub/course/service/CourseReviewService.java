@@ -33,13 +33,13 @@ public class CourseReviewService {
     public CourseReviewResponse createCourseReview(User user, Integer courseId, CourseReviewRequest request) {
         Course course = courseGateway.findCourseById(user, courseId);
 
-        if (course.getCreator().getId().equals(user.getId()))
+        if(course.getCreator().getId().equals(user.getId()))
             throw new SelfReviewNotAllowedException("Course creator cannot review its own course.");
 
-        if (repository.existsByAuthorIdAndCourseId(user.getId(), courseId))
+        if(repository.existsByAuthorIdAndCourseId(user.getId(), courseId))
             throw new DuplicateReviewException("User can only review once.");
 
-        if (!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId)) {
+        if(!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId)) {
             throw new CourseReviewNotAllowedException("User hasn't bought the course.");
         }
 
@@ -52,9 +52,10 @@ public class CourseReviewService {
         return mapper.toDto(courseReview);
     }
 
-    public Page<CourseReviewResponse> findCourseReviews(CourseReviewFilter filter, Pageable pageable) {
+    public Page<CourseReviewResponse> findCourseReviews(Integer courseId, CourseReviewFilter filter, Pageable pageable) {
         Specification<CourseReview> specification = Specification
-                .where(CourseReviewSpecs.withFilter(filter));
+                .where(CourseReviewSpecs.withFilter(filter))
+                .and(CourseReviewSpecs.withCourseId(courseId));
 
         return repository.findAll(specification, pageable)
                 .map(mapper::toDto);
@@ -63,7 +64,7 @@ public class CourseReviewService {
     public void deleteReviewById(User user, Integer courseId, Integer courseReviewId) {
         CourseReview courseReview = repository.findByIdAndCourseId(courseReviewId, courseId);
 
-        if (!courseReview.getAuthor().getId().equals(user.getId()))
+        if(!courseReview.getAuthor().getId().equals(user.getId()))
             throw new ReviewOwnershipException("User is not the author of the review");
 
         repository.delete(courseReview);

@@ -106,6 +106,9 @@ public class EnrollmentService {
         lessonProgress.setUpdatedAt(LocalDateTime.now());
         lessonProgress.setLastPositionInSeconds(request.lastPositionInSeconds());
 
+        if(lessonProgress.getLastPositionInSeconds() >= lesson.getDuration() * .9) {
+        }
+
         lessonProgressRepository.save(lessonProgress);
 
         return new ProgressResponse(
@@ -140,6 +143,7 @@ public class EnrollmentService {
         );
     }
 
-    public Enrollment findEnrollmentEntityByUserId(Integer userId) {
+    public Optional<Enrollment> findEnrollmentEntityByUserIdAndCourseId(Integer userId, Integer courseId) {
+        return repository.findByUserIdAndCourseId(userId, courseId);
     }
 }
