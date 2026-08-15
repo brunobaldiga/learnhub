@@ -54,7 +54,6 @@ public class EnrollmentService {
         Enrollment courseProgress = Enrollment.builder()
                 .user(user)
                 .course(course)
-                .totalLessons(courseGateway.countLessonsByCourseId(courseId))
                 .build();
 
         repository.save(courseProgress);
@@ -65,8 +64,10 @@ public class EnrollmentService {
 
         return repository.findByUserId(userId, pageable)
                 .map(enrollment -> mapper.toDto(
-                        enrollment,
-                        lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId()))
+                            enrollment,
+                            lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId()),
+                            courseGateway.countLessonsByCourseId(enrollment.getCourse().getId())
+                        )
                 );
     }
 
@@ -75,8 +76,9 @@ public class EnrollmentService {
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
 
         Integer completedLessons = lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollmentId);
+        Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourse().getId());
 
-        return mapper.toDto(enrollment, completedLessons);
+        return mapper.toDto(enrollment, completedLessons, totalLessons);
     }
 
     public ProgressResponse startLesson(User user, Integer lessonId) {
@@ -101,11 +103,13 @@ public class EnrollmentService {
             lessonProgressRepository.save(newLessonProgress);
         }
 
+        Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourse().getId());
+
         return new ProgressResponse(
                 completedLessons,
-                enrollment.getTotalLessons(),
-                (completedLessons * 100.0) / enrollment.getTotalLessons(),
-                enrollment.getTotalLessons().equals(completedLessons)
+                totalLessons,
+                (completedLessons * 100.0) / totalLessons,
+                totalLessons.equals(completedLessons)
         );
     }
 
@@ -126,13 +130,13 @@ public class EnrollmentService {
 
             lessonProgressRepository.save(newLessonProgress);
 
-
+            Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourse().getId());
 
             return new ProgressResponse(
                     completedLessons,
-                    enrollment.getTotalLessons(),
-                    (completedLessons * 100.0) / enrollment.getTotalLessons(),
-                    enrollment.getTotalLessons().equals(completedLessons)
+                    totalLessons,
+                    (completedLessons * 100.0) / totalLessons,
+                    totalLessons.equals(completedLessons)
             );
         }
 
@@ -157,11 +161,13 @@ public class EnrollmentService {
 
         lessonProgressRepository.save(lessonProgress);
 
+        Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourse().getId());
+
         return new ProgressResponse(
                 completedLessons,
-                enrollment.getTotalLessons(),
-                (completedLessons * 100.0) / enrollment.getTotalLessons(),
-                enrollment.getTotalLessons().equals(completedLessons)
+                totalLessons,
+                (completedLessons * 100.0) / totalLessons,
+                totalLessons.equals(completedLessons)
         );
     }
 
@@ -169,7 +175,9 @@ public class EnrollmentService {
         Enrollment enrollment = repository.findByIdAndUserId(enrollmentId, user.getId())
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
 
-        if(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollmentId) < enrollment.getTotalLessons())
+        Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourse().getId());
+
+        if(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollmentId) < totalLessons)
             throw new CourseNotCompletedException("Cannot generate certificate, user did not finish the course.");
 
         if(certificateRepository.existsByEnrollmentId(enrollment.getId()))

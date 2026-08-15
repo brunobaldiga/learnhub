@@ -34,9 +34,6 @@ public class Enrollment {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Column(nullable = false)
-    private Integer totalLessons;
-
     @OneToMany(mappedBy = "enrollment", fetch = FetchType.LAZY)
     private List<LessonProgress> lessonProgresses = new ArrayList<>();
 

@@ -53,7 +53,6 @@ public class EnrollmentRepositoryTest {
         Enrollment enrollment = Enrollment.builder()
                 .user(user)
                 .course(course)
-                .totalLessons(10)
                 .build();
 
         entityManager.persist(user);
@@ -101,8 +100,8 @@ public class EnrollmentRepositoryTest {
         Course savedCourse1 = entityManager.persist(course1);
         Course savedCourse2 = entityManager.persist(course2);
 
-        entityManager.persist(Enrollment.builder().user(savedUser).course(savedCourse1).totalLessons(10).build());
-        entityManager.persist(Enrollment.builder().user(savedUser).course(savedCourse2).totalLessons(20).build());
+        entityManager.persist(Enrollment.builder().user(savedUser).course(savedCourse1).build());
+        entityManager.persist(Enrollment.builder().user(savedUser).course(savedCourse2).build());
 
         entityManager.flush();
         entityManager.clear();
@@ -139,7 +138,6 @@ public class EnrollmentRepositoryTest {
         Enrollment enrollment = Enrollment.builder()
                 .user(savedUser)
                 .course(savedCourse)
-                .totalLessons(10)
                 .build();
 
         Enrollment savedEnrollment = entityManager.persist(enrollment);
@@ -175,7 +173,7 @@ public class EnrollmentRepositoryTest {
 
         Course savedCourse = entityManager.persist(course);
 
-        Enrollment enrollment = Enrollment.builder().user(savedUser).course(savedCourse).totalLessons(10).build();
+        Enrollment enrollment = Enrollment.builder().user(savedUser).course(savedCourse).build();
 
         Enrollment savedEnrollment = entityManager.persist(enrollment);
 

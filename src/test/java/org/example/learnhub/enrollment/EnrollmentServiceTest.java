@@ -130,10 +130,10 @@ public class EnrollmentServiceTest {
         Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).build();
         Page<Enrollment> enrollments = new PageImpl<>(List.of(enrollment));
 
-        EnrollmentResponse response = new EnrollmentResponse(1, 1, "Java Course", "Creator", 10, 0, 0.0, LocalDateTime.now());
+        EnrollmentResponse response = new EnrollmentResponse(1, 1, "Java Course", "Creator", 10, 10, 0.0, LocalDateTime.now());
 
         when(repository.findByUserId(any(), any())).thenReturn(enrollments);
-        when(mapper.toDto(any(), any())).thenReturn(response);
+        when(mapper.toDto(any(), any(), any())).thenReturn(response);
 
         Page<EnrollmentResponse> result = service.findEnrolledCourses(1, 0, 10);
 
@@ -142,23 +142,23 @@ public class EnrollmentServiceTest {
         assertThat(result.getContent().get(0)).isEqualTo(response);
 
         verify(repository).findByUserId(eq(1), any(Pageable.class));
-        verify(mapper).toDto(enrollment, 0);
+        verify(mapper).toDto(enrollment, 10, 10);
     }
 
     @Test
     void shouldReturnEnrollmentSuccessfully() {
         Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).build();
-        EnrollmentResponse response = new EnrollmentResponse(1, 1, "Java Course", "Creator", 10, 0, 0.0, LocalDateTime.now());
+        EnrollmentResponse response = new EnrollmentResponse(1, 1, "Java Course", "Creator", 10, 10, 0.0, LocalDateTime.now());
 
         when(repository.findByIdAndUserId(any(), any())).thenReturn(Optional.of(enrollment));
-        when(mapper.toDto(any(), any())).thenReturn(response);
+        when(mapper.toDto(any(), any(), any())).thenReturn(response);
 
         EnrollmentResponse result = service.findEnrollmentById(user.getId(), enrollment.getId());
 
         assertThat(result).isEqualTo(response);
 
         verify(repository).findByIdAndUserId(user.getId(), enrollment.getId());
-        verify(mapper).toDto(enrollment, 0);
+        verify(mapper).toDto(enrollment, 10, 10);
     }
 
     @Test
@@ -172,7 +172,7 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldCreateLessonProgressSuccessfully() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).build();
         ProgressRequest request = mock(ProgressRequest.class);
         LessonProgress lessonProgress = mock(LessonProgress.class);
 
@@ -206,7 +206,7 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldUpdateLessonProgressSuccessfully() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).build();
         LessonProgress lessonProgress = mock(LessonProgress.class);
         ProgressRequest request = mock(ProgressRequest.class);
 
@@ -228,7 +228,7 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldReturnInvalidProgressWhenPositionExceedsMaximumAllowed() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).build();
         LessonProgress lessonProgress = mock(LessonProgress.class);
         ProgressRequest request = mock(ProgressRequest.class);
 
@@ -248,15 +248,10 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldReturnInvalidProgressWhenPositionExceedsLessonDuration() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
         LessonProgress lessonProgress = mock(LessonProgress.class);
         ProgressRequest request = mock(ProgressRequest.class);
 
         when(lessonGateway.findLessonById(1)).thenReturn(lesson);
-        when(repository.findByCourseIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
-        when(lessonProgressRepository.findByLessonIdAndEnrollmentId(1, enrollment.getId())).thenReturn(Optional.of(lessonProgress));
-        when(lessonProgress.getUpdatedAt()).thenReturn(LocalDateTime.now().minusSeconds(200));
-        when(lessonProgress.getLastPositionInSeconds()).thenReturn(10);
         when(request.lastPositionInSeconds()).thenReturn(150);
 
         assertThatThrownBy(() -> service.progress(user, 1, request))
@@ -268,7 +263,7 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldGenerateCertificateSuccessfully() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).build();
         Certificate certificate = mock(Certificate.class);
         CertificateResponse response = mock(CertificateResponse.class);
 
@@ -276,6 +271,7 @@ public class EnrollmentServiceTest {
         when(certificateRepository.existsByEnrollmentId(1)).thenReturn(false);
         when(certificateMapper.toCertificate(user, enrollment)).thenReturn(certificate);
         when(certificateMapper.toDto(certificate)).thenReturn(response);
+        when(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(any())).thenReturn(10);
 
         CertificateResponse result = service.generateCertificate(user, 1);
 
@@ -301,7 +297,7 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldReturnExceptionWhenCourseIsNotCompleted() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).build();
 
         when(repository.findByIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
 
@@ -315,10 +311,11 @@ public class EnrollmentServiceTest {
 
     @Test
     void shouldReturnExceptionWhenCertificateAlreadyExists() {
-        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).totalLessons(10).build();
+        Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).build();
 
         when(repository.findByIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
         when(certificateRepository.existsByEnrollmentId(1)).thenReturn(true);
+        when(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(any())).thenReturn(10);
 
         assertThatThrownBy(() -> service.generateCertificate(user, 1))
                 .isInstanceOf(DuplicateCertificateException.class)
