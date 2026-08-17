@@ -14,7 +14,7 @@ public record SectionRequest(
         )
         String title,
 
-        @Min(0) @Max(20)
+        @Min(1) @Max(20)
         Integer position
 ) {
 }

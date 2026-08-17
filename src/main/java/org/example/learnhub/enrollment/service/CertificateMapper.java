@@ -14,12 +14,11 @@ public class CertificateMapper {
     public Certificate toCertificate(User user, Enrollment enrollment) {
         return Certificate.builder()
                 .enrollment(enrollment)
-                .user(user)
                 .fullNameAtIssuance(user.getFullName())
                 .courseTitleAtIssuance(enrollment.getCourse().getTitle())
-                .courseLengthInHoursAtIssuance(enrollment.getCourse().calculateDuration())
+                .courseLengthInHoursAtIssuance(enrollment.getCourse().calculateDuration() / 3600)
                 .issuedAt(LocalDate.now())
-            .build();
+                .build();
     }
 
     public CertificateResponse toDto(Certificate certificate) {

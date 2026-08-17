@@ -62,6 +62,11 @@ public class Course {
         totalReviews++;
     }
 
+    public void removeReview(Integer rating) {
+        averageRating = (averageRating * totalReviews - rating) / (totalReviews - 1);
+        totalReviews--;
+    }
+
     public Integer calculateDuration() {
         return sections.stream()
                 .flatMap(section -> section.getLessons().stream())

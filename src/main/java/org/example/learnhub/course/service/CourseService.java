@@ -4,13 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
-import org.example.learnhub.gateway.PaymentGateway;
-import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.repository.CourseSpecs;
 import org.example.learnhub.exception.CourseAccessDenied;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.exception.MaxSectionsReached;
+import org.example.learnhub.gateway.PaymentGateway;
+import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.section.service.SectionMapper;
@@ -88,7 +88,8 @@ public class CourseService {
         Course course = repository.findByIdAndCreatorId(courseId, user.getId())
                 .orElseThrow(() -> new EntityNotFound("Course not found."));
 
-        if (course.getSections().size() >= 20) throw new MaxSectionsReached("Course cannot have more than 20 sections.");
+        if(course.getSections().size() >= 20)
+            throw new MaxSectionsReached("Course cannot have more than 20 sections.");
 
         Section section = sectionGateway.createSection(request, course);
         course.getSections().add(section);
@@ -104,7 +105,7 @@ public class CourseService {
         boolean hasPaid = paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
         boolean isOwner = course.getCreator().getId().equals(user.getId());
 
-        if (!hasPaid && !isOwner) throw new CourseAccessDenied("User haven't paid for the course");
+        if(!hasPaid && !isOwner) throw new CourseAccessDenied("User haven't paid for the course");
 
         return course.getSections().stream()
                 .map(sectionGateway::toDto)

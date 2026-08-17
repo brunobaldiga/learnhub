@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class SectionController {
     public ResponseEntity<SectionResponse> createLesson(
             @AuthenticationPrincipal User user,
             @PathVariable Integer sectionId,
-            @RequestBody LessonRequest request
+            @RequestBody @Validated LessonRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(service.createLesson(user, sectionId, request));

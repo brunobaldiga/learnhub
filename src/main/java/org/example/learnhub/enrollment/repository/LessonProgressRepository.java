@@ -12,5 +12,5 @@ public interface LessonProgressRepository extends JpaRepository<LessonProgress, 
 
     Integer countByEnrollmentIdAndCompletedTrue(Integer id);
 
-    boolean existsByLessonIdAndEnrollmentId(Integer id, Integer id1);
+    boolean existsByLessonIdAndEnrollmentId(Integer lessonId, Integer enrollmentId);
 }

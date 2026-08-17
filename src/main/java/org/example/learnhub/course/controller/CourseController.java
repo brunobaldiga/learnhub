@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.service.CourseReviewService;
@@ -179,7 +178,7 @@ public class CourseController {
     public ResponseEntity<CourseReviewResponse> createCourseReview(
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId,
-            @RequestBody @Valid CourseReviewRequest request
+            @RequestBody @Validated CourseReviewRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(courseReviewService.createCourseReview(user, courseId, request));

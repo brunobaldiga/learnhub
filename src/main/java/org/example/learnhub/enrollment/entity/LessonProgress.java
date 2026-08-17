@@ -31,8 +31,8 @@ public class LessonProgress {
     @JoinColumn(name = "lesson_id", nullable = false)
     private Lesson lesson;
 
-    @Column(nullable = false)
-    private Boolean completed;
+    @Builder.Default
+    private Boolean completed = false;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

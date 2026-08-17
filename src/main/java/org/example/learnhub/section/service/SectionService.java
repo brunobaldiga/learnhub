@@ -53,7 +53,12 @@ public class SectionService {
     public void deleteLesson(User user, Integer sectionId, Integer lessonId) {
         Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
 
-        section.getLessons().removeIf(lesson -> lesson.getId().equals(lessonId));
+        Lesson lesson = section.getLessons()
+                .stream()
+                .filter(l -> l.getId().equals(lessonId))
+                .findFirst().orElseThrow(() -> new EntityNotFound("Lesson not found."));
+
+        section.getLessons().remove(lesson);
 
         repository.save(section);
     }

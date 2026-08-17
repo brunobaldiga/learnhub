@@ -35,6 +35,7 @@ public class Enrollment {
     private Course course;
 
     @OneToMany(mappedBy = "enrollment", fetch = FetchType.LAZY)
+    @Builder.Default
     private List<LessonProgress> lessonProgresses = new ArrayList<>();
 
     @CreationTimestamp

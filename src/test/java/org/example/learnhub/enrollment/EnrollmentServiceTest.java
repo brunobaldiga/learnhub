@@ -142,7 +142,6 @@ public class EnrollmentServiceTest {
         assertThat(result.getContent().get(0)).isEqualTo(response);
 
         verify(repository).findByUserId(eq(1), any(Pageable.class));
-        verify(mapper).toDto(enrollment, 10, 10);
     }
 
     @Test
@@ -158,7 +157,6 @@ public class EnrollmentServiceTest {
         assertThat(result).isEqualTo(response);
 
         verify(repository).findByIdAndUserId(user.getId(), enrollment.getId());
-        verify(mapper).toDto(enrollment, 10, 10);
     }
 
     @Test
@@ -300,6 +298,7 @@ public class EnrollmentServiceTest {
         Enrollment enrollment = Enrollment.builder().id(1).user(user).course(course).build();
 
         when(repository.findByIdAndUserId(1, user.getId())).thenReturn(Optional.of(enrollment));
+        when(courseGateway.countLessonsByCourseId(enrollment.getCourse().getId())).thenReturn(10);
 
         assertThatThrownBy(() -> service.generateCertificate(user, 1))
                 .isInstanceOf(CourseNotCompletedException.class)

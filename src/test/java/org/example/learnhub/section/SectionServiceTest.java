@@ -58,18 +58,19 @@ public class SectionServiceTest {
     void shouldCreateLessonSuccessfully() {
         Section section = Section.builder().id(1).lessons(new ArrayList<>()).build();
 
-        LessonRequest request = new LessonRequest("https://youtube.com/video", 0);
+        LessonRequest request = new LessonRequest("https://youtube.com/video", 120, 1);
 
         Lesson lesson = Lesson.builder()
                 .id(1)
                 .contentUrl(request.contentUrl())
                 .position(request.position())
+                .duration(request.duration())
                 .build();
 
         SectionResponse response = new SectionResponse(
                 1,
                 "Section 1",
-                0,
+                1,
                 List.of(
                         new LessonResponse(
                                 1,
@@ -94,7 +95,7 @@ public class SectionServiceTest {
 
     @Test
     void shouldReturn404WhenSectionNotFoundOnCreateLesson() {
-        LessonRequest request = new LessonRequest("https://youtube.com/video", 0);
+        LessonRequest request = new LessonRequest("https://youtube.com/video", 120, 1);
 
         when(repository.findByIdAndCourseCreatorId(any(), any())).thenReturn(Optional.empty());
 

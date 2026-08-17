@@ -6,6 +6,7 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.example.learnhub.user.entity.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -14,7 +15,7 @@ import java.time.ZoneOffset;
 
 @Service
 public class TokenService {
-    @Value("${JWT_SECRET:secret-key}")
+    @Value("${api.security.token.secret}")
     private String secret;
 
 
@@ -28,7 +29,7 @@ public class TokenService {
                     .verify(token)
                     .getSubject();
         } catch (JWTVerificationException exception) {
-            return "";
+            throw new BadCredentialsException("Invalid JWT token");
         }
     }
 

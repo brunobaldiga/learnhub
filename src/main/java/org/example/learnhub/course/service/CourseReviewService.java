@@ -9,29 +9,33 @@ import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseReview;
 import org.example.learnhub.course.repository.CourseReviewRepository;
 import org.example.learnhub.course.repository.CourseReviewSpecs;
+import org.example.learnhub.enrollment.entity.Enrollment;
 import org.example.learnhub.exception.CourseReviewNotAllowedException;
 import org.example.learnhub.exception.DuplicateReviewException;
 import org.example.learnhub.exception.ReviewOwnershipException;
 import org.example.learnhub.exception.SelfReviewNotAllowedException;
 import org.example.learnhub.gateway.CourseGateway;
-import org.example.learnhub.gateway.PaymentGateway;
+import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class CourseReviewService {
     private final CourseReviewRepository repository;
     private final CourseGateway courseGateway;
-    private final PaymentGateway paymentGateway;
+    private final EnrollmentGateway enrollmentGateway;
     private final CourseReviewMapper mapper;
 
     @Transactional
     public CourseReviewResponse createCourseReview(User user, Integer courseId, CourseReviewRequest request) {
         Course course = courseGateway.findCourseById(user, courseId);
+        Optional<Enrollment> enrollment = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), courseId);
 
         if(course.getCreator().getId().equals(user.getId()))
             throw new SelfReviewNotAllowedException("Course creator cannot review its own course.");
@@ -39,8 +43,8 @@ public class CourseReviewService {
         if(repository.existsByAuthorIdAndCourseId(user.getId(), courseId))
             throw new DuplicateReviewException("User can only review once.");
 
-        if(!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId)) {
-            throw new CourseReviewNotAllowedException("User hasn't bought the course.");
+        if(enrollment.isEmpty()) {
+            throw new CourseReviewNotAllowedException("User hasn't enrolled the course.");
         }
 
         CourseReview courseReview = mapper.toCourseReview(user, course, request);
@@ -61,12 +65,15 @@ public class CourseReviewService {
                 .map(mapper::toDto);
     }
 
+    @Transactional
     public void deleteReviewById(User user, Integer courseId, Integer courseReviewId) {
         CourseReview courseReview = repository.findByIdAndCourseId(courseReviewId, courseId);
 
         if(!courseReview.getAuthor().getId().equals(user.getId()))
             throw new ReviewOwnershipException("User is not the author of the review");
 
+
         repository.delete(courseReview);
+        courseReview.getCourse().removeReview(courseReview.getRating());
     }
 }

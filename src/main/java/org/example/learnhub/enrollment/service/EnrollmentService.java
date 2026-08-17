@@ -64,9 +64,9 @@ public class EnrollmentService {
 
         return repository.findByUserId(userId, pageable)
                 .map(enrollment -> mapper.toDto(
-                            enrollment,
-                            lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId()),
-                            courseGateway.countLessonsByCourseId(enrollment.getCourse().getId())
+                                enrollment,
+                                lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId()),
+                                courseGateway.countLessonsByCourseId(enrollment.getCourse().getId())
                         )
                 );
     }
@@ -89,7 +89,7 @@ public class EnrollmentService {
 
         Integer completedLessons = lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId());
 
-        if (!lessonProgressRepository.existsByLessonIdAndEnrollmentId(lessonId, user.getId())) {
+        if(!lessonProgressRepository.existsByLessonIdAndEnrollmentId(lessonId, enrollment.getId())) {
             LocalDateTime now = LocalDateTime.now();
 
             LessonProgress newLessonProgress = LessonProgress.builder()
@@ -116,7 +116,8 @@ public class EnrollmentService {
     public ProgressResponse progress(User user, Integer lessonId, ProgressRequest request) {
         Lesson lesson = lessonGateway.findLessonById(lessonId);
 
-        if (request.lastPositionInSeconds() > lesson.getDuration()) throw new InvalidLessonProgressException("Progress cannot exceed the lesson duration.");
+        if(request.lastPositionInSeconds() > lesson.getDuration())
+            throw new InvalidLessonProgressException("Progress cannot exceed the lesson duration.");
 
         Enrollment enrollment = repository.findByCourseIdAndUserId(lesson.getSection().getCourse().getId(), user.getId())
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
@@ -124,21 +125,6 @@ public class EnrollmentService {
         Optional<LessonProgress> existing = lessonProgressRepository.findByLessonIdAndEnrollmentId(lessonId, enrollment.getId());
 
         Integer completedLessons = lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId());
-
-        if(existing.isEmpty()) {
-            LessonProgress newLessonProgress = lessonProgressMapper.toLessonProgress(request, enrollment, lesson);
-
-            lessonProgressRepository.save(newLessonProgress);
-
-            Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourse().getId());
-
-            return new ProgressResponse(
-                    completedLessons,
-                    totalLessons,
-                    (completedLessons * 100.0) / totalLessons,
-                    totalLessons.equals(completedLessons)
-            );
-        }
 
         LessonProgress lessonProgress = existing.get();
 

@@ -1,257 +1,157 @@
-CREATE TABLE users
+create table users
 (
-    id          SERIAL PRIMARY KEY,
-    username    VARCHAR(255) NOT NULL,
-    email       VARCHAR(255) NOT NULL,
-    full_name   VARCHAR(255) NOT NULL,
-    password    VARCHAR(255) NOT NULL,
-    role_type   VARCHAR(20)  NOT NULL,
-    keycloak_id VARCHAR(255),
-    created_at  TIMESTAMP(6) NOT NULL
+    id          serial primary key,
+    username    varchar(255) not null,
+    email       varchar(255) not null,
+    full_name   varchar(255) not null,
+    password    varchar(255) not null,
+    role_type   varchar(20)  not null,
+    keycloak_id varchar(255),
+    created_at  timestamp(6) not null
 );
 
-CREATE UNIQUE INDEX uk_users_username_lower
-    ON users (LOWER(username));
+create unique index uk_users_username_lower on users (lower(username));
+create unique index uk_users_email_lower on users (lower(email));
 
-CREATE UNIQUE INDEX uk_users_email_lower
-    ON users (LOWER(email));
-
-CREATE TABLE courses
+create table courses
 (
-    id             SERIAL PRIMARY KEY,
-    user_id        INTEGER          NOT NULL,
-    title          VARCHAR(255)     NOT NULL,
-    status         VARCHAR(20)      NOT NULL,
-    price          NUMERIC(38, 2)   NOT NULL,
-    sales_amount   INTEGER          NOT NULL,
-    average_rating DOUBLE PRECISION NOT NULL DEFAULT 0,
-    total_reviews  INTEGER          NOT NULL DEFAULT 0,
-    created_at     TIMESTAMP(6)     NOT NULL,
+    id             serial primary key,
+    user_id        integer          not null,
+    title          varchar(255)     not null,
+    status         varchar(20)      not null,
+    price          numeric(38, 2)   not null,
+    sales_amount   integer          not null,
+    average_rating double precision not null default 0,
+    total_reviews  integer          not null default 0,
+    created_at     timestamp(6)     not null,
 
-    CONSTRAINT fk_course_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id)
+    constraint fk_course_user foreign key (user_id) references users (id)
 );
 
-CREATE TABLE enrollments
+create table enrollments
 (
-    id                SERIAL PRIMARY KEY,
-    user_id           INTEGER      NOT NULL,
-    course_id         INTEGER      NOT NULL,
-    completed_lessons INTEGER      NOT NULL DEFAULT 0,
-    total_lessons     INTEGER      NOT NULL,
-    enrolled_at       TIMESTAMP(6) NOT NULL,
+    id          serial primary key,
+    user_id     integer      not null,
+    course_id   integer      not null,
+    enrolled_at timestamp(6) not null,
 
-    CONSTRAINT fk_enrollment_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id),
-
-    CONSTRAINT fk_enrollment_course
-        FOREIGN KEY (course_id)
-            REFERENCES courses (id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT uk_enrollment_user_course
-        UNIQUE (user_id, course_id)
+    constraint fk_enrollment_user foreign key (user_id) references users (id),
+    constraint fk_enrollment_course foreign key (course_id) references courses (id) on delete cascade,
+    constraint uk_enrollment_user_course unique (user_id, course_id)
 );
 
-CREATE TABLE course_reviews
+create table course_reviews
 (
-    id         SERIAL PRIMARY KEY,
-    course_id  INTEGER       NOT NULL,
-    author_id  INTEGER       NOT NULL,
-    rating     INTEGER       NOT NULL,
-    comment    VARCHAR(1000) NOT NULL,
-    created_at TIMESTAMP(6)  NOT NULL,
+    id         serial primary key,
+    course_id  integer      not null,
+    author_id  integer      not null,
+    rating     integer      not null,
+    comment    varchar(500) not null,
+    created_at timestamp(6) not null,
 
-    CONSTRAINT fk_course_review_course
-        FOREIGN KEY (course_id)
-            REFERENCES courses (id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT fk_course_review_author
-        FOREIGN KEY (author_id)
-            REFERENCES users (id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT chk_course_review_rating
-        CHECK (rating BETWEEN 1 AND 5),
-
-    CONSTRAINT uk_course_review_author_course
-        UNIQUE (author_id, course_id)
+    constraint fk_course_review_course foreign key (course_id) references courses (id) on delete cascade,
+    constraint fk_course_review_author foreign key (author_id) references users (id) on delete cascade,
+    constraint chk_course_review_rating check (rating between 1 and 5),
+    constraint uk_course_review_author_course unique (author_id, course_id)
 );
 
-CREATE INDEX idx_course_reviews_course_id
-    ON course_reviews (course_id);
+create index idx_course_reviews_course_id on course_reviews (course_id);
+create index idx_course_reviews_author_id on course_reviews (author_id);
+create index idx_course_reviews_created_at on course_reviews (created_at);
 
-CREATE INDEX idx_course_reviews_author_id
-    ON course_reviews (author_id);
-
-CREATE INDEX idx_course_reviews_created_at
-    ON course_reviews (created_at);
-
-CREATE TABLE payments
+create table payments
 (
-    id           SERIAL PRIMARY KEY,
-    user_id      INTEGER        NOT NULL,
-    course_id    INTEGER        NOT NULL,
-    course_title VARCHAR(255)   NOT NULL,
-    course_price NUMERIC(38, 2) NOT NULL,
-    currency     VARCHAR(50)    NOT NULL,
-    created_at   TIMESTAMP(6)   NOT NULL,
+    id           serial primary key,
+    user_id      integer        not null,
+    course_id    integer        not null,
+    course_title varchar(255)   not null,
+    course_price numeric(38, 2) not null,
+    currency     varchar(50)    not null,
+    created_at   timestamp(6)   not null,
 
-    CONSTRAINT fk_payment_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id),
-
-    CONSTRAINT fk_payment_course
-        FOREIGN KEY (course_id)
-            REFERENCES courses (id)
+    constraint fk_payment_user foreign key (user_id) references users (id),
+    constraint fk_payment_course foreign key (course_id) references courses (id),
+    constraint uk_payment_user_course unique (user_id, course_id)
 );
 
-CREATE INDEX idx_payments_user_id
-    ON payments (user_id);
+create index idx_payment_user_id on payments (user_id);
+create index idx_payments_course_id on payments (course_id);
+create index idx_payments_created_at on payments (created_at);
 
-CREATE INDEX idx_payments_course_id
-    ON payments (course_id);
-
-CREATE INDEX idx_payments_created_at
-    ON payments (created_at);
-
-CREATE TABLE sections
+create table sections
 (
-    id         SERIAL PRIMARY KEY,
-    title      VARCHAR(255) NOT NULL,
-    position   INTEGER      NOT NULL,
-    course_id  INTEGER      NOT NULL,
-    created_at TIMESTAMP(6) NOT NULL,
+    id         serial primary key,
+    title      varchar(255) not null,
+    position   integer      not null,
+    course_id  integer      not null,
+    created_at timestamp(6) not null,
 
-    CONSTRAINT fk_section_course
-        FOREIGN KEY (course_id)
-            REFERENCES courses (id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT uk_section_course_index
-        UNIQUE (course_id, position)
-);
-CREATE TABLE lessons
-(
-    id          SERIAL PRIMARY KEY,
-    section_id  INTEGER       NOT NULL,
-    content_url VARCHAR(1000) NOT NULL,
-    duration    INTEGER       NOT NULL,
-    position    INTEGER       NOT NULL,
-    created_at  TIMESTAMP(6)  NOT NULL,
-
-    CONSTRAINT fk_lesson_section
-        FOREIGN KEY (section_id)
-            REFERENCES sections (id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT chk_lesson_duration
-        CHECK (duration > 0),
-
-    CONSTRAINT uk_lesson_section_index
-        UNIQUE (section_id, position)
+    constraint fk_section_course foreign key (course_id) references courses (id) on delete cascade,
+    constraint uk_section_course_index unique (course_id, position)
 );
 
-CREATE TABLE lesson_progress
+create table lessons
 (
-    id                       SERIAL PRIMARY KEY,
+    id          serial primary key,
+    section_id  integer       not null,
+    content_url varchar(1000) not null,
+    duration    integer       not null,
+    position    integer       not null,
+    created_at  timestamp(6)  not null,
 
-    enrollment_id            INTEGER      NOT NULL,
-    lesson_id                INTEGER      NOT NULL,
-
-    last_position_in_seconds INTEGER      NOT NULL DEFAULT 0,
-
-    created_at               TIMESTAMP(6) NOT NULL,
-    updated_at               TIMESTAMP(6) NOT NULL,
-
-    CONSTRAINT fk_lesson_progress_enrollment
-        FOREIGN KEY (enrollment_id)
-            REFERENCES enrollments (id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT fk_lesson_progress_lesson
-        FOREIGN KEY (lesson_id)
-            REFERENCES lessons (id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT uk_lesson_progress_enrollment_lesson
-        UNIQUE (enrollment_id, lesson_id),
-
-    CONSTRAINT chk_last_position
-        CHECK (last_position_in_seconds >= 0)
+    constraint fk_lesson_section foreign key (section_id) references sections (id) on delete cascade,
+    constraint chk_lesson_duration check (duration > 0),
+    constraint uk_lesson_section_index unique (section_id, position)
 );
 
-CREATE INDEX idx_lesson_progress_enrollment
-    ON lesson_progress (enrollment_id);
-
-CREATE INDEX idx_lesson_progress_lesson
-    ON lesson_progress (lesson_id);
-
-CREATE INDEX idx_courses_user
-    ON courses (user_id);
-
-CREATE INDEX idx_sections_course
-    ON sections (course_id);
-
-CREATE INDEX idx_lessons_section
-    ON lessons (section_id);
-
-CREATE INDEX idx_enrollments_user
-    ON enrollments (user_id);
-
-CREATE INDEX idx_enrollments_course
-    ON enrollments (course_id);
-
-CREATE TABLE certificates
+create table lesson_progress
 (
-    id                                 UUID PRIMARY KEY,
+    id                       serial primary key,
+    enrollment_id            integer      not null,
+    lesson_id                integer      not null,
+    completed                boolean      not null default false,
+    last_position_in_seconds integer      not null default 0,
+    created_at               timestamp(6) not null,
+    updated_at               timestamp(6) not null,
 
-    enrollment_id                      INTEGER      NOT NULL,
-    user_id                            INTEGER      NOT NULL,
-
-    full_name_at_issuance              VARCHAR(255) NOT NULL,
-    course_title_at_issuance           VARCHAR(255) NOT NULL,
-    course_length_in_hours_at_issuance INTEGER      NOT NULL,
-
-    issued_at                          DATE         NOT NULL,
-
-    CONSTRAINT fk_certificate_enrollment
-        FOREIGN KEY (enrollment_id)
-            REFERENCES enrollments (id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT fk_certificate_user
-        FOREIGN KEY (user_id)
-            REFERENCES users (id)
-            ON DELETE CASCADE,
-
-    CONSTRAINT uk_certificate_enrollment_user
-        UNIQUE (enrollment_id, user_id)
+    constraint fk_lesson_progress_enrollment foreign key (enrollment_id) references enrollments (id) on delete cascade,
+    constraint fk_lesson_progress_lesson foreign key (lesson_id) references lessons (id) on delete cascade,
+    constraint uk_lesson_progress_enrollment_lesson unique (enrollment_id, lesson_id),
+    constraint chk_last_position check (last_position_in_seconds >= 0)
 );
 
-CREATE INDEX idx_certificates_user
-    ON certificates (user_id);
+create index idx_lesson_progress_enrollment on lesson_progress (enrollment_id);
+create index idx_lesson_progress_lesson on lesson_progress (lesson_id);
+create index idx_course_user on courses (user_id);
 
-CREATE INDEX idx_certificates_enrollment
-    ON certificates (enrollment_id);
+create index idx_section_course on sections (course_id);
+create index idx_lessons_section on lessons (section_id);
+create index idx_enrollments_user on enrollments (user_id);
+create index idx_enrollments_course on enrollments (course_id);
 
-INSERT INTO users (username,
-                   email,
-                   full_name,
-                   password,
-                   role_type,
-                   keycloak_id,
-                   created_at)
-VALUES ('user',
+create table certificates
+(
+    id                                 uuid primary key,
+    enrollment_id                      integer      not null,
+    full_name_at_issuance              varchar(255) not null,
+    course_title_at_issuance           varchar(255) not null,
+    course_length_in_hours_at_issuance integer      not null,
+    issued_at                          date         not null,
+
+    constraint fk_certificate_enrollment foreign key (enrollment_id) references enrollments (id) on delete cascade
+);
+
+create index idx_certificates_enrollment on certificates (enrollment_id);
+
+insert into users (username, email, full_name, password, role_type, keycloak_id, created_at)
+values ('user',
         'user@learnhub.com',
         'John Doe',
         '$2a$10$7EqJtq98hPqEX7fNZaFWoOHi7x6TSGT.bVfVki71RJKVQ1BM8DT8e',
         'USER',
         NULL,
         CURRENT_TIMESTAMP),
+
        ('creator',
         'creator@learnhub.com',
         'Jane Doe',
@@ -267,15 +167,9 @@ VALUES ('user',
         NULL,
         CURRENT_TIMESTAMP);
 
-INSERT INTO courses (user_id,
-                     title,
-                     status,
-                     price,
-                     sales_amount,
-                     average_rating,
-                     total_reviews,
-                     created_at)
-VALUES (2,
+
+insert into courses (user_id, title, status, price, sales_amount, average_rating, total_reviews, created_at)
+values (2,
         'Spring Boot Masterclass',
         'PUBLIC',
         99.99,
@@ -292,11 +186,8 @@ VALUES (2,
         0,
         CURRENT_TIMESTAMP);
 
-INSERT INTO sections (title,
-                      position,
-                      course_id,
-                      created_at)
-VALUES ('Introduction',
+insert into sections (title, position, course_id, created_at)
+values ('Introduction',
         1,
         1,
         CURRENT_TIMESTAMP),
@@ -321,12 +212,8 @@ VALUES ('Introduction',
         2,
         CURRENT_TIMESTAMP);
 
-INSERT INTO lessons (section_id,
-                     content_url,
-                     duration,
-                     position,
-                     created_at)
-VALUES (1, 'https://www.youtube.com/watch?v=9SGDpanrc8U', 480, 1, CURRENT_TIMESTAMP),
+insert into lessons (section_id, content_url, duration, position, created_at)
+values (1, 'https://www.youtube.com/watch?v=9SGDpanrc8U', 480, 1, CURRENT_TIMESTAMP),
        (1, 'https://www.youtube.com/watch?v=vtPkZShrvXQ', 720, 2, CURRENT_TIMESTAMP),
        (1, 'https://www.youtube.com/watch?v=HGTJBPNC-Gw', 540, 3, CURRENT_TIMESTAMP),
 

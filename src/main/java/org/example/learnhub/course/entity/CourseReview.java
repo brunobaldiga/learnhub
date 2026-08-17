@@ -30,11 +30,11 @@ public class CourseReview {
     private User author;
 
     @Column(nullable = false)
-    @Min(0)
+    @Min(1)
     @Max(5)
     private Integer rating;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 500)
     private String comment;
 
     @CreationTimestamp
