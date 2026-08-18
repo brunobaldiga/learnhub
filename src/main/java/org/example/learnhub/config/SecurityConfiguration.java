@@ -49,14 +49,14 @@ public class SecurityConfiguration {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(8);
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public RoleHierarchy roleHierarchy() {
         return RoleHierarchyImpl.fromHierarchy("""
-                ROLE_ADMIN > ROLE_CREATOR
-                ROLE_CREATOR > ROLE_USER
-            """);
+                    ROLE_ADMIN > ROLE_CREATOR
+                    ROLE_CREATOR > ROLE_USER
+                """);
     }
 }

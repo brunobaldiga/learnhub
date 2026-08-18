@@ -138,7 +138,8 @@ create table certificates
     course_length_in_hours_at_issuance integer      not null,
     issued_at                          date         not null,
 
-    constraint fk_certificate_enrollment foreign key (enrollment_id) references enrollments (id) on delete cascade
+    constraint fk_certificate_enrollment foreign key (enrollment_id) references enrollments (id) on delete cascade,
+    constraint uk_certificate_enrollment unique (enrollment_id)
 );
 
 create index idx_certificates_enrollment on certificates (enrollment_id);

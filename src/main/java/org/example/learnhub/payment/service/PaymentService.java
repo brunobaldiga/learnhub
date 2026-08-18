@@ -1,6 +1,5 @@
 package org.example.learnhub.payment.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
@@ -17,6 +16,7 @@ import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
@@ -55,6 +55,7 @@ public class PaymentService {
         return mapper.toDto(payment);
     }
 
+    @Transactional(readOnly = true)
     public Page<PurchaseResponse> history(User user, LocalDate startDate, LocalDate endDate, Pageable pageable) {
         return repository.findAll(
                 PaymentSpecification.filter(
@@ -66,6 +67,7 @@ public class PaymentService {
         ).map(mapper::toDto);
     }
 
+    @Transactional(readOnly = true)
     public PurchaseResponse findById(User user, Integer paymentId) {
         return repository.findByIdAndUserId(paymentId, user.getId())
                 .map(mapper::toDto)

@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -36,11 +37,11 @@ public class EnrollmentService {
     private final CourseGateway courseGateway;
     private final PaymentGateway paymentGateway;
     private final LessonGateway lessonGateway;
-    private final LessonProgressMapper lessonProgressMapper;
     private final LessonProgressRepository lessonProgressRepository;
     private final CertificateRepository certificateRepository;
     private final CertificateMapper certificateMapper;
 
+    @Transactional
     public void enroll(User user, Integer courseId) {
         Course course = courseGateway.findCourseById(user, courseId);
 
@@ -59,6 +60,7 @@ public class EnrollmentService {
         repository.save(courseProgress);
     }
 
+    @Transactional(readOnly = true)
     public Page<EnrollmentResponse> findEnrolledCourses(Integer userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
@@ -71,6 +73,7 @@ public class EnrollmentService {
                 );
     }
 
+    @Transactional(readOnly = true)
     public EnrollmentResponse findEnrollmentById(Integer userId, Integer enrollmentId) {
         Enrollment enrollment = repository.findByIdAndUserId(enrollmentId, userId)
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
@@ -81,6 +84,7 @@ public class EnrollmentService {
         return mapper.toDto(enrollment, completedLessons, totalLessons);
     }
 
+    @Transactional
     public ProgressResponse startLesson(User user, Integer lessonId) {
         Lesson lesson = lessonGateway.findLessonById(lessonId);
 
@@ -113,6 +117,7 @@ public class EnrollmentService {
         );
     }
 
+    @Transactional
     public ProgressResponse progress(User user, Integer lessonId, ProgressRequest request) {
         Lesson lesson = lessonGateway.findLessonById(lessonId);
 
@@ -122,11 +127,10 @@ public class EnrollmentService {
         Enrollment enrollment = repository.findByCourseIdAndUserId(lesson.getSection().getCourse().getId(), user.getId())
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
 
-        Optional<LessonProgress> existing = lessonProgressRepository.findByLessonIdAndEnrollmentId(lessonId, enrollment.getId());
+        LessonProgress lessonProgress = lessonProgressRepository.findByLessonIdAndEnrollmentId(lessonId, enrollment.getId())
+                .orElseThrow(() -> new EntityNotFound("Lesson progress not found."));
 
         Integer completedLessons = lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId());
-
-        LessonProgress lessonProgress = existing.get();
 
         long elapsedSeconds = Duration.between(lessonProgress.getUpdatedAt(), LocalDateTime.now()).toSeconds();
         int maxAllowed = lessonProgress.getLastPositionInSeconds() + (int) elapsedSeconds + 10;
@@ -139,7 +143,7 @@ public class EnrollmentService {
         lessonProgress.setUpdatedAt(LocalDateTime.now());
         lessonProgress.setLastPositionInSeconds(request.lastPositionInSeconds());
 
-        if(lessonProgress.getLastPositionInSeconds() >= lesson.getDuration() * .9) {
+        if(!lessonProgress.getCompleted() && lessonProgress.getLastPositionInSeconds() >= lesson.getDuration() * .9) {
             lessonProgress.setCompleted(true);
             completedLessons++;
 
@@ -157,6 +161,7 @@ public class EnrollmentService {
         );
     }
 
+    @Transactional
     public CertificateResponse generateCertificate(User user, Integer enrollmentId) {
         Enrollment enrollment = repository.findByIdAndUserId(enrollmentId, user.getId())
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
@@ -176,6 +181,7 @@ public class EnrollmentService {
         return certificateMapper.toDto(certificate);
     }
 
+    @Transactional(readOnly = true)
     public CertificateResponse findCertificateById(UUID certificateId) {
         return certificateMapper.toDto(
                 certificateRepository.findById(certificateId)
@@ -183,6 +189,7 @@ public class EnrollmentService {
         );
     }
 
+    @Transactional(readOnly = true)
     public Optional<Enrollment> findEnrollmentEntityByUserIdAndCourseId(Integer userId, Integer courseId) {
         return repository.findByUserIdAndCourseId(userId, courseId);
     }

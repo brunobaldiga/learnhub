@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class CourseService {
     private final PaymentGateway paymentGateway;
     private final SectionMapper sectionMapper;
 
+    @Transactional
     public CourseResponse create(User user, CourseRequest request) {
         Course course = mapper.toCourse(request);
         course.setCreator(user);
@@ -40,6 +42,7 @@ public class CourseService {
         return mapper.toDto(course);
     }
 
+    @Transactional(readOnly = true)
     public Page<CourseResponse> search(CourseFilter filter, Pageable pageable) {
         Specification<Course> specification = Specification
                 .where(CourseSpecs.withFilter(filter))
@@ -50,6 +53,7 @@ public class CourseService {
         return courses.map(mapper::toDto);
     }
 
+    @Transactional(readOnly = true)
     public Page<CourseResponse> findCourses(User user, CourseFilter filter, Pageable pageable) {
         Specification<Course> specification = Specification
                 .where(CourseSpecs.withFilter(filter))
@@ -60,6 +64,7 @@ public class CourseService {
         return courses.map(mapper::toDto);
     }
 
+    @Transactional(readOnly = true)
     public CourseResponse findCourseById(User user, Integer courseId) {
         return mapper.toDto(findCourseEntityById(user, courseId));
     }
@@ -70,20 +75,22 @@ public class CourseService {
                 .orElseThrow(() -> new EntityNotFound("Course not found."));
     }
 
+    @Transactional(readOnly = true)
     public Integer countLessonsByCourseId(Integer courseId) {
         return repository.countLessonsByCourseId(courseId);
     }
 
+    @Transactional
     public CourseResponse updateCourseById(User user, Integer courseId, UpdateCourseRequest request) {
         Course course = repository.findByIdAndCreatorId(courseId, user.getId())
                 .orElseThrow(() -> new EntityNotFound("Course not found."));
 
         mapper.updateCourse(course, request);
-        repository.save(course);
 
         return mapper.toDto(course);
     }
 
+    @Transactional
     public SectionResponse createCourseSection(User user, Integer courseId, SectionRequest request) {
         Course course = repository.findByIdAndCreatorId(courseId, user.getId())
                 .orElseThrow(() -> new EntityNotFound("Course not found."));
@@ -99,6 +106,7 @@ public class CourseService {
         return sectionGateway.toDto(section);
     }
 
+    @Transactional(readOnly = true)
     public List<SectionResponse> findCourseSection(User user, Integer courseId) {
         Course course = findCourseEntityById(user, courseId);
 
@@ -112,6 +120,7 @@ public class CourseService {
                 .toList();
     }
 
+    @Transactional
     public SectionResponse updateCourseSection(User user, Integer sectionId, SectionRequest request) {
         Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
 
@@ -123,6 +132,7 @@ public class CourseService {
         return sectionMapper.toDto(section);
     }
 
+    @Transactional
     public void deleteCourseSection(User user, Integer sectionId) {
         Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
         sectionGateway.deleteSection(section);

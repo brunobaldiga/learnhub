@@ -1,6 +1,5 @@
 package org.example.learnhub.course.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.CourseReviewFilter;
 import org.example.learnhub.course.dto.CourseReviewRequest;
@@ -21,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -56,6 +56,7 @@ public class CourseReviewService {
         return mapper.toDto(courseReview);
     }
 
+    @Transactional(readOnly = true)
     public Page<CourseReviewResponse> findCourseReviews(Integer courseId, CourseReviewFilter filter, Pageable pageable) {
         Specification<CourseReview> specification = Specification
                 .where(CourseReviewSpecs.withFilter(filter))

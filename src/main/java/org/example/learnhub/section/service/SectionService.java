@@ -16,6 +16,7 @@ import org.example.learnhub.section.repository.LessonRepository;
 import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.user.entity.User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -33,12 +34,14 @@ public class SectionService {
         return repository.save(section);
     }
 
+    @Transactional
     public Section createSection(SectionRequest request, Course course) {
         Section section = mapper.toSection(request, course);
 
         return repository.save(section);
     }
 
+    @Transactional
     public SectionResponse createLesson(User user, Integer sectionId, LessonRequest request) {
         Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
         Lesson lesson = lessonMapper.toLesson(request);
@@ -50,6 +53,7 @@ public class SectionService {
         return mapper.toDto(section);
     }
 
+    @Transactional
     public void deleteLesson(User user, Integer sectionId, Integer lessonId) {
         Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
 
@@ -63,15 +67,18 @@ public class SectionService {
         repository.save(section);
     }
 
+    @Transactional(readOnly = true)
     public Section findSectionEntityByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
         return repository.findByIdAndCourseCreatorId(sectionId, creatorId)
                 .orElseThrow(() -> new EntityNotFound("Section not found"));
     }
 
+    @Transactional
     public void deleteSection(Section section) {
         repository.delete(section);
     }
 
+    @Transactional(readOnly = true)
     public LessonResponse findLessonById(User user, Integer lessonId) {
         Lesson lesson = findLessonEntityById(lessonId);
 
@@ -85,11 +92,13 @@ public class SectionService {
         return lessonMapper.toDto(lesson);
     }
 
+    @Transactional(readOnly = true)
     public Lesson findLessonEntityById(Integer lessonId) {
         return lessonRepository.findById(lessonId).orElseThrow(
                 () -> new EntityNotFound("Lesson not found."));
     }
 
+    @Transactional(readOnly = true)
     public List<LessonResponse> findSectionLessons(User user, Integer sectionId) {
         Section section = repository.findById(sectionId)
                 .orElseThrow(() -> new EntityNotFound("Section not found"));

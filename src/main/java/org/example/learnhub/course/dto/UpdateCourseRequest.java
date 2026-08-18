@@ -1,9 +1,6 @@
 package org.example.learnhub.course.dto;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import org.example.learnhub.course.entity.CourseStatus;
 
 import java.math.BigDecimal;
@@ -21,5 +18,7 @@ public record UpdateCourseRequest(
         CourseStatus status,
 
         @DecimalMin("0.0")
+        @DecimalMax("999999.99")
         BigDecimal price
-) {}
+) {
+}
