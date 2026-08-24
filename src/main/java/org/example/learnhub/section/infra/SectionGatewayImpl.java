@@ -2,13 +2,15 @@ package org.example.learnhub.section.infra;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
-import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.gateway.SectionGateway;
+import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.section.service.SectionMapper;
 import org.example.learnhub.section.service.SectionService;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -17,27 +19,39 @@ public class SectionGatewayImpl implements SectionGateway {
     private final SectionMapper mapper;
 
     @Override
-    public void deleteSection(Section section) {
-        service.deleteSection(section);
+    public void deleteSection(Integer sectionId) {
+        service.deleteSection(sectionId);
     }
 
     @Override
-    public Section saveSection(Section section) {
-        return service.saveSection(section);
+    public SectionInfo createSection(SectionRequest request, Integer courseId) {
+        return service.createSection(request, courseId);
     }
 
     @Override
-    public Section createSection(SectionRequest request, Course course) {
-        return service.createSection(request, course);
+    public SectionInfo updateSection(Integer sectionId, Integer creatorId, SectionRequest request) {
+        return service.updateSection(sectionId, creatorId, request);
     }
 
     @Override
-    public SectionResponse toDto(Section section) {
-        return mapper.toDto(section);
+    public Integer countSectionsByCourseId(Integer courseId) {
+        return 0;
     }
 
     @Override
-    public Section findByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
-        return service.findSectionEntityByIdAndCourseCreatorId(sectionId, creatorId);
+    public List<SectionResponse> findAllByCourseId(Integer courseId) {
+        return List.of();
+    }
+
+    @Override
+    public SectionInfo findByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
+        Section section = service.findSectionEntityByIdAndCourseCreatorId(sectionId, creatorId);
+
+        return new SectionInfo(
+                section.getId(),
+                section.getTitle(),
+                section.getPosition(),
+                section.getCourseId()
+        );
     }
 }

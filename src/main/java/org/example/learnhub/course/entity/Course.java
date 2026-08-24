@@ -2,15 +2,10 @@ package org.example.learnhub.course.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.section.entity.Lesson;
-import org.example.learnhub.section.entity.Section;
-import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "courses")
@@ -24,9 +19,8 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User creator;
+    @Column(name = "creator_id", nullable = false)
+    private Integer creatorId;
 
     @Column(nullable = false)
     private String title;
@@ -41,10 +35,6 @@ public class Course {
 
     @Builder.Default
     private Integer salesAmount = 0;
-
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Section> sections = new ArrayList<>();
 
     @Column(nullable = false)
     private Double averageRating;
@@ -65,12 +55,5 @@ public class Course {
     public void removeReview(Integer rating) {
         averageRating = (averageRating * totalReviews - rating) / (totalReviews - 1);
         totalReviews--;
-    }
-
-    public Integer calculateDuration() {
-        return sections.stream()
-                .flatMap(section -> section.getLessons().stream())
-                .mapToInt(Lesson::getDuration)
-                .sum();
     }
 }

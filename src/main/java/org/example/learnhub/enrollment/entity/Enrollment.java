@@ -2,8 +2,6 @@ package org.example.learnhub.enrollment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -26,13 +24,11 @@ public class Enrollment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Integer user_id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @Column(name = "course_id", nullable = false)
+    private Integer courseId;
 
     @OneToMany(mappedBy = "enrollment", fetch = FetchType.LAZY)
     @Builder.Default

@@ -6,7 +6,9 @@ import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.enrollment.entity.Enrollment;
 import org.example.learnhub.exception.CourseAccessDenied;
 import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
+import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
@@ -29,16 +31,13 @@ public class SectionService {
     private final SectionMapper mapper;
     private final LessonMapper lessonMapper;
     private final EnrollmentGateway enrollmentGateway;
-
-    public Section saveSection(Section section) {
-        return repository.save(section);
-    }
+    private final CourseGateway courseGateway;
 
     @Transactional
-    public Section createSection(SectionRequest request, Course course) {
-        Section section = mapper.toSection(request, course);
+    public SectionInfo createSection(SectionRequest request, Integer courseId) {
+        Section section = mapper.toSection(request, courseId);
 
-        return repository.save(section);
+        return mapper.toSectionInfo(repository.save(section));
     }
 
     @Transactional
@@ -51,6 +50,21 @@ public class SectionService {
         repository.save(section);
 
         return mapper.toDto(section);
+    }
+
+    @Transactional
+    public SectionInfo updateSection(Integer sectionId, Integer creatorId, SectionRequest request) {
+        Section section = repository.findById(sectionId)
+                .orElseThrow(() -> new EntityNotFound("Section not found."));
+
+        if(!courseGateway.isCourseCreator(section.getCourseId(), creatorId))
+            throw new CourseAccessDenied("You are not the creator of this course.");
+
+        section.setTitle(request.title());
+        section.setPosition(request.position());
+        Section saved = repository.save(section);
+
+        return mapper.toDto(saved);
     }
 
     @Transactional
@@ -74,8 +88,8 @@ public class SectionService {
     }
 
     @Transactional
-    public void deleteSection(Section section) {
-        repository.delete(section);
+    public void deleteSection(Integer sectionId) {
+        repository.deleteById(sectionId);
     }
 
     @Transactional(readOnly = true)

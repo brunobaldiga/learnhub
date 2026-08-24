@@ -2,8 +2,8 @@ package org.example.learnhub.course.service;
 
 import org.example.learnhub.course.dto.CourseReviewRequest;
 import org.example.learnhub.course.dto.CourseReviewResponse;
-import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseReview;
+import org.example.learnhub.gateway.dto.CourseInfo;
 import org.example.learnhub.user.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Component
 public class CourseReviewMapper {
 
-    public CourseReview toCourseReview(User user, Course course, CourseReviewRequest request) {
+    public CourseReview toCourseReview(User user, CourseInfo course, CourseReviewRequest request) {
         return CourseReview.builder()
                 .course(course)
                 .author(user)

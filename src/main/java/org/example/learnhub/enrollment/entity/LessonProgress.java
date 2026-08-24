@@ -2,7 +2,6 @@ package org.example.learnhub.enrollment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.section.entity.Lesson;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -27,9 +26,8 @@ public class LessonProgress {
     @JoinColumn(name = "enrollment_id", nullable = false)
     private Enrollment enrollment;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "lesson_id", nullable = false)
-    private Lesson lesson;
+    @Column(nullable = false)
+    private Integer lessonId;
 
     @Builder.Default
     private Boolean completed = false;

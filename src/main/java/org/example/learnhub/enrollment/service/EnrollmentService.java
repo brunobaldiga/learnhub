@@ -1,7 +1,6 @@
 package org.example.learnhub.enrollment.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.enrollment.dto.CertificateResponse;
 import org.example.learnhub.enrollment.dto.EnrollmentResponse;
 import org.example.learnhub.enrollment.dto.ProgressRequest;
@@ -16,6 +15,7 @@ import org.example.learnhub.exception.*;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.LessonGateway;
 import org.example.learnhub.gateway.PaymentGateway;
+import org.example.learnhub.gateway.dto.CourseInfo;
 import org.example.learnhub.section.entity.Lesson;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -43,12 +43,12 @@ public class EnrollmentService {
 
     @Transactional
     public void enroll(User user, Integer courseId) {
-        Course course = courseGateway.findCourseById(user, courseId);
+        CourseInfo course = courseGateway.findCourseById(user, courseId);
 
         if(!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId))
             throw new CourseAccessDenied("User haven't bought the course.");
 
-        Optional<Enrollment> existingCourseProgress = repository.findByUserAndCourse(user, course);
+        Optional<Enrollment> existingCourseProgress = repository.findByUserIdAndCourseId(user.getId(), course.id());
 
         if(existingCourseProgress.isPresent()) throw new UserAlreadyEnrolled("User is already enrolled.");
 

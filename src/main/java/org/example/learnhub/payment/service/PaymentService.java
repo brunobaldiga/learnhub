@@ -1,13 +1,13 @@
 package org.example.learnhub.payment.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.exception.CourseAccessDenied;
 import org.example.learnhub.exception.DuplicatePurchaseException;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
+import org.example.learnhub.gateway.dto.CourseInfo;
 import org.example.learnhub.payment.dto.CurrencyType;
 import org.example.learnhub.payment.dto.PurchaseResponse;
 import org.example.learnhub.payment.entity.Payment;
@@ -30,27 +30,27 @@ public class PaymentService {
 
     @Transactional
     public PurchaseResponse purchase(User user, Integer courseId) {
-        Course course = courseGateway.findCourseById(user, courseId);
+        CourseInfo course = courseGateway.findCourseById(user, courseId);
 
         if(repository.existsByUserIdAndCourseId(user.getId(), courseId))
             throw new DuplicatePurchaseException("User has already paid for this course.");
 
-        if(user.getId().equals(course.getCreator().getId()) || !course.getStatus().equals(CourseStatus.PUBLIC))
+        if(user.getId().equals(course.creatorId()) || !course.status().equals(CourseStatus.PUBLIC))
             throw new CourseAccessDenied("Course access denied");
 
         Payment payment = Payment.builder()
                 .userId(user.getId())
-                .courseId(course.getId())
-                .courseTitle(course.getTitle())
-                .coursePrice(course.getPrice())
+                .courseId(course.id())
+                .courseTitle(course.title())
+                .coursePrice(course.price())
                 .currency(CurrencyType.USD)
                 .build();
 
-        course.setSalesAmount(course.getSalesAmount() + 1);
+        courseGateway.incrementSalesAmount(courseId);
 
         payment = repository.save(payment);
 
-        enrollmentGateway.enroll(user, course.getId());
+        enrollmentGateway.enroll(user, course.id());
 
         return mapper.toDto(payment);
     }

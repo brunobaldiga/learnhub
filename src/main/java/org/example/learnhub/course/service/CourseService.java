@@ -11,6 +11,7 @@ import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.exception.MaxSectionsReached;
 import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.gateway.SectionGateway;
+import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.section.service.SectionMapper;
@@ -95,15 +96,19 @@ public class CourseService {
         Course course = repository.findByIdAndCreatorId(courseId, user.getId())
                 .orElseThrow(() -> new EntityNotFound("Course not found."));
 
-        if(course.getSections().size() >= 20)
+        if(sectionGateway.countSectionsByCourseId(courseId) >= 20)
             throw new MaxSectionsReached("Course cannot have more than 20 sections.");
 
-        Section section = sectionGateway.createSection(request, course);
-        course.getSections().add(section);
+        SectionInfo section = sectionGateway.createSection(request, courseId);
 
         repository.save(course);
 
-        return sectionGateway.toDto(section);
+        return new SectionResponse(
+                section.id(),
+                section.title(),
+                section.position(),
+                List.of()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -111,30 +116,37 @@ public class CourseService {
         Course course = findCourseEntityById(user, courseId);
 
         boolean hasPaid = paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
-        boolean isOwner = course.getCreator().getId().equals(user.getId());
+        boolean isOwner = course.getCreatorId().equals(user.getId());
 
         if(!hasPaid && !isOwner) throw new CourseAccessDenied("User haven't paid for the course");
 
-        return course.getSections().stream()
-                .map(sectionGateway::toDto)
-                .toList();
+        return sectionGateway.findAllByCourseId(courseId);
     }
 
-    @Transactional
     public SectionResponse updateCourseSection(User user, Integer sectionId, SectionRequest request) {
-        Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
-
-        section.setTitle(request.title());
-        section.setPosition(request.position());
-
-        sectionGateway.saveSection(section);
-
-        return sectionMapper.toDto(section);
+        return sectionGateway.updateSection(sectionId, user.getId(), request);
     }
 
     @Transactional
     public void deleteCourseSection(User user, Integer sectionId) {
         Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
         sectionGateway.deleteSection(section);
+    }
+
+    @Transactional
+    public void incrementSalesAmount(Integer courseId) {
+        Course course = repository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFound("Course not found."));
+        course.setSalesAmount(course.getSalesAmount() + 1);
+        repository.save(course);
+    }
+
+
+    public void recordReview(Integer courseId, Integer rating) {
+        Course course = repository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFound("Course not found."));
+
+        course.addReview(rating);
+        repository.save(course);
     }
 }

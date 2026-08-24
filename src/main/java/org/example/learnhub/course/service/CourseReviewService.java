@@ -4,17 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.CourseReviewFilter;
 import org.example.learnhub.course.dto.CourseReviewRequest;
 import org.example.learnhub.course.dto.CourseReviewResponse;
-import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseReview;
 import org.example.learnhub.course.repository.CourseReviewRepository;
 import org.example.learnhub.course.repository.CourseReviewSpecs;
-import org.example.learnhub.enrollment.entity.Enrollment;
 import org.example.learnhub.exception.CourseReviewNotAllowedException;
 import org.example.learnhub.exception.DuplicateReviewException;
 import org.example.learnhub.exception.ReviewOwnershipException;
 import org.example.learnhub.exception.SelfReviewNotAllowedException;
-import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
+import org.example.learnhub.gateway.dto.CourseInfo;
+import org.example.learnhub.gateway.dto.EnrollmentInfo;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,16 +27,16 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CourseReviewService {
     private final CourseReviewRepository repository;
-    private final CourseGateway courseGateway;
+    private final CourseService courseService;
     private final EnrollmentGateway enrollmentGateway;
     private final CourseReviewMapper mapper;
 
     @Transactional
     public CourseReviewResponse createCourseReview(User user, Integer courseId, CourseReviewRequest request) {
-        Course course = courseGateway.findCourseById(user, courseId);
-        Optional<Enrollment> enrollment = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), courseId);
+        CourseInfo course = courseService.findCourseById(user, courseId);
+        Optional<EnrollmentInfo> enrollment = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), courseId);
 
-        if(course.getCreator().getId().equals(user.getId()))
+        if(course.creatorId().equals(user.getId()))
             throw new SelfReviewNotAllowedException("Course creator cannot review its own course.");
 
         if(repository.existsByAuthorIdAndCourseId(user.getId(), courseId))
@@ -49,7 +48,7 @@ public class CourseReviewService {
 
         CourseReview courseReview = mapper.toCourseReview(user, course, request);
 
-        course.addReview(request.rating());
+        courseService.recordReview(courseId, request.rating());
 
         repository.save(courseReview);
 

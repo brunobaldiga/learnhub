@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.learnhub.enrollment.entity.Enrollment;
 import org.example.learnhub.enrollment.service.EnrollmentService;
 import org.example.learnhub.gateway.EnrollmentGateway;
+import org.example.learnhub.gateway.dto.EnrollmentInfo;
 import org.example.learnhub.user.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +21,14 @@ public class EnrollmentGatewayImpl implements EnrollmentGateway {
     }
 
     @Override
-    public Optional<Enrollment> findEnrollmentByUserIdAndCourseId(Integer userId, Integer courseId) {
-        return service.findEnrollmentEntityByUserIdAndCourseId(userId, courseId);
+    public Optional<EnrollmentInfo> findEnrollmentByUserIdAndCourseId(Integer userId, Integer courseId) {
+        Enrollment enrollment = service.findEnrollmentEntityByUserIdAndCourseId(userId, courseId);
+
+        return new EnrollmentInfo(
+                enrollment.getId(),
+                enrollment.getUser().getId(),
+                enrollment.getCourse().getId(),
+                enrollment.getEnrolledAt()
+        );
     }
 }
