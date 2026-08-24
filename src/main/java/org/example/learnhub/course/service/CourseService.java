@@ -31,12 +31,11 @@ public class CourseService {
     private final CourseMapper mapper;
     private final SectionGateway sectionGateway;
     private final PaymentGateway paymentGateway;
-    private final SectionMapper sectionMapper;
 
     @Transactional
     public CourseResponse create(User user, CourseRequest request) {
         Course course = mapper.toCourse(request);
-        course.setCreator(user);
+        course.setCreatorId(user.getId());
 
         repository.save(course);
 
@@ -124,7 +123,14 @@ public class CourseService {
     }
 
     public SectionResponse updateCourseSection(User user, Integer sectionId, SectionRequest request) {
-        return sectionGateway.updateSection(sectionId, user.getId(), request);
+        SectionInfo sectionInfo = sectionGateway.updateSection(sectionId, user.getId(), request);
+
+        return new SectionResponse(
+                sectionId,
+                sectionInfo.title(),
+                sectionInfo.position(),
+                sectionGateway.findLessonsBySectionId(sectionId) weiofwmeiofjwioejfiowjeiofjweiofowie
+        )
     }
 
     @Transactional
