@@ -2,12 +2,11 @@ package org.example.learnhub.section.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
-import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.enrollment.entity.Enrollment;
 import org.example.learnhub.exception.CourseAccessDenied;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
+import org.example.learnhub.gateway.dto.CourseInfo;
 import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.dto.LessonResponse;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -53,7 +51,7 @@ public class SectionService {
     }
 
     @Transactional
-    public SectionInfo updateSection(Integer sectionId, Integer creatorId, SectionRequest request) {
+    public SectionResponse updateSection(Integer sectionId, Integer creatorId, SectionRequest request) {
         Section section = repository.findById(sectionId)
                 .orElseThrow(() -> new EntityNotFound("Section not found."));
 
@@ -81,25 +79,20 @@ public class SectionService {
         repository.save(section);
     }
 
-    @Transactional(readOnly = true)
-    public Section findSectionEntityByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
-        return repository.findByIdAndCourseCreatorId(sectionId, creatorId)
-                .orElseThrow(() -> new EntityNotFound("Section not found"));
-    }
-
     @Transactional
-    public void deleteSection(Integer sectionId) {
-        repository.deleteById(sectionId);
+    public void deleteSection(Integer sectionId, Integer creatorId) {
+        Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, creatorId);
+        repository.delete(section);
     }
 
     @Transactional(readOnly = true)
     public LessonResponse findLessonById(User user, Integer lessonId) {
         Lesson lesson = findLessonEntityById(lessonId);
 
-        Course course = lesson.getSection().getCourse();
+        CourseInfo courseInfo = courseGateway.findCourseById(user.getId(), lesson.getSection().getCourseId());
 
-        boolean isCourseCreator = course.getCreator().getId().equals(user.getId());
-        boolean isEnrolled = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), course.getId()).isPresent();
+        boolean isCourseCreator = courseInfo.creatorId().equals(user.getId());
+        boolean isEnrolled = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), courseInfo.id()).isPresent();
 
         if(!isCourseCreator && !isEnrolled) throw new CourseAccessDenied("User does not have access to this course.");
 
@@ -117,13 +110,21 @@ public class SectionService {
         Section section = repository.findById(sectionId)
                 .orElseThrow(() -> new EntityNotFound("Section not found"));
 
-        boolean isCourseCreator = section.getCourse().getCreator().getId().equals(user.getId());
-        Optional<Enrollment> enrollment = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), section.getCourse().getId());
+        CourseInfo courseInfo = courseGateway.findCourseById(user.getId(), section.getCourseId());
 
-        if(enrollment.isEmpty() && !isCourseCreator)
+        boolean isCourseCreator = courseInfo.creatorId().equals(user.getId());
+        boolean isEnrolled = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), courseInfo.id()).isPresent();
+
+        if(!isCourseCreator && !isEnrolled)
             throw new CourseAccessDenied("User does not have access to this course.");
 
         return lessonRepository.findAllBySectionId(section.getId())
                 .stream().map(lessonMapper::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Section findSectionEntityByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
+        return repository.findByIdAndCourseCreatorId(sectionId, creatorId)
+                .orElseThrow(() -> new EntityNotFound("Section not found"));
     }
 }

@@ -25,7 +25,7 @@ public class CourseReview {
     private Course course;
 
     @Column(name = "author_id", nullable = false)
-    private Integer author;
+    private Integer authorId;
 
     @Column(nullable = false)
     @Min(1)

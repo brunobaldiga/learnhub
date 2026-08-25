@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.CourseReviewFilter;
 import org.example.learnhub.course.dto.CourseReviewRequest;
 import org.example.learnhub.course.dto.CourseReviewResponse;
+import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseReview;
 import org.example.learnhub.course.repository.CourseReviewRepository;
 import org.example.learnhub.course.repository.CourseReviewSpecs;
@@ -12,7 +13,6 @@ import org.example.learnhub.exception.DuplicateReviewException;
 import org.example.learnhub.exception.ReviewOwnershipException;
 import org.example.learnhub.exception.SelfReviewNotAllowedException;
 import org.example.learnhub.gateway.EnrollmentGateway;
-import org.example.learnhub.gateway.dto.CourseInfo;
 import org.example.learnhub.gateway.dto.EnrollmentInfo;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -33,10 +33,10 @@ public class CourseReviewService {
 
     @Transactional
     public CourseReviewResponse createCourseReview(User user, Integer courseId, CourseReviewRequest request) {
-        CourseInfo course = courseService.findCourseById(user, courseId);
+        Course course = courseService.findCourseEntityById(user.getId(), courseId);
         Optional<EnrollmentInfo> enrollment = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), courseId);
 
-        if(course.creatorId().equals(user.getId()))
+        if(course.getCreatorId().equals(user.getId()))
             throw new SelfReviewNotAllowedException("Course creator cannot review its own course.");
 
         if(repository.existsByAuthorIdAndCourseId(user.getId(), courseId))
@@ -52,7 +52,7 @@ public class CourseReviewService {
 
         repository.save(courseReview);
 
-        return mapper.toDto(courseReview);
+        return mapper.toDto(courseReview, user.getUsername());
     }
 
     @Transactional(readOnly = true)
@@ -69,9 +69,8 @@ public class CourseReviewService {
     public void deleteReviewById(User user, Integer courseId, Integer courseReviewId) {
         CourseReview courseReview = repository.findByIdAndCourseId(courseReviewId, courseId);
 
-        if(!courseReview.getAuthor().getId().equals(user.getId()))
+        if(!courseReview.getId().equals(user.getId()))
             throw new ReviewOwnershipException("User is not the author of the review");
-
 
         repository.delete(courseReview);
         courseReview.getCourse().removeReview(courseReview.getRating());

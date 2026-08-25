@@ -13,8 +13,6 @@ import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.entity.Section;
-import org.example.learnhub.section.service.SectionMapper;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -66,12 +64,12 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public CourseResponse findCourseById(User user, Integer courseId) {
-        return mapper.toDto(findCourseEntityById(user, courseId));
+        return mapper.toDto(findCourseEntityById(user.getId(), courseId));
     }
 
-    public Course findCourseEntityById(User user, Integer courseId) {
+    public Course findCourseEntityById(Integer userId, Integer courseId) {
         return repository.findByIdAndStatus(courseId, CourseStatus.PUBLIC)
-                .or(() -> repository.findByIdAndCreatorId(courseId, user.getId()))
+                .or(() -> repository.findByIdAndCreatorId(courseId, userId))
                 .orElseThrow(() -> new EntityNotFound("Course not found."));
     }
 
@@ -112,7 +110,7 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public List<SectionResponse> findCourseSection(User user, Integer courseId) {
-        Course course = findCourseEntityById(user, courseId);
+        Course course = findCourseEntityById(user.getId(), courseId);
 
         boolean hasPaid = paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
         boolean isOwner = course.getCreatorId().equals(user.getId());
@@ -123,20 +121,12 @@ public class CourseService {
     }
 
     public SectionResponse updateCourseSection(User user, Integer sectionId, SectionRequest request) {
-        SectionInfo sectionInfo = sectionGateway.updateSection(sectionId, user.getId(), request);
-
-        return new SectionResponse(
-                sectionId,
-                sectionInfo.title(),
-                sectionInfo.position(),
-                sectionGateway.findLessonsBySectionId(sectionId) weiofwmeiofjwioejfiowjeiofjweiofowie
-        )
+        return sectionGateway.updateSection(sectionId, user.getId(), request);
     }
 
     @Transactional
     public void deleteCourseSection(User user, Integer sectionId) {
-        Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
-        sectionGateway.deleteSection(section);
+        sectionGateway.deleteSection(sectionId, user.getId());
     }
 
     @Transactional
@@ -154,5 +144,9 @@ public class CourseService {
 
         course.addReview(rating);
         repository.save(course);
+    }
+
+    public boolean isCourseCreator(Integer courseId, Integer creatorId) {
+        return repository.existsByIdAndCreatorId(courseId, creatorId);
     }
 }

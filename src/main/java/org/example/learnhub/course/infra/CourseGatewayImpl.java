@@ -5,7 +5,6 @@ import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.dto.CourseInfo;
-import org.example.learnhub.user.entity.User;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,8 +13,13 @@ public class CourseGatewayImpl implements CourseGateway {
     private final CourseService service;
 
     @Override
-    public CourseInfo findCourseById(User user, Integer courseId) {
-        Course course = service.findCourseEntityById(user, courseId);
+    public boolean isCourseCreator(Integer courseId, Integer creatorId) {
+        return service.isCourseCreator(courseId, creatorId);
+    }
+
+    @Override
+    public CourseInfo findCourseById(Integer userId, Integer courseId) {
+        Course course = service.findCourseEntityById(userId, courseId);
 
         return new CourseInfo(
                 course.getId(),

@@ -19,18 +19,18 @@ public class SectionGatewayImpl implements SectionGateway {
     private final SectionMapper mapper;
 
     @Override
-    public void deleteSection(Integer sectionId) {
-        service.deleteSection(sectionId);
-    }
-
-    @Override
     public SectionInfo createSection(SectionRequest request, Integer courseId) {
         return service.createSection(request, courseId);
     }
 
     @Override
-    public SectionInfo updateSection(Integer sectionId, Integer creatorId, SectionRequest request) {
+    public SectionResponse updateSection(Integer sectionId, Integer creatorId, SectionRequest request) {
         return service.updateSection(sectionId, creatorId, request);
+    }
+
+    @Override
+    public void deleteSection(Integer sectionId, Integer creatorId) {
+        service.deleteSection(sectionId, creatorId);
     }
 
     @Override
