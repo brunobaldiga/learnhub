@@ -189,7 +189,7 @@ public class CourseControllerTest {
     @Test
     @WithMockUser(roles = "CREATOR")
     void shouldReturn200WhenListingCreatorCourses() throws Exception {
-        when(service.findCourses(any(), any(), any())).thenReturn(Page.empty());
+        when(service.findUserCourses(any(), any(), any())).thenReturn(Page.empty());
 
         mockMvc.perform(get("/api/courses")).andExpect(status().isOk());
     }

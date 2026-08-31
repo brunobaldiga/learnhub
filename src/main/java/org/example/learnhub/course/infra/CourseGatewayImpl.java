@@ -5,7 +5,11 @@ import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.dto.CourseInfo;
+import org.example.learnhub.gateway.dto.CourseSummary;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -18,7 +22,12 @@ public class CourseGatewayImpl implements CourseGateway {
     }
 
     @Override
-    public CourseInfo findCourseById(Integer userId, Integer courseId) {
+    public Map<Integer, CourseSummary> findCourseSummariesById(Collection<Integer> courseIds) {
+        return service.findCourseSummariesById(courseIds);
+    }
+
+    @Override
+    public CourseInfo findById(Integer userId, Integer courseId) {
         Course course = service.findCourseEntityById(userId, courseId);
 
         return new CourseInfo(
@@ -33,6 +42,11 @@ public class CourseGatewayImpl implements CourseGateway {
     @Override
     public Integer countLessonsByCourseId(Integer courseId) {
         return service.countLessonsByCourseId(courseId);
+    }
+
+    @Override
+    public CourseSummary findCourseSummaryById(Integer courseId) {
+        return service.findCourseSummaryById(courseId);
     }
 
     @Override

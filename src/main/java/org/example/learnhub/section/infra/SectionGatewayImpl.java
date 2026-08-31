@@ -6,7 +6,6 @@ import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
-import org.example.learnhub.section.service.SectionMapper;
 import org.example.learnhub.section.service.SectionService;
 import org.springframework.stereotype.Component;
 
@@ -16,21 +15,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SectionGatewayImpl implements SectionGateway {
     private final SectionService service;
-    private final SectionMapper mapper;
 
     @Override
-    public SectionInfo createSection(SectionRequest request, Integer courseId) {
+    public SectionInfo create(SectionRequest request, Integer courseId) {
         return service.createSection(request, courseId);
     }
 
     @Override
-    public SectionResponse updateSection(Integer sectionId, Integer creatorId, SectionRequest request) {
-        return service.updateSection(sectionId, creatorId, request);
+    public SectionResponse update(Integer sectionId, Integer creatorId, SectionRequest request) {
+        return service.update(sectionId, creatorId, request);
     }
 
     @Override
-    public void deleteSection(Integer sectionId, Integer creatorId) {
-        service.deleteSection(sectionId, creatorId);
+    public void delete(Integer sectionId, Integer creatorId) {
+        service.delete(sectionId, creatorId);
     }
 
     @Override

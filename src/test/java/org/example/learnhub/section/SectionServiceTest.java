@@ -133,7 +133,7 @@ public class SectionServiceTest {
 
         when(repository.save(section)).thenReturn(section);
 
-        Section result = service.saveSection(section);
+        Section result = service.save(section);
 
         assertThat(result).isEqualTo(section);
 

@@ -11,9 +11,9 @@ import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.exception.MaxSectionsReached;
 import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.gateway.SectionGateway;
+import org.example.learnhub.gateway.UserGateway;
+import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.entity.Section;
-import org.example.learnhub.section.service.SectionMapper;
 import org.example.learnhub.user.dto.RoleType;
 import org.example.learnhub.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,10 +30,10 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -57,7 +57,7 @@ public class CourseServiceTest {
     private CourseMapper mapper;
 
     @Mock
-    private SectionMapper sectionMapper;
+    private UserGateway userGateway;
 
     @InjectMocks
     private CourseService service;
@@ -75,7 +75,7 @@ public class CourseServiceTest {
 
         Course course = Course.builder()
                 .id(1)
-                .creator(user)
+                .creatorId(user.getId())
                 .title("Java Course")
                 .status(CourseStatus.PRIVATE)
                 .price(BigDecimal.ZERO)
@@ -93,7 +93,7 @@ public class CourseServiceTest {
         );
 
         when(mapper.toCourse(request)).thenReturn(course);
-        when(mapper.toDto(course)).thenReturn(response);
+        when(mapper.toDto(course, user.getUsername())).thenReturn(response);
 
         CourseResponse result = service.create(user, request);
 
@@ -105,7 +105,7 @@ public class CourseServiceTest {
     void shouldReturnCourseWhenCourseExists() {
         Course course = Course.builder()
                 .id(1)
-                .creator(user)
+                .creatorId(user.getId())
                 .title("Java Course")
                 .status(CourseStatus.PUBLIC)
                 .price(BigDecimal.ZERO)
@@ -122,8 +122,9 @@ public class CourseServiceTest {
                 LocalDateTime.now()
         );
 
-        when(mapper.toDto(course)).thenReturn(response);
+        when(mapper.toDto(course, user.getUsername())).thenReturn(response);
         when(repository.findByIdAndCreatorId(1, user.getId())).thenReturn(Optional.of(course));
+        when(userGateway.findUsernameById(user.getId())).thenReturn(user.getUsername());
 
         CourseResponse result = service.findCourseById(user, course.getId());
 
@@ -144,7 +145,7 @@ public class CourseServiceTest {
     void shouldUpdateCourseSuccessfully() {
         Course course = Course.builder()
                 .id(1)
-                .creator(user)
+                .creatorId(user.getId())
                 .title("Java Course")
                 .status(CourseStatus.PRIVATE)
                 .price(BigDecimal.ZERO)
@@ -164,13 +165,13 @@ public class CourseServiceTest {
         );
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
-        when(mapper.toDto(course)).thenReturn(response);
+        when(userGateway.findUsernameById(user.getId())).thenReturn(user.getUsername());
+        when(mapper.toDto(course, user.getUsername())).thenReturn(response);
 
         CourseResponse result = service.updateCourseById(user, course.getId(), request);
 
         verify(repository).save(course);
         assertThat(result).isEqualTo(response);
-
     }
 
     @Test
@@ -187,33 +188,29 @@ public class CourseServiceTest {
 
     @Test
     void shouldCreateSectionSuccessfully() {
-        Course course = Course.builder().id(1).creator(user).sections(new ArrayList<>()).build();
+        Course course = Course.builder().id(1).creatorId(user.getId()).build();
 
-        Section section = Section.builder().id(1).title("Section 1").position(0).course(course).build();
-
+        SectionInfo sectionInfo = new SectionInfo(1, "Section 1", 0, course.getId());
         SectionRequest request = new SectionRequest("Section 1", 0);
-
         SectionResponse response = new SectionResponse(1, "Section 1", 0, List.of());
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
-        when(sectionGateway.createSection(any(), any())).thenReturn(section);
-        when(sectionGateway.toDto(any())).thenReturn(response);
+        when(sectionGateway.countSectionsByCourseId(course.getId())).thenReturn(1);
+        when(sectionGateway.create(any(), any())).thenReturn(sectionInfo);
 
         SectionResponse result = service.createCourseSection(user, course.getId(), request);
 
-        verify(repository).save(course);
         assertThat(result).isEqualTo(response);
     }
 
     @Test
     void shouldReturn409WhenSectionLimitReached() {
-        List<Section> sections = new ArrayList<>(Collections.nCopies(20, new Section()));
-
-        Course course = Course.builder().id(1).creator(user).sections(sections).build();
+        Course course = Course.builder().id(1).creatorId(user.getId()).build();
 
         SectionRequest request = new SectionRequest("Section 21", 21);
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
+        when(sectionGateway.countSectionsByCourseId(course.getId())).thenReturn(20);
 
         assertThatThrownBy(() -> service.createCourseSection(user, course.getId(), request))
                 .isInstanceOf(MaxSectionsReached.class)
@@ -233,16 +230,12 @@ public class CourseServiceTest {
 
     @Test
     void shouldReturnSectionWhenUserIsOwner() {
-        Section section = Section.builder().id(1).title("Section 1").position(0).build();
-        List<Section> sections = new ArrayList<>(List.of(section));
         SectionResponse sectionResponse = new SectionResponse(1, "Section 1", 0, List.of());
 
-        Course course = Course.builder().id(1).creator(user).sections(sections).build();
-
+        Course course = Course.builder().id(1).creatorId(user.getId()).build();
 
         when(repository.findByIdAndStatus(any(), any())).thenReturn(Optional.of(course));
-        when(paymentGateway.existsByUserIdAndCourseId(any(), any())).thenReturn(false);
-        when(sectionGateway.toDto(section)).thenReturn(sectionResponse);
+        when(sectionGateway.findAllByCourseId(course.getId())).thenReturn(List.of(sectionResponse));
 
         List<SectionResponse> result = service.findCourseSection(user, course.getId());
 
@@ -253,15 +246,13 @@ public class CourseServiceTest {
     void shouldReturnSectionWhenUserHasPaid() {
         User creator = User.builder().id(2).build();
 
-        Section section = Section.builder().id(1).title("Section 1").position(0).build();
-        List<Section> sections = new ArrayList<>(List.of(section));
         SectionResponse sectionResponse = new SectionResponse(1, "Section 1", 0, List.of());
 
-        Course course = Course.builder().id(1).creator(creator).sections(sections).build();
+        Course course = Course.builder().id(1).creatorId(creator.getId()).build();
 
         when(repository.findByIdAndStatus(any(), any())).thenReturn(Optional.of(course));
         when(paymentGateway.existsByUserIdAndCourseId(any(), any())).thenReturn(true);
-        when(sectionGateway.toDto(section)).thenReturn(sectionResponse);
+        when(sectionGateway.findAllByCourseId(course.getId())).thenReturn(List.of(sectionResponse));
 
         List<SectionResponse> result = service.findCourseSection(user, course.getId());
 
@@ -272,18 +263,14 @@ public class CourseServiceTest {
     void shouldReturn403WhenUserHasNotPaid() {
         User creator = User.builder().id(2).build();
 
-        Section section = Section.builder().id(1).title("Section 1").position(0).build();
-        List<Section> sections = new ArrayList<>(List.of(section));
-
-        Course course = Course.builder().id(1).creator(creator).sections(sections).build();
+        Course course = Course.builder().id(1).creatorId(creator.getId()).build();
 
         when(repository.findByIdAndStatus(any(), any())).thenReturn(Optional.of(course));
         when(paymentGateway.existsByUserIdAndCourseId(any(), any())).thenReturn(false);
 
-
         assertThatThrownBy(() -> service.findCourseSection(user, course.getId()))
                 .isInstanceOf(CourseAccessDenied.class)
-                .hasMessage("User haven't paid for the course");
+                .hasMessage("User haven't paid for the course.");
     }
 
     @Test
@@ -305,7 +292,8 @@ public class CourseServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         when(repository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
-        when(mapper.toDto(course)).thenReturn(response);
+        when(userGateway.findUsernamesByIds(Set.of(user.getId()))).thenReturn(Map.of(user.getId(), "John"));
+        when(mapper.toDto(course, user.getUsername())).thenReturn(response);
 
         Page<CourseResponse> result = service.search(new CourseFilter(null, "John"), pageable);
 
@@ -314,7 +302,7 @@ public class CourseServiceTest {
 
     @Test
     void shouldFindOwnedCoursesSuccessfully() {
-        Course course = Course.builder().id(1).creator(user).build();
+        Course course = Course.builder().id(1).creatorId(user.getId()).build();
 
         CourseResponse response = new CourseResponse(
                 1,
@@ -331,9 +319,10 @@ public class CourseServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         when(repository.findAll(any(Specification.class), eq(pageable))).thenReturn(page);
-        when(mapper.toDto(course)).thenReturn(response);
+        when(userGateway.findUsernamesByIds(Set.of(user.getId()))).thenReturn(Map.of(user.getId(), "John"));
+        when(mapper.toDto(course, user.getUsername())).thenReturn(response);
 
-        Page<CourseResponse> result = service.findCourses(user, new CourseFilter(null, "John"), pageable);
+        Page<CourseResponse> result = service.findUserCourses(user, new CourseFilter(null, "John"), pageable);
 
         assertThat(result.getContent()).containsExactly(response);
     }
@@ -349,31 +338,20 @@ public class CourseServiceTest {
 
     @Test
     void shouldUpdateSectionSuccessfully() {
-        Section section = Section.builder().id(1).title("Old").position(0).build();
-
         SectionRequest request = new SectionRequest("New Title", 1);
+        SectionResponse response = new SectionResponse(1, "New Title", 1, List.of());
 
-        SectionResponse response = new SectionResponse(1, "New Title", 1, List.of()
-        );
-
-        when(sectionGateway.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(section);
-        when(sectionMapper.toDto(section)).thenReturn(response);
+        when(sectionGateway.update(1, user.getId(), request)).thenReturn(response);
 
         SectionResponse result = service.updateCourseSection(user, 1, request);
-
-        verify(sectionGateway).saveSection(section);
 
         assertThat(result).isEqualTo(response);
     }
 
     @Test
     void shouldDeleteSectionSuccessfully() {
-        Section section = Section.builder().id(1).build();
-
-        when(sectionGateway.findByIdAndCourseCreatorId(1, user.getId())).thenReturn(section);
-
         service.deleteCourseSection(user, 1);
 
-        verify(sectionGateway).deleteSection(section);
+        verify(sectionGateway).delete(1, user.getId());
     }
 }

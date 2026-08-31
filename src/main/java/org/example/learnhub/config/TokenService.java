@@ -28,7 +28,7 @@ public class TokenService {
                     .verify(token)
                     .getSubject();
         } catch (JWTVerificationException exception) {
-            throw new BadCredentialsException("Invalid JWT token");
+            throw new BadCredentialsException("Invalid JWT token.");
         }
     }
 

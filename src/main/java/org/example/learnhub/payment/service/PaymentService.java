@@ -30,13 +30,13 @@ public class PaymentService {
 
     @Transactional
     public PurchaseResponse purchase(User user, Integer courseId) {
-        CourseInfo course = courseGateway.findCourseById(user, courseId);
+        CourseInfo course = courseGateway.findById(user.getId(), courseId);
 
         if(repository.existsByUserIdAndCourseId(user.getId(), courseId))
             throw new DuplicatePurchaseException("User has already paid for this course.");
 
         if(user.getId().equals(course.creatorId()) || !course.status().equals(CourseStatus.PUBLIC))
-            throw new CourseAccessDenied("Course access denied");
+            throw new CourseAccessDenied("Course access denied.");
 
         Payment payment = Payment.builder()
                 .userId(user.getId())

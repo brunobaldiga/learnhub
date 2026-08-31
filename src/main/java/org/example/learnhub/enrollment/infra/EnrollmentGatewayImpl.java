@@ -1,7 +1,6 @@
 package org.example.learnhub.enrollment.infra;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.enrollment.entity.Enrollment;
 import org.example.learnhub.enrollment.service.EnrollmentService;
 import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.gateway.dto.EnrollmentInfo;
@@ -21,14 +20,20 @@ public class EnrollmentGatewayImpl implements EnrollmentGateway {
     }
 
     @Override
-    public Optional<EnrollmentInfo> findEnrollmentByUserIdAndCourseId(Integer userId, Integer courseId) {
-        Enrollment enrollment = service.findEnrollmentEntityByUserIdAndCourseId(userId, courseId);
-
-        return new EnrollmentInfo(
-                enrollment.getId(),
-                enrollment.getUser().getId(),
-                enrollment.getCourse().getId(),
-                enrollment.getEnrolledAt()
-        );
+    public boolean existsByUserIdAndCourseId(Integer userId, Integer courseId) {
+        return service.existsByUserIdAndCourseId(userId, courseId);
     }
+
+    @Override
+    public Optional<EnrollmentInfo> findByUserIdAndCourseId(Integer userId, Integer courseId) {
+        return service.findEnrollmentEntityByUserIdAndCourseId(userId, courseId)
+                .map(enrollment -> new EnrollmentInfo(
+                        enrollment.getId(),
+                        enrollment.getUserId(),
+                        enrollment.getCourseId(),
+                        enrollment.getEnrolledAt()
+                ));
+    }
+
+
 }

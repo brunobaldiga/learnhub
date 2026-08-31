@@ -17,6 +17,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -59,5 +63,15 @@ public class UserService {
         var token = tokenService.generateToken((User) auth.getPrincipal());
 
         return new TokenResponse(token);
+    }
+
+    public Map<Integer, String> findUsernamesByIds(Set<Integer> userIds) {
+        return repository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, User::getUsername));
+    }
+
+    public String findUsernamesById(Integer userId) {
+        return repository.findById(userId)
+                .orElseThrow(() -> new EntityNotFound("User not found")).getUsername();
     }
 }

@@ -13,6 +13,7 @@ import org.example.learnhub.exception.DuplicateReviewException;
 import org.example.learnhub.exception.ReviewOwnershipException;
 import org.example.learnhub.exception.SelfReviewNotAllowedException;
 import org.example.learnhub.gateway.EnrollmentGateway;
+import org.example.learnhub.gateway.UserGateway;
 import org.example.learnhub.gateway.dto.EnrollmentInfo;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
@@ -21,7 +22,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,11 +34,12 @@ public class CourseReviewService {
     private final CourseService courseService;
     private final EnrollmentGateway enrollmentGateway;
     private final CourseReviewMapper mapper;
+    private final UserGateway userGateway;
 
     @Transactional
     public CourseReviewResponse createCourseReview(User user, Integer courseId, CourseReviewRequest request) {
         Course course = courseService.findCourseEntityById(user.getId(), courseId);
-        Optional<EnrollmentInfo> enrollment = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), courseId);
+        Optional<EnrollmentInfo> enrollment = enrollmentGateway.findByUserIdAndCourseId(user.getId(), courseId);
 
         if(course.getCreatorId().equals(user.getId()))
             throw new SelfReviewNotAllowedException("Course creator cannot review its own course.");
@@ -61,8 +66,15 @@ public class CourseReviewService {
                 .where(CourseReviewSpecs.withFilter(filter))
                 .and(CourseReviewSpecs.withCourseId(courseId));
 
-        return repository.findAll(specification, pageable)
-                .map(mapper::toDto);
+        Page<CourseReview> courseReviews = repository.findAll(specification, pageable);
+
+        Set<Integer> authorIds = courseReviews.getContent().stream()
+                .map(CourseReview::getAuthorId)
+                .collect(Collectors.toSet());
+
+        Map<Integer, String> usernamesByCreatorId = userGateway.findUsernamesByIds(authorIds);
+
+        return courseReviews.map(courseReview -> mapper.toDto(courseReview, usernamesByCreatorId.get(courseReview.getAuthorId())));
     }
 
     @Transactional
@@ -70,7 +82,7 @@ public class CourseReviewService {
         CourseReview courseReview = repository.findByIdAndCourseId(courseReviewId, courseId);
 
         if(!courseReview.getId().equals(user.getId()))
-            throw new ReviewOwnershipException("User is not the author of the review");
+            throw new ReviewOwnershipException("User is not the author of the review.");
 
         repository.delete(courseReview);
         courseReview.getCourse().removeReview(courseReview.getRating());

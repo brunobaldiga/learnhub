@@ -51,7 +51,7 @@ public class SectionService {
     }
 
     @Transactional
-    public SectionResponse updateSection(Integer sectionId, Integer creatorId, SectionRequest request) {
+    public SectionResponse update(Integer sectionId, Integer creatorId, SectionRequest request) {
         Section section = repository.findById(sectionId)
                 .orElseThrow(() -> new EntityNotFound("Section not found."));
 
@@ -80,7 +80,7 @@ public class SectionService {
     }
 
     @Transactional
-    public void deleteSection(Integer sectionId, Integer creatorId) {
+    public void delete(Integer sectionId, Integer creatorId) {
         Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, creatorId);
         repository.delete(section);
     }
@@ -89,10 +89,10 @@ public class SectionService {
     public LessonResponse findLessonById(User user, Integer lessonId) {
         Lesson lesson = findLessonEntityById(lessonId);
 
-        CourseInfo courseInfo = courseGateway.findCourseById(user.getId(), lesson.getSection().getCourseId());
+        CourseInfo courseInfo = courseGateway.findById(user.getId(), lesson.getSection().getCourseId());
 
         boolean isCourseCreator = courseInfo.creatorId().equals(user.getId());
-        boolean isEnrolled = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), courseInfo.id()).isPresent();
+        boolean isEnrolled = enrollmentGateway.existsByUserIdAndCourseId(user.getId(), courseInfo.id());
 
         if(!isCourseCreator && !isEnrolled) throw new CourseAccessDenied("User does not have access to this course.");
 
@@ -110,10 +110,10 @@ public class SectionService {
         Section section = repository.findById(sectionId)
                 .orElseThrow(() -> new EntityNotFound("Section not found"));
 
-        CourseInfo courseInfo = courseGateway.findCourseById(user.getId(), section.getCourseId());
+        CourseInfo courseInfo = courseGateway.findById(user.getId(), section.getCourseId());
 
         boolean isCourseCreator = courseInfo.creatorId().equals(user.getId());
-        boolean isEnrolled = enrollmentGateway.findEnrollmentByUserIdAndCourseId(user.getId(), courseInfo.id()).isPresent();
+        boolean isEnrolled = enrollmentGateway.findByUserIdAndCourseId(user.getId(), courseInfo.id()).isPresent();
 
         if(!isCourseCreator && !isEnrolled)
             throw new CourseAccessDenied("User does not have access to this course.");
@@ -126,5 +126,9 @@ public class SectionService {
     public Section findSectionEntityByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
         return repository.findByIdAndCourseCreatorId(sectionId, creatorId)
                 .orElseThrow(() -> new EntityNotFound("Section not found"));
+    }
+
+    public Integer calculateDurationByCourseId(Integer courseId) {
+        return repository.calculateDurationByCourseId(courseId);
     }
 }

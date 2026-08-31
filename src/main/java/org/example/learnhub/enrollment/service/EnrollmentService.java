@@ -16,7 +16,8 @@ import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.LessonGateway;
 import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.gateway.dto.CourseInfo;
-import org.example.learnhub.section.entity.Lesson;
+import org.example.learnhub.gateway.dto.CourseSummary;
+import org.example.learnhub.gateway.dto.LessonInfo;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,8 +27,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +47,7 @@ public class EnrollmentService {
 
     @Transactional
     public void enroll(User user, Integer courseId) {
-        CourseInfo course = courseGateway.findCourseById(user, courseId);
+        CourseInfo course = courseGateway.findById(user.getId(), courseId);
 
         if(!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId))
             throw new CourseAccessDenied("User haven't bought the course.");
@@ -53,8 +57,8 @@ public class EnrollmentService {
         if(existingCourseProgress.isPresent()) throw new UserAlreadyEnrolled("User is already enrolled.");
 
         Enrollment courseProgress = Enrollment.builder()
-                .user(user)
-                .course(course)
+                .userId(user.getId())
+                .courseId(course.id())
                 .build();
 
         repository.save(courseProgress);
@@ -63,14 +67,20 @@ public class EnrollmentService {
     @Transactional(readOnly = true)
     public Page<EnrollmentResponse> findEnrolledCourses(Integer userId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        Page<Enrollment> enrollments = repository.findByUserId(userId, pageable);
 
-        return repository.findByUserId(userId, pageable)
-                .map(enrollment -> mapper.toDto(
-                                enrollment,
-                                lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId()),
-                                courseGateway.countLessonsByCourseId(enrollment.getCourse().getId())
-                        )
-                );
+        Set<Integer> courseIds = enrollments.getContent().stream()
+                .map(Enrollment::getCourseId)
+                .collect(Collectors.toSet());
+
+        Map<Integer, CourseSummary> summariesByCourseId = courseGateway.findCourseSummariesById(courseIds);
+
+        return enrollments.map(enrollment -> mapper.toDto(
+                enrollment,
+                summariesByCourseId.get(enrollment.getCourseId()),
+                lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId()),
+                courseGateway.countLessonsByCourseId(enrollment.getCourseId())
+        ));
     }
 
     @Transactional(readOnly = true)
@@ -79,16 +89,17 @@ public class EnrollmentService {
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
 
         Integer completedLessons = lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollmentId);
-        Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourse().getId());
+        Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourseId());
+        CourseSummary courseSummary = courseGateway.findCourseSummaryById(enrollment.getCourseId());
 
-        return mapper.toDto(enrollment, completedLessons, totalLessons);
+        return mapper.toDto(enrollment, courseSummary, completedLessons, totalLessons);
     }
 
     @Transactional
     public ProgressResponse startLesson(User user, Integer lessonId) {
-        Lesson lesson = lessonGateway.findLessonById(lessonId);
+        LessonInfo lessonInfo = lessonGateway.findById(lessonId);
 
-        Enrollment enrollment = repository.findByCourseIdAndUserId(lesson.getSection().getCourse().getId(), user.getId())
+        Enrollment enrollment = repository.findByUserIdAndCourseId(user.getId(), lessonInfo.courseId())
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
 
         Integer completedLessons = lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId());
@@ -99,7 +110,7 @@ public class EnrollmentService {
             LessonProgress newLessonProgress = LessonProgress.builder()
                     .lastPositionInSeconds(0)
                     .enrollment(enrollment)
-                    .lesson(lesson)
+                    .lessonId(lessonInfo.id())
                     .createdAt(now)
                     .updatedAt(now)
                     .build();
@@ -107,7 +118,7 @@ public class EnrollmentService {
             lessonProgressRepository.save(newLessonProgress);
         }
 
-        Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourse().getId());
+        Integer totalLessons = courseGateway.countLessonsByCourseId(lessonInfo.courseId());
 
         return new ProgressResponse(
                 completedLessons,
@@ -119,12 +130,12 @@ public class EnrollmentService {
 
     @Transactional
     public ProgressResponse progress(User user, Integer lessonId, ProgressRequest request) {
-        Lesson lesson = lessonGateway.findLessonById(lessonId);
+        LessonInfo lessonInfo = lessonGateway.findById(lessonId);
 
-        if(request.lastPositionInSeconds() > lesson.getDuration())
+        if(request.lastPositionInSeconds() > lessonInfo.duration())
             throw new InvalidLessonProgressException("Progress cannot exceed the lesson duration.");
 
-        Enrollment enrollment = repository.findByCourseIdAndUserId(lesson.getSection().getCourse().getId(), user.getId())
+        Enrollment enrollment = repository.findByUserIdAndCourseId(user.getId(), lessonInfo.courseId())
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
 
         LessonProgress lessonProgress = lessonProgressRepository.findByLessonIdAndEnrollmentId(lessonId, enrollment.getId())
@@ -137,13 +148,13 @@ public class EnrollmentService {
 
         if(request.lastPositionInSeconds() > maxAllowed)
             throw new InvalidLessonProgressException("Progress exceeds the maximum allowed position.");
-        if(request.lastPositionInSeconds() > lesson.getDuration())
+        if(request.lastPositionInSeconds() > lessonInfo.duration())
             throw new InvalidLessonProgressException("Progress cannot exceed the lesson duration.");
 
         lessonProgress.setUpdatedAt(LocalDateTime.now());
         lessonProgress.setLastPositionInSeconds(request.lastPositionInSeconds());
 
-        if(!lessonProgress.getCompleted() && lessonProgress.getLastPositionInSeconds() >= lesson.getDuration() * .9) {
+        if(!lessonProgress.getCompleted() && lessonProgress.getLastPositionInSeconds() >= lessonInfo.duration() * .9) {
             lessonProgress.setCompleted(true);
             completedLessons++;
 
@@ -151,7 +162,7 @@ public class EnrollmentService {
 
         lessonProgressRepository.save(lessonProgress);
 
-        Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourse().getId());
+        Integer totalLessons = courseGateway.countLessonsByCourseId(lessonInfo.courseId());
 
         return new ProgressResponse(
                 completedLessons,
@@ -166,7 +177,7 @@ public class EnrollmentService {
         Enrollment enrollment = repository.findByIdAndUserId(enrollmentId, user.getId())
                 .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
 
-        Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourse().getId());
+        Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourseId());
 
         if(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollmentId) < totalLessons)
             throw new CourseNotCompletedException("Cannot generate certificate, user did not finish the course.");
@@ -174,7 +185,10 @@ public class EnrollmentService {
         if(certificateRepository.existsByEnrollmentId(enrollment.getId()))
             throw new DuplicateCertificateException("User cannot generate more than 1 certificate per course.");
 
-        Certificate certificate = certificateMapper.toCertificate(user, enrollment);
+        Integer courseDuration = lessonGateway.calculateDurationByCourseId(enrollment.getCourseId());
+        CourseSummary courseSummary = courseGateway.findCourseSummaryById(enrollment.getCourseId());
+
+        Certificate certificate = certificateMapper.toCertificate(user, enrollment, courseSummary.title(), courseDuration);
 
         certificateRepository.save(certificate);
 
@@ -192,5 +206,9 @@ public class EnrollmentService {
     @Transactional(readOnly = true)
     public Optional<Enrollment> findEnrollmentEntityByUserIdAndCourseId(Integer userId, Integer courseId) {
         return repository.findByUserIdAndCourseId(userId, courseId);
+    }
+
+    public boolean existsByUserIdAndCourseId(Integer userId, Integer courseId) {
+        return repository.existsByUserIdAndCourseId(userId, courseId);
     }
 }

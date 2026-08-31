@@ -51,7 +51,7 @@ public class PaymentRepositoryTest {
         entityManager.persist(user);
 
         course = Course.builder()
-                .creator(user)
+                .creatorId(user.getId())
                 .title("Java Course")
                 .status(CourseStatus.PUBLIC)
                 .price(BigDecimal.TEN)

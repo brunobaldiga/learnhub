@@ -25,7 +25,7 @@ public class Enrollment {
     private Integer id;
 
     @Column(name = "user_id", nullable = false)
-    private Integer user_id;
+    private Integer userId;
 
     @Column(name = "course_id", nullable = false)
     private Integer courseId;

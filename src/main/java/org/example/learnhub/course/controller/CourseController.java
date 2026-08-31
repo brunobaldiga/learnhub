@@ -84,7 +84,7 @@ public class CourseController {
             @ParameterObject CourseFilter filter,
             @ParameterObject Pageable pageable
     ) {
-        return ResponseEntity.ok(service.findCourses(user, filter, pageable));
+        return ResponseEntity.ok(service.findUserCourses(user, filter, pageable));
     }
 
     @PreAuthorize("hasRole('USER')")

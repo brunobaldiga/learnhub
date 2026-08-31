@@ -8,5 +8,7 @@ import java.util.Optional;
 public interface EnrollmentGateway {
     void enroll(User user, Integer id);
 
-    Optional<EnrollmentInfo> findEnrollmentByUserIdAndCourseId(Integer userId, Integer courseId);
+    Optional<EnrollmentInfo> findByUserIdAndCourseId(Integer userId, Integer courseId);
+
+    boolean existsByUserIdAndCourseId(Integer id, Integer id1);
 }

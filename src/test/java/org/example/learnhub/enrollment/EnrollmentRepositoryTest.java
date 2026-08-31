@@ -36,72 +36,34 @@ public class EnrollmentRepositoryTest {
     private TestEntityManager entityManager;
 
     @Test
-    void shouldFindEnrollmentByUserAndCourse() {
+    void shouldFindEnrollmentByUserId() {
         User user = User.builder()
                 .username("john")
                 .email("john@example.com")
                 .fullName("John Doe")
                 .password("password")
-                .build();
-
-        Course course = Course.builder()
-                .creator(user)
-                .title("Java Course")
-                .averageRating(0.0)
-                .build();
-
-        Enrollment enrollment = Enrollment.builder()
-                .user(user)
-                .course(course)
-                .build();
-
-        entityManager.persist(user);
-        entityManager.persist(course);
-        entityManager.persist(enrollment);
-        entityManager.flush();
-        entityManager.clear();
-
-        Optional<Enrollment> result = repository.findByUserAndCourse(user, course);
-
-        assertThat(result).isPresent();
-        assertThat(result.get().getId()).isEqualTo(enrollment.getId());
-        assertThat(result.get().getUser().getId()).isEqualTo(user.getId());
-        assertThat(result.get().getCourse().getId()).isEqualTo(course.getId());
-    }
-
-    @Test
-    void shouldFindEnrollmentsByUserId() {
-        User user = User.builder()
-                .username("john")
-                .email("john@example.com")
-                .fullName("John Doe")
-                .password("password")
-                .roleType(RoleType.USER)
                 .build();
 
         User savedUser = entityManager.persist(user);
 
         Course course1 = Course.builder()
-                .creator(savedUser)
+                .creatorId(savedUser.getId())
                 .title("Java Course")
-                .status(CourseStatus.PUBLIC)
-                .price(BigDecimal.TEN)
                 .averageRating(0.0)
                 .build();
 
         Course course2 = Course.builder()
-                .creator(savedUser)
-                .title("Spring Course")
-                .status(CourseStatus.PUBLIC)
-                .price(BigDecimal.TEN)
+                .creatorId(savedUser.getId())
+                .title("Java Course")
                 .averageRating(0.0)
                 .build();
+
 
         Course savedCourse1 = entityManager.persist(course1);
         Course savedCourse2 = entityManager.persist(course2);
 
-        entityManager.persist(Enrollment.builder().user(savedUser).course(savedCourse1).build());
-        entityManager.persist(Enrollment.builder().user(savedUser).course(savedCourse2).build());
+        entityManager.persist(Enrollment.builder().userId(savedUser.getId()).courseId(savedCourse1.getId()).build());
+        entityManager.persist(Enrollment.builder().userId(savedUser.getId()).courseId(savedCourse2.getId()).build());
 
         entityManager.flush();
         entityManager.clear();
@@ -109,8 +71,8 @@ public class EnrollmentRepositoryTest {
         Page<Enrollment> result = repository.findByUserId(savedUser.getId(), PageRequest.of(0, 10));
 
         assertThat(result.getContent()).hasSize(2);
-        assertThat(result.getContent()).extracting(enrollment -> enrollment.getCourse().getTitle())
-                .containsExactlyInAnyOrder("Java Course", "Spring Course");
+        assertThat(result.getContent()).extracting(Enrollment::getCourseId)
+                .containsExactlyInAnyOrder(savedCourse1.getId(), savedCourse2.getId());
     }
 
     @Test
@@ -126,7 +88,7 @@ public class EnrollmentRepositoryTest {
         User savedUser = entityManager.persist(user);
 
         Course course = Course.builder()
-                .creator(savedUser)
+                .creatorId(savedUser.getId())
                 .title("Java Course")
                 .status(CourseStatus.PUBLIC)
                 .price(BigDecimal.TEN)
@@ -136,8 +98,8 @@ public class EnrollmentRepositoryTest {
         Course savedCourse = entityManager.persist(course);
 
         Enrollment enrollment = Enrollment.builder()
-                .user(savedUser)
-                .course(savedCourse)
+                .userId(savedUser.getId())
+                .courseId(savedCourse.getId())
                 .build();
 
         Enrollment savedEnrollment = entityManager.persist(enrollment);
@@ -145,14 +107,15 @@ public class EnrollmentRepositoryTest {
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Enrollment> result = repository.findByIdAndUserId(savedEnrollment.getId(), savedUser.getId());
+        Optional<Enrollment> result = repository.findByCourseIdAndUserId(savedCourse.getId(), savedUser.getId());
 
         assertThat(result).isPresent();
-        assertThat(result.get().getId()).isEqualTo(savedEnrollment.getId());
+        assertThat(result.get().getCourseId()).isEqualTo(savedCourse.getId());
+        assertThat(result.get().getUserId()).isEqualTo(savedUser.getId());
     }
 
     @Test
-    void shouldFindEnrollmentByCourseIdAndUserId() {
+    void shouldReturnEmptyWhenNoEnrollmentExists() {
         User user = User.builder()
                 .username("john")
                 .email("john@example.com")
@@ -163,28 +126,11 @@ public class EnrollmentRepositoryTest {
 
         User savedUser = entityManager.persist(user);
 
-        Course course = Course.builder()
-                .creator(savedUser)
-                .title("Java Course")
-                .status(CourseStatus.PUBLIC)
-                .price(BigDecimal.TEN)
-                .averageRating(0.0)
-                .build();
-
-        Course savedCourse = entityManager.persist(course);
-
-        Enrollment enrollment = Enrollment.builder().user(savedUser).course(savedCourse).build();
-
-        Enrollment savedEnrollment = entityManager.persist(enrollment);
-
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Enrollment> result = repository.findByCourseIdAndUserId(savedCourse.getId(), savedUser.getId());
+        Optional<Enrollment> result = repository.findByCourseIdAndUserId(999, savedUser.getId());
 
-        assertThat(result).isPresent();
-        assertThat(result.get().getId()).isEqualTo(savedEnrollment.getId());
-        assertThat(result.get().getCourse().getId()).isEqualTo(savedCourse.getId());
-        assertThat(result.get().getUser().getId()).isEqualTo(savedUser.getId());
+        assertThat(result).isEmpty();
     }
 }
