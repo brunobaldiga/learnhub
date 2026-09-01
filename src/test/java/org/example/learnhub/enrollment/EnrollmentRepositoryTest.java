@@ -3,9 +3,12 @@ package org.example.learnhub.enrollment;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.enrollment.entity.Enrollment;
+import org.example.learnhub.enrollment.repository.CertificateRepository;
 import org.example.learnhub.enrollment.repository.EnrollmentRepository;
+import org.example.learnhub.enrollment.repository.LessonProgressRepository;
 import org.example.learnhub.user.dto.RoleType;
 import org.example.learnhub.user.entity.User;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -24,60 +27,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 @DataJpaTest
-public class EnrollmentRepositoryTest {
+public class  EnrollmentRepositoryTest {
     @Container
     @ServiceConnection
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
 
     @Autowired
-    private EnrollmentRepository repository;
-
-    @Autowired
     private TestEntityManager entityManager;
 
-    @Test
-    void shouldFindEnrollmentByUserId() {
-        User user = User.builder()
-                .username("john")
-                .email("john@example.com")
-                .fullName("John Doe")
-                .password("password")
-                .build();
+    @Autowired
+    private EnrollmentRepository repository;
 
-        User savedUser = entityManager.persist(user);
+    private User user;
+    private Course course;
 
-        Course course1 = Course.builder()
-                .creatorId(savedUser.getId())
-                .title("Java Course")
-                .averageRating(0.0)
-                .build();
-
-        Course course2 = Course.builder()
-                .creatorId(savedUser.getId())
-                .title("Java Course")
-                .averageRating(0.0)
-                .build();
-
-
-        Course savedCourse1 = entityManager.persist(course1);
-        Course savedCourse2 = entityManager.persist(course2);
-
-        entityManager.persist(Enrollment.builder().userId(savedUser.getId()).courseId(savedCourse1.getId()).build());
-        entityManager.persist(Enrollment.builder().userId(savedUser.getId()).courseId(savedCourse2.getId()).build());
-
-        entityManager.flush();
-        entityManager.clear();
-
-        Page<Enrollment> result = repository.findByUserId(savedUser.getId(), PageRequest.of(0, 10));
-
-        assertThat(result.getContent()).hasSize(2);
-        assertThat(result.getContent()).extracting(Enrollment::getCourseId)
-                .containsExactlyInAnyOrder(savedCourse1.getId(), savedCourse2.getId());
-    }
-
-    @Test
-    void shouldFindEnrollmentByIdAndUserId() {
-        User user = User.builder()
+    @BeforeEach
+    void setUp() {
+        user = User.builder()
                 .username("john")
                 .email("john@example.com")
                 .fullName("John Doe")
@@ -85,52 +51,120 @@ public class EnrollmentRepositoryTest {
                 .roleType(RoleType.USER)
                 .build();
 
-        User savedUser = entityManager.persist(user);
+        entityManager.persist(user);
 
-        Course course = Course.builder()
-                .creatorId(savedUser.getId())
+        course = Course.builder()
+                .creatorId(user.getId())
                 .title("Java Course")
                 .status(CourseStatus.PUBLIC)
                 .price(BigDecimal.TEN)
                 .averageRating(0.0)
                 .build();
 
-        Course savedCourse = entityManager.persist(course);
+        entityManager.persist(course);
+        entityManager.flush();
+        entityManager.clear();
+    }
 
+
+    @Test
+    void shouldReturnEnrollmentsByUserIdSuccessfully() {
         Enrollment enrollment = Enrollment.builder()
-                .userId(savedUser.getId())
-                .courseId(savedCourse.getId())
+                .userId(user.getId())
+                .courseId(course.getId())
                 .build();
 
-        Enrollment savedEnrollment = entityManager.persist(enrollment);
+        entityManager.persist(enrollment);
+        entityManager.flush();
+        entityManager.clear();
+
+        Page<Enrollment> result = repository.findByUserId(user.getId(), PageRequest.of(0, 10));
+
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getCourseId()).isEqualTo(course.getId());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenUserHasNoEnrollments() {
+        Page<Enrollment> result = repository.findByUserId(user.getId(), PageRequest.of(0, 10));
+
+        assertThat(result.getContent()).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEnrollmentByIdAndUserIdSuccessfully() {
+        Enrollment enrollment = entityManager.persist(Enrollment.builder()
+                .userId(user.getId())
+                .courseId(course.getId())
+                .build());
 
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Enrollment> result = repository.findByCourseIdAndUserId(savedCourse.getId(), savedUser.getId());
+        Optional<Enrollment> result = repository.findByIdAndUserId(enrollment.getId(), user.getId());
 
         assertThat(result).isPresent();
-        assertThat(result.get().getCourseId()).isEqualTo(savedCourse.getId());
-        assertThat(result.get().getUserId()).isEqualTo(savedUser.getId());
+        assertThat(result.get().getId()).isEqualTo(enrollment.getId());
+        assertThat(result.get().getCourseId()).isEqualTo(course.getId());
     }
 
     @Test
-    void shouldReturnEmptyWhenNoEnrollmentExists() {
-        User user = User.builder()
-                .username("john")
-                .email("john@example.com")
-                .fullName("John Doe")
+    void shouldReturnEmptyWhenEnrollmentBelongsToAnotherUser() {
+        Enrollment enrollment = entityManager.persist(Enrollment.builder()
+                .userId(user.getId())
+                .courseId(course.getId())
+                .build());
+
+        User otherUser = User.builder()
+                .username("mary")
+                .email("mary@example.com")
+                .fullName("Mary Doe")
                 .password("password")
                 .roleType(RoleType.USER)
                 .build();
 
-        User savedUser = entityManager.persist(user);
+        entityManager.persist(otherUser);
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(repository.findByIdAndUserId(enrollment.getId(), otherUser.getId())).isEmpty();
+    }
+
+    @Test
+    void shouldReturnEnrollmentByUserIdAndCourseIdSuccessfully() {
+        Enrollment enrollment = entityManager.persist(Enrollment.builder()
+                .userId(user.getId())
+                .courseId(course.getId())
+                .build());
 
         entityManager.flush();
         entityManager.clear();
 
-        Optional<Enrollment> result = repository.findByCourseIdAndUserId(999, savedUser.getId());
+        Optional<Enrollment> result = repository.findByUserIdAndCourseId(user.getId(), course.getId());
 
-        assertThat(result).isEmpty();
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo(enrollment.getId());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenUserIsNotEnrolledInCourse() {
+        assertThat(repository.findByUserIdAndCourseId(user.getId(), course.getId())).isEmpty();
+    }
+
+    @Test
+    void shouldReturnTrueWhenEnrollmentExists() {
+        entityManager.persist(Enrollment.builder()
+                .userId(user.getId())
+                .courseId(course.getId())
+                .build());
+
+        entityManager.flush();
+
+        assertThat(repository.existsByUserIdAndCourseId(user.getId(), course.getId())).isTrue();
+    }
+
+    @Test
+    void shouldReturnFalseWhenEnrollmentDoesNotExist() {
+        assertThat(repository.existsByUserIdAndCourseId(user.getId(), course.getId())).isFalse();
     }
 }

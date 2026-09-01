@@ -8,12 +8,16 @@ import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.section.service.SectionService;
+import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.repository.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,10 +26,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(SectionController.class)
@@ -46,79 +53,90 @@ public class SectionControllerTest {
     @MockitoBean
     private TokenService tokenService;
 
-    @Test
-    @WithMockUser(roles = "CREATOR")
-    void shouldReturn201WhenCreatorCreatesLesson() throws Exception {
-        when(service.createLesson(any(), any(), any()))
-                .thenReturn(
-                        new SectionResponse(
-                                1,
-                                "Section 1",
-                                0,
-                                List.of(
-                                        new LessonResponse(
-                                                1,
-                                                "https://youtube.com/lesson",
-                                                0,
-                                                LocalDateTime.now()
-                                        )
-                                )
-                        )
-                );
+    private User creator;
+    private User user;
+    private UsernamePasswordAuthenticationToken creatorAuth;
+    private UsernamePasswordAuthenticationToken userAuth;
 
-        mockMvc.perform(post("/api/sections/1/lessons")
-                        .with(csrf())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "contentUrl":"https://youtube.com/video",
-                                    "index":0
-                                }
-                                """))
-                .andExpect(status().isCreated());
+
+    @BeforeEach
+    void setUp() {
+        creator = User.builder().id(1).username("creator").build();
+        user = User.builder().id(2).username("user").build();
+        creatorAuth = new UsernamePasswordAuthenticationToken(creator, null, List.of(new SimpleGrantedAuthority("ROLE_CREATOR"), new SimpleGrantedAuthority("ROLE_USER")));
+        userAuth = new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
     }
 
     @Test
-    @WithMockUser(roles = "USER")
-    void shouldReturn403WhenUserCreatesLesson() throws Exception {
-        mockMvc.perform(post("/api/sections/1/lessons")
-                        .with(csrf())
+    void shouldReturn201WhenCreatorCreatesLesson() throws Exception {
+        when(service.createLesson(any(), eq(10), any())).thenReturn(new SectionResponse(10, "Introduction", 1, List.of(new LessonResponse(20, "https://example.com/lesson", 1, null))));
+
+        mockMvc.perform(post("/api/sections/10/lessons").with(authentication(creatorAuth))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "contentUrl":"https://youtube.com/video",
-                                    "index":0
-                                }
-                                """))
+                        .content("{\"contentUrl\":\"https://example.com/lesson\",\"duration\":120,\"position\":1}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(10));
+    }
+
+    @Test
+    void shouldReturn400WhenLessonRequestIsInvalid() throws Exception {
+        mockMvc.perform(post("/api/sections/10/lessons").with(authentication(creatorAuth))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"contentUrl\":\"x\",\"duration\":0,\"position\":0}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn403WhenUserCreatesLesson() throws Exception {
+        mockMvc.perform(post("/api/sections/10/lessons").with(authentication(userAuth))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"contentUrl\":\"https://example.com/lesson\",\"duration\":120,\"position\":1}"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(roles = "CREATOR")
-    void shouldReturn404WhenSectionDoesNotExistOnCreate() throws Exception {
-        when(service.createLesson(any(), any(), any())).thenThrow(new EntityNotFound("Section not found"));
+    void shouldReturn404WhenSectionDoesNotExist() throws Exception {
+        when(service.createLesson(any(), eq(10), any())).thenThrow(new EntityNotFound("Section not found"));
 
-        mockMvc.perform(post("/api/sections/1/lessons")
-                        .with(csrf())
+        mockMvc.perform(post("/api/sections/10/lessons").with(authentication(creatorAuth))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "contentUrl":"https://youtube.com/video",
-                                    "index":0
-                                }
-                                """))
+                        .content("{\"contentUrl\":\"https://example.com/lesson\",\"duration\":120,\"position\":1}"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @WithMockUser(roles = "CREATOR")
-    void shouldReturn200WhenCreatorDeletesLesson() throws Exception {
-        mockMvc.perform(delete("/api/sections/1/lessons/1").with(csrf())).andExpect(status().isNoContent());
+    void shouldReturn204WhenDeletingLesson() throws Exception {
+        mockMvc.perform(delete("/api/sections/10/lessons/20").with(authentication(creatorAuth)))
+                .andExpect(status().isNoContent());
+        verify(service).deleteLesson(creator, 10, 20);
     }
 
     @Test
-    @WithMockUser(roles = "USER")
     void shouldReturn403WhenUserDeletesLesson() throws Exception {
-        mockMvc.perform(delete("/api/sections/1/lessons/1").with(csrf())).andExpect(status().isForbidden());
+        mockMvc.perform(delete("/api/sections/10/lessons/20").with(authentication(userAuth)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldReturn200WhenListingSectionLessons() throws Exception {
+        when(service.findSectionLessons(user, 10)).thenReturn(List.of(new LessonResponse(20, "https://example.com/lesson", 1, null)));
+
+        mockMvc.perform(get("/api/sections/10/lessons").with(authentication(userAuth)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(20));
+    }
+
+    @Test
+    void shouldReturn200WhenFindingLesson() throws Exception {
+        when(service.findLessonById(user, 20)).thenReturn(new LessonResponse(20, "https://example.com/lesson", 1, null));
+
+        mockMvc.perform(get("/api/sections/lessons/20").with(authentication(userAuth)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(20));
+    }
+
+    @Test
+    void shouldReturn403WhenAnonymousUserListsLessons() throws Exception {
+        mockMvc.perform(get("/api/sections/10/lessons")).andExpect(status().isForbidden());
     }
 }
