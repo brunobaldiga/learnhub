@@ -144,7 +144,7 @@ public class CourseControllerTest {
                 .thenReturn(new SectionResponse(
                         1,
                         "Introduction",
-                        0,
+                        1,
                         List.of()
                 ));
 
@@ -154,13 +154,13 @@ public class CourseControllerTest {
                         .content("""
                                 {
                                     "title": "Introduction",
-                                    "position": 0
+                                    "position": 1
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Introduction"))
-                .andExpect(jsonPath("$.position").value(0))
+                .andExpect(jsonPath("$.position").value(1))
                 .andExpect(jsonPath("$.lessons").isArray());
     }
 
@@ -222,7 +222,7 @@ public class CourseControllerTest {
                 .thenReturn(new SectionResponse(
                         1,
                         "Updated Section",
-                        0,
+                        1,
                         List.of()
                 ));
 
@@ -232,7 +232,7 @@ public class CourseControllerTest {
                         .content("""
                                 {
                                     "title":"Updated Section",
-                                    "position":0
+                                    "position":1
                                 }
                                 """))
                 .andExpect(status().isOk())

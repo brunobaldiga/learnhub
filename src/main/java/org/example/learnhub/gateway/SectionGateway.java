@@ -11,8 +11,6 @@ public interface SectionGateway {
 
     SectionResponse update(Integer sectionId, Integer creatorId, SectionRequest request);
 
-    SectionInfo findByIdAndCourseCreatorId(Integer sectionId, Integer creatorId);
-
     void delete(Integer sectionId, Integer creatorId);
 
     Integer countSectionsByCourseId(Integer courseId);

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public record SectionRequest(
+public record   SectionRequest(
         @NotBlank(message = "Title cannot be blank.")
         @Size(
                 min = 3,

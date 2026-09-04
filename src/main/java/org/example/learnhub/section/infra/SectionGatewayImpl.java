@@ -38,18 +38,6 @@ public class SectionGatewayImpl implements SectionGateway {
 
     @Override
     public List<SectionResponse> findAllByCourseId(Integer courseId) {
-        return List.of();
-    }
-
-    @Override
-    public SectionInfo findByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
-        Section section = service.findSectionEntityByIdAndCourseCreatorId(sectionId, creatorId);
-
-        return new SectionInfo(
-                section.getId(),
-                section.getTitle(),
-                section.getPosition(),
-                section.getCourseId()
-        );
+        return service.findAllByCourseId(courseId);
     }
 }

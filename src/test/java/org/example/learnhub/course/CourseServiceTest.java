@@ -191,7 +191,7 @@ public class CourseServiceTest {
         Course course = Course.builder().id(1).creatorId(user.getId()).build();
 
         SectionInfo sectionInfo = new SectionInfo(1, "Section 1", 0, course.getId());
-        SectionRequest request = new SectionRequest("Section 1", 0);
+        SectionRequest request = new SectionRequest("Section 1", 1);
         SectionResponse response = new SectionResponse(1, "Section 1", 0, List.of());
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
@@ -207,7 +207,7 @@ public class CourseServiceTest {
     void shouldReturn409WhenSectionLimitReached() {
         Course course = Course.builder().id(1).creatorId(user.getId()).build();
 
-        SectionRequest request = new SectionRequest("Section 21", 21);
+        SectionRequest request = new SectionRequest("Section 20", 20);
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
         when(sectionGateway.countSectionsByCourseId(course.getId())).thenReturn(20);
@@ -219,7 +219,7 @@ public class CourseServiceTest {
 
     @Test
     void shouldReturn404WhenCourseNotFoundOnSectionCreate() {
-        SectionRequest request = new SectionRequest("Section 21", 21);
+        SectionRequest request = new SectionRequest("Section 20", 20);
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.empty());
 
@@ -275,7 +275,7 @@ public class CourseServiceTest {
 
     @Test
     void shouldSearchCoursesSuccessfully() {
-        Course course = Course.builder().id(1).title("Java").build();
+        Course course = Course.builder().id(1).title("Java").creatorId(user.getId()).build();
 
         CourseResponse response = new CourseResponse(
                 1,

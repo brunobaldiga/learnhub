@@ -14,7 +14,7 @@ public interface CourseRepository extends JpaRepository<Course, Integer>, JpaSpe
     @Query("""
                 SELECT COUNT(v)
                 FROM Lesson v
-                WHERE v.section.course.id = :courseId
+                WHERE v.section.courseId = :courseId
             """)
     Integer countLessonsByCourseId(Integer courseId);
 

@@ -2,6 +2,7 @@ package org.example.learnhub.section.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
+import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.exception.CourseAccessDenied;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.gateway.CourseGateway;
@@ -32,7 +33,7 @@ public class SectionService {
     private final CourseGateway courseGateway;
 
     @Transactional
-    public SectionInfo createSection(SectionRequest request, Integer courseId) {
+    public SectionInfo create(SectionRequest request, Integer courseId) {
         Section section = mapper.toSection(request, courseId);
 
         return mapper.toSectionInfo(repository.save(section));
@@ -124,7 +125,10 @@ public class SectionService {
 
     @Transactional(readOnly = true)
     public Section findSectionEntityByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
-        return repository.findByIdAndCourseCreatorId(sectionId, creatorId)
+        Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
+
+        CourseInfo courseInfo = courseGateway.findBySectionId(sectionId);
+        return repository.findById(sectionId, creatorId)
                 .orElseThrow(() -> new EntityNotFound("Section not found"));
     }
 

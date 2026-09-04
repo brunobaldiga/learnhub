@@ -9,8 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface SectionRepository extends JpaRepository<Section, Integer> {
-    Optional<Section> findByIdAndCourseCreatorId(Integer sectionId, Integer id);
-
     @Query("select coalesce(sum(lesson.duration), 0) from Lesson lesson where lesson.section.courseId = :courseId")
     Integer calculateDurationByCourseId(Integer courseId);
 }

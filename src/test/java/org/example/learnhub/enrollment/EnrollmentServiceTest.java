@@ -118,7 +118,7 @@ public class EnrollmentServiceTest {
 
         assertThatThrownBy(() -> service.enroll(user, 1))
                 .isInstanceOf(UserAlreadyEnrolled.class)
-                .hasMessage("User already enrolled.");
+                .hasMessage("User is already enrolled.");
     }
 
     @Test
@@ -130,8 +130,8 @@ public class EnrollmentServiceTest {
         when(courseGateway.findCourseSummariesById(Set.of(enrollment.getCourseId())))
                 .thenReturn(Map.of(enrollment.getCourseId(), courseSummary));
         when(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId())).thenReturn(10);
-        when(courseGateway.countLessonsByCourseId(10)).thenReturn(4);
-        when(mapper.toDto(enrollment, courseSummary, 2, 4)).thenReturn(response);
+        when(courseGateway.countLessonsByCourseId(enrollment.getId())).thenReturn(4);
+        when(mapper.toDto(enrollment, courseSummary, 10, 4)).thenReturn(response);
 
         Page<EnrollmentResponse> result = service.findEnrolledCourses(1, 0, 10);
 
@@ -144,7 +144,7 @@ public class EnrollmentServiceTest {
 
         assertThatThrownBy(() -> service.findEnrollmentById(1, 1))
                 .isInstanceOf(EntityNotFound.class)
-                .hasMessage("Enrollment not found");
+                .hasMessage("Enrollment not found.");
     }
 
     @Test
@@ -255,11 +255,11 @@ public class EnrollmentServiceTest {
                 .courseLengthInHoursAtIssuance(2).issuedAt(LocalDate.now()).build();
         CertificateResponse response = new CertificateResponse(certificate.getId(), "John Doe", "Java Course", 2, certificate.getIssuedAt());
         when(repository.findByIdAndUserId(1, 1)).thenReturn(Optional.of(enrollment));
-        when(courseGateway.countLessonsByCourseId(10)).thenReturn(4);
+        when(courseGateway.countLessonsByCourseId(enrollment.getCourseId())).thenReturn(4);
         when(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(1)).thenReturn(4);
         when(certificateRepository.existsByEnrollmentId(1)).thenReturn(false);
-        when(lessonGateway.calculateDurationByCourseId(10)).thenReturn(7200);
-        when(courseGateway.findCourseSummaryById(10)).thenReturn(courseSummary);
+        when(lessonGateway.calculateDurationByCourseId(enrollment.getId())).thenReturn(7200);
+        when(courseGateway.findCourseSummaryById(enrollment.getCourseId())).thenReturn(courseSummary);
         when(certificateMapper.toCertificate(user, enrollment, "Java Course", 7200)).thenReturn(certificate);
         when(certificateMapper.toDto(certificate)).thenReturn(response);
 
@@ -270,8 +270,8 @@ public class EnrollmentServiceTest {
     @Test
     void shouldReturnCertificateWhenCourseIsIncomplete() {
         when(repository.findByIdAndUserId(1, 1)).thenReturn(Optional.of(enrollment));
-        when(courseGateway.countLessonsByCourseId(10)).thenReturn(4);
-        when(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(1)).thenReturn(3);
+        when(courseGateway.countLessonsByCourseId(enrollment.getCourseId())).thenReturn(4);
+        when(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId())).thenReturn(3);
 
         assertThatThrownBy(() -> service.generateCertificate(user, 1))
                 .isInstanceOf(CourseNotCompletedException.class);
@@ -280,7 +280,7 @@ public class EnrollmentServiceTest {
     @Test
     void shouldReturn403WhenDuplicateCertificate() {
         when(repository.findByIdAndUserId(1, 1)).thenReturn(Optional.of(enrollment));
-        when(courseGateway.countLessonsByCourseId(10)).thenReturn(4);
+        when(courseGateway.countLessonsByCourseId(enrollment.getCourseId())).thenReturn(4);
         when(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(1)).thenReturn(4);
         when(certificateRepository.existsByEnrollmentId(1)).thenReturn(true);
 
