@@ -5,6 +5,7 @@ import org.example.learnhub.gateway.UserGateway;
 import org.example.learnhub.user.service.UserService;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,5 +22,10 @@ public class UserGatewayImpl implements UserGateway {
     @Override
     public String findUsernameById(Integer userId) {
         return service.findUsernamesById(userId);
+    }
+
+    @Override
+    public List<Integer> findIdsByUsernameContaining(String username) {
+        return service.findIdsByUsernameContaining(username);
     }
 }

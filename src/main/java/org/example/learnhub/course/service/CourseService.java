@@ -6,7 +6,7 @@ import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.repository.CourseSpecs;
-import org.example.learnhub.exception.CourseAccessDenied;
+import org.example.learnhub.exception.CourseAccessDeniedException;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.exception.MaxSectionsReached;
 import org.example.learnhub.gateway.PaymentGateway;
@@ -49,8 +49,14 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public Page<CourseResponse> search(CourseFilter filter, Pageable pageable) {
+        List<Integer> filteredCreatorIds = null;
+
+        if(filter.creatorName() != null && !filter.creatorName().isBlank()) {
+            filteredCreatorIds = userGateway.findIdsByUsernameContaining(filter.creatorName());
+        }
+
         Specification<Course> specification = Specification
-                .where(CourseSpecs.withFilter(filter))
+                .where(CourseSpecs.withFilter(filter, filteredCreatorIds))
                 .and(CourseSpecs.isPublic());
 
         Page<Course> courses = repository.findAll(specification, pageable);
@@ -66,8 +72,14 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public Page<CourseResponse> findUserCourses(User user, CourseFilter filter, Pageable pageable) {
+        List<Integer> filteredCreatorIds = null;
+
+        if(filter.creatorName() != null && !filter.creatorName().isBlank()) {
+            filteredCreatorIds = userGateway.findIdsByUsernameContaining(filter.creatorName());
+        }
+
         Specification<Course> specification = Specification
-                .where(CourseSpecs.withFilter(filter))
+                .where(CourseSpecs.withFilter(filter, filteredCreatorIds))
                 .and(CourseSpecs.ownedBy(user.getId()));
 
         Page<Course> courses = repository.findAll(specification, pageable);
@@ -83,15 +95,28 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public CourseResponse findCourseById(User user, Integer courseId) {
-        Course course = findCourseEntityById(user.getId(), courseId);
+        Course course = findCourseEntityById(courseId);
         String creatorUsername = userGateway.findUsernameById(course.getCreatorId());
 
         return mapper.toDto(course, creatorUsername);
     }
 
-    public Course findCourseEntityById(Integer userId, Integer courseId) {
+
+    @Transactional(readOnly = true)
+    public Course findCourseEntityById(Integer courseId) {
+        return repository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFound("Course not found."));
+    }
+
+    @Transactional(readOnly = true)
+    public Course findOwnedCourseById(Integer creatorId, Integer courseId) {
+        return repository.findByIdAndCreatorId(courseId, creatorId)
+                .orElseThrow(() -> new EntityNotFound("Course not found."));
+    }
+
+    @Transactional(readOnly = true)
+    public Course findPublicCourseById(Integer courseId) {
         return repository.findByIdAndStatus(courseId, CourseStatus.PUBLIC)
-                .or(() -> repository.findByIdAndCreatorId(courseId, userId))
                 .orElseThrow(() -> new EntityNotFound("Course not found."));
     }
 
@@ -112,15 +137,13 @@ public class CourseService {
 
     @Transactional
     public SectionResponse createCourseSection(User user, Integer courseId, SectionRequest request) {
-        Course course = repository.findByIdAndCreatorId(courseId, user.getId())
+        repository.findByIdAndCreatorId(courseId, user.getId())
                 .orElseThrow(() -> new EntityNotFound("Course not found."));
 
         if(sectionGateway.countSectionsByCourseId(courseId) >= 20)
             throw new MaxSectionsReached("Course cannot have more than 20 sections.");
 
         SectionInfo section = sectionGateway.create(request, courseId);
-
-        repository.save(course);
 
         return new SectionResponse(
                 section.id(),
@@ -137,7 +160,7 @@ public class CourseService {
         boolean hasPaid = paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
         boolean isOwner = course.getCreatorId().equals(user.getId());
 
-        if(!hasPaid && !isOwner) throw new CourseAccessDenied("User haven't paid for the course.");
+        if(!hasPaid && !isOwner) throw new CourseAccessDeniedException("User haven't paid for the course.");
 
         return sectionGateway.findAllByCourseId(courseId);
     }

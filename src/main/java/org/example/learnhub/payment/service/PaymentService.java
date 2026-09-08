@@ -2,7 +2,7 @@ package org.example.learnhub.payment.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.entity.CourseStatus;
-import org.example.learnhub.exception.CourseAccessDenied;
+import org.example.learnhub.exception.CourseAccessDeniedException;
 import org.example.learnhub.exception.DuplicatePurchaseException;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.gateway.CourseGateway;
@@ -36,7 +36,7 @@ public class PaymentService {
             throw new DuplicatePurchaseException("User has already paid for this course.");
 
         if(user.getId().equals(course.creatorId()) || !course.status().equals(CourseStatus.PUBLIC))
-            throw new CourseAccessDenied("Course access denied.");
+            throw new CourseAccessDeniedException("Course access denied.");
 
         Payment payment = Payment.builder()
                 .userId(user.getId())

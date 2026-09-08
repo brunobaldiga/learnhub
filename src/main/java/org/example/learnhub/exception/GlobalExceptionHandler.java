@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler({
-            CourseAccessDenied.class,
+            CourseAccessDeniedException.class,
             ReviewOwnershipException.class,
             AuthorizationDeniedException.class,
             CourseNotCompletedException.class

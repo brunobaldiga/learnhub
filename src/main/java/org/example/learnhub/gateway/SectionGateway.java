@@ -13,7 +13,7 @@ public interface SectionGateway {
 
     void delete(Integer sectionId, Integer creatorId);
 
-    Integer countSectionsByCourseId(Integer courseId);
+    long countSectionsByCourseId(Integer courseId);
 
     List<SectionResponse> findAllByCourseId(Integer courseId);
 }

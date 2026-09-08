@@ -50,7 +50,7 @@ public class EnrollmentService {
         CourseInfo course = courseGateway.findById(user.getId(), courseId);
 
         if(!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId))
-            throw new CourseAccessDenied("User haven't bought the course.");
+            throw new CourseAccessDeniedException("User haven't bought the course.");
 
         Optional<Enrollment> existingCourseProgress = repository.findByUserIdAndCourseId(user.getId(), course.id());
 

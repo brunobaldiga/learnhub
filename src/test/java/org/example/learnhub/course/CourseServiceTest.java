@@ -2,11 +2,14 @@ package org.example.learnhub.course;
 
 import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.course.entity.CourseReview;
 import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.course.repository.CourseRepository;
+import org.example.learnhub.course.repository.CourseReviewRepository;
 import org.example.learnhub.course.service.CourseMapper;
+import org.example.learnhub.course.service.CourseReviewService;
 import org.example.learnhub.course.service.CourseService;
-import org.example.learnhub.exception.CourseAccessDenied;
+import org.example.learnhub.exception.CourseAccessDeniedException;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.exception.MaxSectionsReached;
 import org.example.learnhub.gateway.PaymentGateway;
@@ -37,15 +40,18 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CourseServiceTest {
     @Mock
     private CourseRepository repository;
+
+    @Mock
+    private CourseReviewRepository courseReviewRepository;
 
     @Mock
     private SectionGateway sectionGateway;
@@ -61,6 +67,9 @@ public class CourseServiceTest {
 
     @InjectMocks
     private CourseService service;
+
+    @InjectMocks
+    private CourseReviewService courseReviewService;
 
     private User user;
 
@@ -195,7 +204,7 @@ public class CourseServiceTest {
         SectionResponse response = new SectionResponse(1, "Section 1", 0, List.of());
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
-        when(sectionGateway.countSectionsByCourseId(course.getId())).thenReturn(1);
+        when(sectionGateway.countSectionsByCourseId(course.getId())).thenReturn(1L);
         when(sectionGateway.create(any(), any())).thenReturn(sectionInfo);
 
         SectionResponse result = service.createCourseSection(user, course.getId(), request);
@@ -210,7 +219,7 @@ public class CourseServiceTest {
         SectionRequest request = new SectionRequest("Section 20", 20);
 
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.of(course));
-        when(sectionGateway.countSectionsByCourseId(course.getId())).thenReturn(20);
+        when(sectionGateway.countSectionsByCourseId(course.getId())).thenReturn(20L);
 
         assertThatThrownBy(() -> service.createCourseSection(user, course.getId(), request))
                 .isInstanceOf(MaxSectionsReached.class)
@@ -269,7 +278,7 @@ public class CourseServiceTest {
         when(paymentGateway.existsByUserIdAndCourseId(any(), any())).thenReturn(false);
 
         assertThatThrownBy(() -> service.findCourseSection(user, course.getId()))
-                .isInstanceOf(CourseAccessDenied.class)
+                .isInstanceOf(CourseAccessDeniedException.class)
                 .hasMessage("User haven't paid for the course.");
     }
 
@@ -353,5 +362,23 @@ public class CourseServiceTest {
         service.deleteCourseSection(user, 1);
 
         verify(sectionGateway).delete(1, user.getId());
+    }
+
+    @Test
+    void shouldNotDeleteReviewFromAnotherUser() {
+        User user = User.builder().id(1).build();
+        Course course = Course.builder().id(1).title("Java").creatorId(user.getId()).build();
+
+        CourseReview review = CourseReview.builder().id(1).course(course).authorId(2).rating(5).build();
+
+        when(courseReviewRepository.findByIdAndCourseId(review.getId(), course.getId()))
+                .thenReturn(Optional.of(review));
+
+        assertThrows(
+                CourseAccessDeniedException.class,
+                () -> courseReviewService.deleteById(user, course.getId(), user.getId())
+        );
+
+        verify(courseReviewRepository, never()).delete(any(CourseReview.class));
     }
 }

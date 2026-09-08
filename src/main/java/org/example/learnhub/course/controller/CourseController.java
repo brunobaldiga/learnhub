@@ -181,7 +181,7 @@ public class CourseController {
             @RequestBody @Validated CourseReviewRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(courseReviewService.createCourseReview(user, courseId, request));
+                .body(courseReviewService.create(user, courseId, request));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -211,7 +211,7 @@ public class CourseController {
             @PathVariable Integer courseId,
             @PathVariable Integer courseReviewId
     ) {
-        courseReviewService.deleteReviewById(user, courseId, courseReviewId);
+        courseReviewService.deleteById(user, courseId, courseReviewId);
         return ResponseEntity.noContent().build();
     }
 

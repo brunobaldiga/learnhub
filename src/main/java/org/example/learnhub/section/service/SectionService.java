@@ -2,8 +2,7 @@ package org.example.learnhub.section.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
-import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.exception.CourseAccessDenied;
+import org.example.learnhub.exception.CourseAccessDeniedException;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
@@ -57,7 +56,7 @@ public class SectionService {
                 .orElseThrow(() -> new EntityNotFound("Section not found."));
 
         if(!courseGateway.isCourseCreator(section.getCourseId(), creatorId))
-            throw new CourseAccessDenied("You are not the creator of this course.");
+            throw new CourseAccessDeniedException("You are not the creator of this course.");
 
         section.setTitle(request.title());
         section.setPosition(request.position());
@@ -95,7 +94,8 @@ public class SectionService {
         boolean isCourseCreator = courseInfo.creatorId().equals(user.getId());
         boolean isEnrolled = enrollmentGateway.existsByUserIdAndCourseId(user.getId(), courseInfo.id());
 
-        if(!isCourseCreator && !isEnrolled) throw new CourseAccessDenied("User does not have access to this course.");
+        if(!isCourseCreator && !isEnrolled)
+            throw new CourseAccessDeniedException("User does not have access to this course.");
 
         return lessonMapper.toDto(lesson);
     }
@@ -117,7 +117,7 @@ public class SectionService {
         boolean isEnrolled = enrollmentGateway.findByUserIdAndCourseId(user.getId(), courseInfo.id()).isPresent();
 
         if(!isCourseCreator && !isEnrolled)
-            throw new CourseAccessDenied("User does not have access to this course.");
+            throw new CourseAccessDeniedException("User does not have access to this course.");
 
         return lessonRepository.findAllBySectionId(section.getId())
                 .stream().map(lessonMapper::toDto).toList();
@@ -125,14 +125,20 @@ public class SectionService {
 
     @Transactional(readOnly = true)
     public Section findSectionEntityByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
-        Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
-
-        CourseInfo courseInfo = courseGateway.findBySectionId(sectionId);
-        return repository.findById(sectionId, creatorId)
+        Section section = repository.findById(sectionId)
                 .orElseThrow(() -> new EntityNotFound("Section not found"));
+
+        if(!courseGateway.isCourseCreator(section.getCourseId(), creatorId))
+            throw new CourseAccessDeniedException("You do not own this course.");
+
+        return section;
     }
 
     public Integer calculateDurationByCourseId(Integer courseId) {
         return repository.calculateDurationByCourseId(courseId);
+    }
+
+    public long countSectionsByCourseId(Integer courseId) {
+        return repository.countByCourseId(courseId);
     }
 }

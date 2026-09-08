@@ -5,7 +5,6 @@ import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.section.service.SectionService;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +17,7 @@ public class SectionGatewayImpl implements SectionGateway {
 
     @Override
     public SectionInfo create(SectionRequest request, Integer courseId) {
-        return service.createSection(request, courseId);
+        return service.create(request, courseId);
     }
 
     @Override
@@ -32,8 +31,8 @@ public class SectionGatewayImpl implements SectionGateway {
     }
 
     @Override
-    public Integer countSectionsByCourseId(Integer courseId) {
-        return 0;
+    public long countSectionsByCourseId(Integer courseId) {
+        return service.countSectionsByCourseId(courseId);
     }
 
     @Override

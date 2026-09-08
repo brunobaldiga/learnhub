@@ -16,7 +16,7 @@ create unique index uk_users_email_lower on users (lower(email));
 create table courses
 (
     id             serial primary key,
-    user_id        integer          not null,
+    creator_id     integer          not null,
     title          varchar(255)     not null,
     status         varchar(20)      not null,
     price          numeric(38, 2)   not null,
@@ -25,7 +25,7 @@ create table courses
     total_reviews  integer          not null default 0,
     created_at     timestamp(6)     not null,
 
-    constraint fk_course_user foreign key (user_id) references users (id)
+    constraint fk_course_creator foreign key (creator_id) references users (id)
 );
 
 create table enrollments
@@ -122,7 +122,7 @@ create table lesson_progress
 
 create index idx_lesson_progress_enrollment on lesson_progress (enrollment_id);
 create index idx_lesson_progress_lesson on lesson_progress (lesson_id);
-create index idx_course_user on courses (user_id);
+create index idx_course_creator on courses (creator_id);
 
 create index idx_section_course on sections (course_id);
 create index idx_lessons_section on lessons (section_id);
@@ -169,7 +169,7 @@ values ('user',
         CURRENT_TIMESTAMP);
 
 
-insert into courses (user_id, title, status, price, sales_amount, average_rating, total_reviews, created_at)
+insert into courses (creator_id, title, status, price, sales_amount, average_rating, total_reviews, created_at)
 values (2,
         'Spring Boot Masterclass',
         'PUBLIC',

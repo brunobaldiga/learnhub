@@ -106,7 +106,7 @@ public class EnrollmentServiceTest {
         when(paymentGateway.existsByUserIdAndCourseId(user.getId(), courseInfo.id())).thenReturn(false);
 
         assertThatThrownBy(() -> service.enroll(user, 1))
-                .isInstanceOf(CourseAccessDenied.class)
+                .isInstanceOf(CourseAccessDeniedException.class)
                 .hasMessage("User haven't bought the course.");
     }
 

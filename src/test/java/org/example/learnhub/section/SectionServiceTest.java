@@ -1,7 +1,7 @@
 package org.example.learnhub.section;
 
 import org.example.learnhub.course.dto.SectionRequest;
-import org.example.learnhub.exception.CourseAccessDenied;
+import org.example.learnhub.exception.CourseAccessDeniedException;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.exception.MaxLessonsReachedException;
 import org.example.learnhub.gateway.CourseGateway;
@@ -128,7 +128,7 @@ public class SectionServiceTest {
         when(courseGateway.isCourseCreator(20, 2)).thenReturn(false);
 
         assertThatThrownBy(() -> service.update(10, 2, new SectionRequest("Updated", 2)))
-                .isInstanceOf(CourseAccessDenied.class)
+                .isInstanceOf(CourseAccessDeniedException.class)
                 .hasMessage("You are not the creator of this course.");
         verify(repository, never()).save(any());
     }
@@ -195,7 +195,7 @@ public class SectionServiceTest {
         when(enrollmentGateway.existsByUserIdAndCourseId(2, 20)).thenReturn(false);
 
         assertThatThrownBy(() -> service.findLessonById(student, 30))
-                .isInstanceOf(CourseAccessDenied.class)
+                .isInstanceOf(CourseAccessDeniedException.class)
                 .hasMessage("User does not have access to this course.");
     }
 
@@ -245,7 +245,7 @@ public class SectionServiceTest {
         when(enrollmentGateway.findByUserIdAndCourseId(2, 20)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findSectionLessons(student, 10))
-                .isInstanceOf(CourseAccessDenied.class);
+                .isInstanceOf(CourseAccessDeniedException.class);
     }
 
     @Test

@@ -8,10 +8,7 @@ import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseReview;
 import org.example.learnhub.course.repository.CourseReviewRepository;
 import org.example.learnhub.course.repository.CourseReviewSpecs;
-import org.example.learnhub.exception.CourseReviewNotAllowedException;
-import org.example.learnhub.exception.DuplicateReviewException;
-import org.example.learnhub.exception.ReviewOwnershipException;
-import org.example.learnhub.exception.SelfReviewNotAllowedException;
+import org.example.learnhub.exception.*;
 import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.gateway.UserGateway;
 import org.example.learnhub.gateway.dto.EnrollmentInfo;
@@ -37,8 +34,8 @@ public class CourseReviewService {
     private final UserGateway userGateway;
 
     @Transactional
-    public CourseReviewResponse createCourseReview(User user, Integer courseId, CourseReviewRequest request) {
-        Course course = courseService.findCourseEntityById(user.getId(), courseId);
+    public CourseReviewResponse create(User user, Integer courseId, CourseReviewRequest request) {
+        Course course = courseService.findCourseEntityById(courseId);
         Optional<EnrollmentInfo> enrollment = enrollmentGateway.findByUserIdAndCourseId(user.getId(), courseId);
 
         if(course.getCreatorId().equals(user.getId()))
@@ -78,11 +75,12 @@ public class CourseReviewService {
     }
 
     @Transactional
-    public void deleteReviewById(User user, Integer courseId, Integer courseReviewId) {
-        CourseReview courseReview = repository.findByIdAndCourseId(courseReviewId, courseId);
+    public void deleteById(User user, Integer courseId, Integer courseReviewId) {
+        CourseReview courseReview = repository.findByIdAndCourseId(courseReviewId, courseId)
+                .orElseThrow(() -> new EntityNotFound("Course Review not found."));
 
-        if(!courseReview.getId().equals(user.getId()))
-            throw new ReviewOwnershipException("User is not the author of the review.");
+        if(!courseReview.getAuthorId().equals(user.getId()))
+            throw new ReviewOwnershipException("You cannot delete another user's review.");
 
         repository.delete(courseReview);
         courseReview.getCourse().removeReview(courseReview.getRating());

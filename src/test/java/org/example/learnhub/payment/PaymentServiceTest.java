@@ -1,7 +1,7 @@
 package org.example.learnhub.payment;
 
 import org.example.learnhub.course.entity.CourseStatus;
-import org.example.learnhub.exception.CourseAccessDenied;
+import org.example.learnhub.exception.CourseAccessDeniedException;
 import org.example.learnhub.exception.DuplicatePurchaseException;
 import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.gateway.CourseGateway;
@@ -110,7 +110,7 @@ public class PaymentServiceTest {
         when(courseGateway.findById(1, 10)).thenReturn(ownCourse);
         when(repository.existsByUserIdAndCourseId(1, 10)).thenReturn(false);
 
-        assertThatThrownBy(() -> service.purchase(user, 10)).isInstanceOf(CourseAccessDenied.class);
+        assertThatThrownBy(() -> service.purchase(user, 10)).isInstanceOf(CourseAccessDeniedException.class);
     }
 
     @Test
@@ -119,7 +119,7 @@ public class PaymentServiceTest {
         when(courseGateway.findById(1, 10)).thenReturn(privateCourse);
         when(repository.existsByUserIdAndCourseId(1, 10)).thenReturn(false);
 
-        assertThatThrownBy(() -> service.purchase(user, 10)).isInstanceOf(CourseAccessDenied.class);
+        assertThatThrownBy(() -> service.purchase(user, 10)).isInstanceOf(CourseAccessDeniedException.class);
     }
 
     @Test
