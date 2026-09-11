@@ -111,11 +111,10 @@ public class SectionServiceTest {
     void shouldUpdateSectionSuccessfullyWhenCreatorHasAccess() {
         SectionRequest request = new SectionRequest("Updated", 2);
         when(repository.findById(10)).thenReturn(Optional.of(section));
-        when(courseGateway.isCourseCreator(20, 1)).thenReturn(true);
         when(repository.save(section)).thenReturn(section);
         when(mapper.toDto(section)).thenReturn(new SectionResponse(10, "Updated", 2, List.of()));
 
-        SectionResponse result = service.update(10, 1, request);
+        SectionResponse result = service.update(10, request);
 
         assertThat(section.getTitle()).isEqualTo("Updated");
         assertThat(section.getPosition()).isEqualTo(2);

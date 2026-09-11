@@ -9,9 +9,11 @@ import java.util.List;
 public interface SectionGateway {
     SectionInfo create(SectionRequest request, Integer courseId);
 
-    SectionResponse update(Integer sectionId, Integer creatorId, SectionRequest request);
+    SectionInfo findById(Integer sectionId);
 
-    void delete(Integer sectionId, Integer creatorId);
+    SectionResponse update(Integer sectionId, SectionRequest request);
+
+    void delete(Integer sectionId);
 
     long countSectionsByCourseId(Integer courseId);
 

@@ -32,13 +32,6 @@ public class SectionService {
     private final CourseGateway courseGateway;
 
     @Transactional
-    public SectionInfo create(SectionRequest request, Integer courseId) {
-        Section section = mapper.toSection(request, courseId);
-
-        return mapper.toSectionInfo(repository.save(section));
-    }
-
-    @Transactional
     public SectionResponse createLesson(User user, Integer sectionId, LessonRequest request) {
         Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
         Lesson lesson = lessonMapper.toLesson(request);
@@ -48,21 +41,6 @@ public class SectionService {
         repository.save(section);
 
         return mapper.toDto(section);
-    }
-
-    @Transactional
-    public SectionResponse update(Integer sectionId, Integer creatorId, SectionRequest request) {
-        Section section = repository.findById(sectionId)
-                .orElseThrow(() -> new EntityNotFoundException("Section not found."));
-
-        if(!courseGateway.isCourseCreator(section.getCourseId(), creatorId))
-            throw new CourseAccessDeniedException("You are not the creator of this course.");
-
-        section.setTitle(request.title());
-        section.setPosition(request.position());
-        Section saved = repository.save(section);
-
-        return mapper.toDto(saved);
     }
 
     @Transactional
@@ -81,8 +59,7 @@ public class SectionService {
 
     @Transactional
     public void delete(Integer sectionId, Integer creatorId) {
-        Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, creatorId);
-        repository.delete(section);
+
     }
 
     @Transactional(readOnly = true)
@@ -136,16 +113,5 @@ public class SectionService {
 
     public Integer calculateDurationByCourseId(Integer courseId) {
         return repository.calculateDurationByCourseId(courseId);
-    }
-
-    public long countSectionsByCourseId(Integer courseId) {
-        return repository.countByCourseId(courseId);
-    }
-
-    public List<SectionResponse> findAllByCourseId(Integer courseId) {
-        return repository.findAllByCourseIdOrderByPositionAsc(courseId)
-                .stream()
-                .map(mapper::toDto)
-                .toList();
     }
 }

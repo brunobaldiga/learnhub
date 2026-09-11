@@ -350,7 +350,7 @@ public class CourseServiceTest {
         SectionRequest request = new SectionRequest("New Title", 1);
         SectionResponse response = new SectionResponse(1, "New Title", 1, List.of());
 
-        when(sectionGateway.update(1, user.getId(), request)).thenReturn(response);
+        when(sectionGateway.update(1, request)).thenReturn(response);
 
         SectionResponse result = service.updateCourseSection(user, 1, request);
 
@@ -361,7 +361,7 @@ public class CourseServiceTest {
     void shouldDeleteSectionSuccessfully() {
         service.deleteCourseSection(user, 1);
 
-        verify(sectionGateway).delete(1, user.getId());
+        verify(sectionGateway).delete(1);
     }
 
     @Test

@@ -101,7 +101,6 @@ public class CourseService {
         return mapper.toDto(course, creatorUsername);
     }
 
-
     @Transactional(readOnly = true)
     public Course findCourseEntityById(Integer courseId) {
         return repository.findById(courseId)
@@ -166,12 +165,22 @@ public class CourseService {
     }
 
     public SectionResponse updateCourseSection(User user, Integer sectionId, SectionRequest request) {
-        return sectionGateway.update(sectionId, user.getId(), request);
+        Integer courseId = sectionGateway.findById(sectionId).courseId();
+
+        if (!isCourseCreator(courseId, user.getId()))
+            throw new CourseAccessDeniedException("You do not own this course.");
+
+        return sectionGateway.update(sectionId, request);
     }
 
     @Transactional
     public void deleteCourseSection(User user, Integer sectionId) {
-        sectionGateway.delete(sectionId, user.getId());
+        Integer courseId = sectionGateway.findById(sectionId).courseId();
+
+        if (!isCourseCreator(courseId, user.getId()))
+            throw new CourseAccessDeniedException("You do not own this course.");
+
+        sectionGateway.delete(sectionId);
     }
 
     @Transactional
@@ -181,7 +190,6 @@ public class CourseService {
         course.setSalesAmount(course.getSalesAmount() + 1);
         repository.save(course);
     }
-
 
     public void recordReview(Integer courseId, Integer rating) {
         Course course = repository.findById(courseId)
