@@ -10,7 +10,9 @@ import org.example.learnhub.enrollment.dto.ProgressRequest;
 import org.example.learnhub.enrollment.dto.ProgressResponse;
 import org.example.learnhub.enrollment.service.EnrollmentService;
 import org.example.learnhub.user.entity.User;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,10 +43,10 @@ public class EnrollmentController {
     )
     public ResponseEntity<Page<EnrollmentResponse>> findUserEnrollments(
             @AuthenticationPrincipal User user,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @ParameterObject Pageable pageable
     ) {
-        return ResponseEntity.ok(service.findEnrolledCourses(user.getId(), page, size));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findEnrolledCourses(user.getId(), pageable));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -57,7 +59,8 @@ public class EnrollmentController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer enrollmentId
     ) {
-        return ResponseEntity.ok(service.findEnrollmentById(user.getId(), enrollmentId));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findEnrollmentById(user.getId(), enrollmentId));
     }
 
     @PostMapping("/lessons/{lessonId}/start")

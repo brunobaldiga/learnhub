@@ -35,6 +35,7 @@ public class CourseGatewayImpl implements CourseGateway {
                 course.getCreatorId(),
                 course.getTitle(),
                 course.getPrice(),
+                course.getCurrency(),
                 course.getStatus()
         );
     }

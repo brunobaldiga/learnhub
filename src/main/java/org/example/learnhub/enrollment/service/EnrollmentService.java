@@ -20,7 +20,6 @@ import org.example.learnhub.gateway.dto.CourseSummary;
 import org.example.learnhub.gateway.dto.LessonInfo;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +53,7 @@ public class EnrollmentService {
 
         Optional<Enrollment> existingCourseProgress = repository.findByUserIdAndCourseId(user.getId(), course.id());
 
-        if(existingCourseProgress.isPresent()) throw new UserAlreadyEnrolled("User is already enrolled.");
+        if(existingCourseProgress.isPresent()) throw new UserAlreadyEnrolledException("User is already enrolled.");
 
         Enrollment courseProgress = Enrollment.builder()
                 .userId(user.getId())
@@ -65,8 +64,7 @@ public class EnrollmentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<EnrollmentResponse> findEnrolledCourses(Integer userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<EnrollmentResponse> findEnrolledCourses(Integer userId, Pageable pageable) {
         Page<Enrollment> enrollments = repository.findByUserId(userId, pageable);
 
         Set<Integer> courseIds = enrollments.getContent().stream()
@@ -86,7 +84,7 @@ public class EnrollmentService {
     @Transactional(readOnly = true)
     public EnrollmentResponse findEnrollmentById(Integer userId, Integer enrollmentId) {
         Enrollment enrollment = repository.findByIdAndUserId(enrollmentId, userId)
-                .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Enrollment not found."));
 
         Integer completedLessons = lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollmentId);
         Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourseId());
@@ -100,7 +98,7 @@ public class EnrollmentService {
         LessonInfo lessonInfo = lessonGateway.findById(lessonId);
 
         Enrollment enrollment = repository.findByUserIdAndCourseId(user.getId(), lessonInfo.courseId())
-                .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Enrollment not found."));
 
         Integer completedLessons = lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId());
 
@@ -136,10 +134,10 @@ public class EnrollmentService {
             throw new InvalidLessonProgressException("Progress cannot exceed the lesson duration.");
 
         Enrollment enrollment = repository.findByUserIdAndCourseId(user.getId(), lessonInfo.courseId())
-                .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Enrollment not found."));
 
         LessonProgress lessonProgress = lessonProgressRepository.findByLessonIdAndEnrollmentId(lessonId, enrollment.getId())
-                .orElseThrow(() -> new EntityNotFound("Lesson progress not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Lesson progress not found."));
 
         Integer completedLessons = lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollment.getId());
 
@@ -175,7 +173,7 @@ public class EnrollmentService {
     @Transactional
     public CertificateResponse generateCertificate(User user, Integer enrollmentId) {
         Enrollment enrollment = repository.findByIdAndUserId(enrollmentId, user.getId())
-                .orElseThrow(() -> new EntityNotFound("Enrollment not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Enrollment not found."));
 
         Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourseId());
 
@@ -199,7 +197,7 @@ public class EnrollmentService {
     public CertificateResponse findCertificateById(UUID certificateId) {
         return certificateMapper.toDto(
                 certificateRepository.findById(certificateId)
-                        .orElseThrow(() -> new EntityNotFound("Certificate not found."))
+                        .orElseThrow(() -> new EntityNotFoundException("Certificate not found."))
         );
     }
 

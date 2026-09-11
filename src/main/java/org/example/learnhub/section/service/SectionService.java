@@ -3,7 +3,7 @@ package org.example.learnhub.section.service;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.exception.CourseAccessDeniedException;
-import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.gateway.dto.CourseInfo;
@@ -53,7 +53,7 @@ public class SectionService {
     @Transactional
     public SectionResponse update(Integer sectionId, Integer creatorId, SectionRequest request) {
         Section section = repository.findById(sectionId)
-                .orElseThrow(() -> new EntityNotFound("Section not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Section not found."));
 
         if(!courseGateway.isCourseCreator(section.getCourseId(), creatorId))
             throw new CourseAccessDeniedException("You are not the creator of this course.");
@@ -72,7 +72,7 @@ public class SectionService {
         Lesson lesson = section.getLessons()
                 .stream()
                 .filter(l -> l.getId().equals(lessonId))
-                .findFirst().orElseThrow(() -> new EntityNotFound("Lesson not found."));
+                .findFirst().orElseThrow(() -> new EntityNotFoundException("Lesson not found."));
 
         section.getLessons().remove(lesson);
 
@@ -103,13 +103,13 @@ public class SectionService {
     @Transactional(readOnly = true)
     public Lesson findLessonEntityById(Integer lessonId) {
         return lessonRepository.findById(lessonId).orElseThrow(
-                () -> new EntityNotFound("Lesson not found."));
+                () -> new EntityNotFoundException("Lesson not found."));
     }
 
     @Transactional(readOnly = true)
     public List<LessonResponse> findSectionLessons(User user, Integer sectionId) {
         Section section = repository.findById(sectionId)
-                .orElseThrow(() -> new EntityNotFound("Section not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Section not found"));
 
         CourseInfo courseInfo = courseGateway.findById(user.getId(), section.getCourseId());
 
@@ -126,7 +126,7 @@ public class SectionService {
     @Transactional(readOnly = true)
     public Section findSectionEntityByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
         Section section = repository.findById(sectionId)
-                .orElseThrow(() -> new EntityNotFound("Section not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Section not found"));
 
         if(!courseGateway.isCourseCreator(section.getCourseId(), creatorId))
             throw new CourseAccessDeniedException("You do not own this course.");
@@ -140,5 +140,12 @@ public class SectionService {
 
     public long countSectionsByCourseId(Integer courseId) {
         return repository.countByCourseId(courseId);
+    }
+
+    public List<SectionResponse> findAllByCourseId(Integer courseId) {
+        return repository.findAllByCourseIdOrderByPositionAsc(courseId)
+                .stream()
+                .map(mapper::toDto)
+                .toList();
     }
 }

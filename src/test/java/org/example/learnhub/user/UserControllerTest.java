@@ -2,7 +2,7 @@ package org.example.learnhub.user;
 
 import org.example.learnhub.config.SecurityConfiguration;
 import org.example.learnhub.config.TokenService;
-import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.user.controller.UserController;
 import org.example.learnhub.user.dto.RoleType;
 import org.example.learnhub.user.dto.TokenResponse;
@@ -130,7 +130,7 @@ public class UserControllerTest {
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
 
-        when(service.findById(any())).thenThrow(new EntityNotFound("User not found"));
+        when(service.findById(any())).thenThrow(new EntityNotFoundException("User not found"));
 
         mockMvc.perform(get("/api/users/me")
                         .with(authentication(

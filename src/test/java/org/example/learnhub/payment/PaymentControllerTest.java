@@ -3,7 +3,7 @@ package org.example.learnhub.payment;
 
 import org.example.learnhub.config.SecurityConfiguration;
 import org.example.learnhub.config.TokenService;
-import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.payment.controller.PaymentController;
 import org.example.learnhub.payment.dto.PurchaseResponse;
 import org.example.learnhub.payment.service.PaymentService;
@@ -134,7 +134,7 @@ public class PaymentControllerTest {
                 List.of(new SimpleGrantedAuthority("ROLE_" + role))
         );
 
-        when(service.findById(any(), anyInt())).thenThrow(new EntityNotFound("Payment not found"));
+        when(service.findById(any(), anyInt())).thenThrow(new EntityNotFoundException("Payment not found"));
 
         mockMvc.perform(get("/api/payments/{paymentId}", paymentId)
                         .with(authentication(

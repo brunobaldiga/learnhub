@@ -1,11 +1,8 @@
 package org.example.learnhub.course.dto;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
-public record   SectionRequest(
+public record SectionRequest(
         @NotBlank(message = "Title cannot be blank.")
         @Size(
                 min = 3,
@@ -14,6 +11,7 @@ public record   SectionRequest(
         )
         String title,
 
+        @NotNull
         @Min(1) @Max(20)
         Integer position
 ) {

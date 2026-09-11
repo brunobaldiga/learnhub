@@ -70,7 +70,8 @@ public class CourseController {
             @ParameterObject CourseFilter filter,
             @ParameterObject Pageable pageable
     ) {
-        return ResponseEntity.ok(service.search(filter, pageable));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.search(filter, pageable));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
@@ -84,7 +85,8 @@ public class CourseController {
             @ParameterObject CourseFilter filter,
             @ParameterObject Pageable pageable
     ) {
-        return ResponseEntity.ok(service.findUserCourses(user, filter, pageable));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findUserCourses(user, filter, pageable));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -97,7 +99,8 @@ public class CourseController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId
     ) {
-        return ResponseEntity.ok(service.findCourseById(user, courseId));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findCourseById(user, courseId));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
@@ -111,7 +114,8 @@ public class CourseController {
             @PathVariable Integer courseId,
             @RequestBody @Validated UpdateCourseRequest request
     ) {
-        return ResponseEntity.ok(service.updateCourseById(user, courseId, request));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.updateCourseById(user, courseId, request));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
@@ -125,7 +129,8 @@ public class CourseController {
             @PathVariable Integer courseId,
             @RequestBody @Validated SectionRequest request
     ) {
-        return ResponseEntity.ok(service.createCourseSection(user, courseId, request));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.createCourseSection(user, courseId, request));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
@@ -139,7 +144,8 @@ public class CourseController {
             @PathVariable Integer sectionId,
             @RequestBody @Validated SectionRequest request
     ) {
-        return ResponseEntity.ok(service.updateCourseSection(user, sectionId, request));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.updateCourseSection(user, sectionId, request));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
@@ -166,7 +172,8 @@ public class CourseController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId
     ) {
-        return ResponseEntity.ok(service.findCourseSection(user, courseId));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findCourseSection(user, courseId));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -197,7 +204,8 @@ public class CourseController {
             @RequestParam(defaultValue = "25") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(courseReviewService.findCourseReviews(courseId, filter, pageable));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(courseReviewService.findCourseReviews(courseId, filter, pageable));
     }
 
     @PreAuthorize("hasRole('USER')")

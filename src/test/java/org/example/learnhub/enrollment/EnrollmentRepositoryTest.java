@@ -3,9 +3,7 @@ package org.example.learnhub.enrollment;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.enrollment.entity.Enrollment;
-import org.example.learnhub.enrollment.repository.CertificateRepository;
 import org.example.learnhub.enrollment.repository.EnrollmentRepository;
-import org.example.learnhub.enrollment.repository.LessonProgressRepository;
 import org.example.learnhub.user.dto.RoleType;
 import org.example.learnhub.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
 @DataJpaTest
-public class  EnrollmentRepositoryTest {
+public class EnrollmentRepositoryTest {
     @Container
     @ServiceConnection
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
@@ -58,7 +56,6 @@ public class  EnrollmentRepositoryTest {
                 .title("Java Course")
                 .status(CourseStatus.PUBLIC)
                 .price(BigDecimal.TEN)
-                .averageRating(0.0)
                 .build();
 
         entityManager.persist(course);

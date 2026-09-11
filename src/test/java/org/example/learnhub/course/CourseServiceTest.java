@@ -10,8 +10,9 @@ import org.example.learnhub.course.service.CourseMapper;
 import org.example.learnhub.course.service.CourseReviewService;
 import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.exception.CourseAccessDeniedException;
-import org.example.learnhub.exception.EntityNotFound;
-import org.example.learnhub.exception.MaxSectionsReached;
+import org.example.learnhub.exception.EntityNotFoundException;
+import org.example.learnhub.exception.MaxSectionsReachedException;
+import org.example.learnhub.exception.ReviewOwnershipException;
 import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.gateway.UserGateway;
@@ -146,7 +147,7 @@ public class CourseServiceTest {
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findCourseById(user, 1))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Course not found.");
     }
 
@@ -179,7 +180,6 @@ public class CourseServiceTest {
 
         CourseResponse result = service.updateCourseById(user, course.getId(), request);
 
-        verify(repository).save(course);
         assertThat(result).isEqualTo(response);
     }
 
@@ -190,7 +190,7 @@ public class CourseServiceTest {
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.updateCourseById(user, 1, request))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Course not found.");
 
     }
@@ -222,7 +222,7 @@ public class CourseServiceTest {
         when(sectionGateway.countSectionsByCourseId(course.getId())).thenReturn(20L);
 
         assertThatThrownBy(() -> service.createCourseSection(user, course.getId(), request))
-                .isInstanceOf(MaxSectionsReached.class)
+                .isInstanceOf(MaxSectionsReachedException.class)
                 .hasMessage("Course cannot have more than 20 sections.");
     }
 
@@ -233,7 +233,7 @@ public class CourseServiceTest {
         when(repository.findByIdAndCreatorId(any(), any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.createCourseSection(user, 1, request))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Course not found.");
     }
 
@@ -375,7 +375,7 @@ public class CourseServiceTest {
                 .thenReturn(Optional.of(review));
 
         assertThrows(
-                CourseAccessDeniedException.class,
+                ReviewOwnershipException.class,
                 () -> courseReviewService.deleteById(user, course.getId(), user.getId())
         );
 

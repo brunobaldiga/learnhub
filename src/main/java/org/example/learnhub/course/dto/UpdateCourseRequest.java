@@ -1,12 +1,14 @@
 package org.example.learnhub.course.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Size;
 import org.example.learnhub.course.entity.CourseStatus;
+import org.example.learnhub.integration.frankfurter.currency.CurrencyCode;
 
 import java.math.BigDecimal;
 
 public record UpdateCourseRequest(
-        @NotBlank(message = "Title cannot be blank")
         @Size(
                 min = 3,
                 max = 30,
@@ -14,11 +16,12 @@ public record UpdateCourseRequest(
         )
         String title,
 
-        @NotNull
         CourseStatus status,
 
         @DecimalMin("0.0")
         @DecimalMax("999999.99")
-        BigDecimal price
+        BigDecimal price,
+
+        CurrencyCode currency
 ) {
 }

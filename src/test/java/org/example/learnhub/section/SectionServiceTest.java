@@ -2,7 +2,7 @@ package org.example.learnhub.section;
 
 import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.exception.CourseAccessDeniedException;
-import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.exception.MaxLessonsReachedException;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
@@ -103,7 +103,7 @@ public class SectionServiceTest {
         when(repository.findByIdAndCourseCreatorId(10, 1)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.createLesson(creator, 10, new LessonRequest("https://example.com/lesson", 120, 1)))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Section not found");
     }
 
@@ -151,7 +151,7 @@ public class SectionServiceTest {
         when(repository.findByIdAndCourseCreatorId(10, 1)).thenReturn(Optional.of(section));
 
         assertThatThrownBy(() -> service.deleteLesson(creator, 10, 30))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Lesson not found.");
     }
 
@@ -224,7 +224,7 @@ public class SectionServiceTest {
         when(lessonRepository.findById(30)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findLessonEntityById(30))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Lesson not found.");
     }
 

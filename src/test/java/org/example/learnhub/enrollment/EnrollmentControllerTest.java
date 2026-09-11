@@ -5,7 +5,7 @@ import org.example.learnhub.enrollment.controller.EnrollmentController;
 import org.example.learnhub.enrollment.dto.EnrollmentResponse;
 import org.example.learnhub.enrollment.repository.EnrollmentRepository;
 import org.example.learnhub.enrollment.service.EnrollmentService;
-import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +26,6 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -81,7 +80,7 @@ public class EnrollmentControllerTest {
     void shouldReturn404WhenEnrollmentDoesNotExists(String role) throws Exception {
         Integer enrollmentId = 1;
 
-        when(service.findEnrollmentById(any(), any())).thenThrow(new EntityNotFound("Enrollment not found"));
+        when(service.findEnrollmentById(any(), any())).thenThrow(new EntityNotFoundException("Enrollment not found"));
 
         mockMvc.perform(get("/api/enrollments/{enrollmentId}", enrollmentId)
                 .with(authentication(
@@ -100,7 +99,7 @@ public class EnrollmentControllerTest {
 
         List<EnrollmentResponse> list = List.of(enrollmentResponse);
         Page<EnrollmentResponse> page = new PageImpl<>(list, PageRequest.of(0, 10), list.size());
-        when(service.findEnrolledCourses(any(), anyInt(), anyInt())).thenReturn(page);
+        when(service.findEnrolledCourses(any())).thenReturn(page);
 
         mockMvc.perform(get("/api/enrollments")
                         .with(authentication(

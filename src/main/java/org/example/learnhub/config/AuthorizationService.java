@@ -1,7 +1,6 @@
 package org.example.learnhub.config;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.exception.EntityNotFound;
 import org.example.learnhub.user.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

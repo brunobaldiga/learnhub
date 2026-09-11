@@ -3,11 +3,10 @@ package org.example.learnhub.payment;
 import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.exception.CourseAccessDeniedException;
 import org.example.learnhub.exception.DuplicatePurchaseException;
-import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.gateway.dto.CourseInfo;
-import org.example.learnhub.payment.dto.CurrencyType;
 import org.example.learnhub.payment.dto.PurchaseResponse;
 import org.example.learnhub.payment.entity.Payment;
 import org.example.learnhub.payment.repository.PaymentRepository;
@@ -150,7 +149,7 @@ public class PaymentServiceTest {
         when(repository.findByIdAndUserId(1, 1)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findById(user, 1))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Payment not found");
     }
 }

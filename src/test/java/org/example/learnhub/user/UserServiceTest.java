@@ -1,9 +1,9 @@
 package org.example.learnhub.user;
 
 import org.example.learnhub.config.TokenService;
-import org.example.learnhub.exception.EmailAlreadyInUse;
-import org.example.learnhub.exception.EntityNotFound;
-import org.example.learnhub.exception.UsernameAlreadyInUse;
+import org.example.learnhub.exception.EmailAlreadyInUseException;
+import org.example.learnhub.exception.EntityNotFoundException;
+import org.example.learnhub.exception.UsernameAlreadyInUseException;
 import org.example.learnhub.user.dto.TokenResponse;
 import org.example.learnhub.user.dto.UserLoginRequest;
 import org.example.learnhub.user.dto.UserRegisterRequest;
@@ -102,7 +102,7 @@ public class UserServiceTest {
         when(repository.existsByEmailIgnoreCase(request.email())).thenReturn(true);
 
         assertThatThrownBy(() -> service.register(request))
-                .isInstanceOf(EmailAlreadyInUse.class)
+                .isInstanceOf(EmailAlreadyInUseException.class)
                 .hasMessage("Email is already in use.");
     }
 
@@ -119,7 +119,7 @@ public class UserServiceTest {
         when(repository.existsByUsernameIgnoreCase(request.username())).thenReturn(true);
 
         assertThatThrownBy(() -> service.register(request))
-                .isInstanceOf(UsernameAlreadyInUse.class)
+                .isInstanceOf(UsernameAlreadyInUseException.class)
                 .hasMessage("Username is already in use.");
     }
 
@@ -163,7 +163,7 @@ public class UserServiceTest {
         when(repository.findById(any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findById(1))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("User not found");
     }
 }

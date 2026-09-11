@@ -23,6 +23,7 @@ public class CourseReviewMapper {
 
     public CourseReviewResponse toDto(CourseReview courseReview, String authorUsername) {
         return new CourseReviewResponse(
+                courseReview.getId(),
                 authorUsername,
                 courseReview.getRating(),
                 courseReview.getComment(),

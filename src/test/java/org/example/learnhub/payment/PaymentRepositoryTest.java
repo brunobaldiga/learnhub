@@ -2,7 +2,6 @@ package org.example.learnhub.payment;
 
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
-import org.example.learnhub.payment.dto.CurrencyType;
 import org.example.learnhub.payment.entity.Payment;
 import org.example.learnhub.payment.repository.PaymentRepository;
 import org.example.learnhub.user.dto.RoleType;
@@ -59,7 +58,6 @@ public class PaymentRepositoryTest {
                 .title("Java Course")
                 .status(CourseStatus.PUBLIC)
                 .price(BigDecimal.TEN)
-                .averageRating(0.0)
                 .build();
 
         entityManager.persist(course);

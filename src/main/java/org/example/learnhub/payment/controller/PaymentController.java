@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.payment.dto.PurchaseRequest;
 import org.example.learnhub.payment.dto.PurchaseResponse;
 import org.example.learnhub.payment.service.PaymentService;
 import org.example.learnhub.user.entity.User;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -37,11 +39,12 @@ public class PaymentController {
     )
     public ResponseEntity<PurchaseResponse> purchase(
             @AuthenticationPrincipal User user,
-            @PathVariable Integer courseId
+            @PathVariable Integer courseId,
+            @RequestBody @Validated PurchaseRequest request
     ) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(service.purchase(user, courseId));
+                .body(service.purchase(user, courseId, request));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -56,7 +59,8 @@ public class PaymentController {
             @RequestParam(required = false) LocalDate endDate,
             @ParameterObject Pageable pageable
     ) {
-        return ResponseEntity.ok(service.history(user, startDate, endDate, pageable));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.history(user, startDate, endDate, pageable));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -69,6 +73,7 @@ public class PaymentController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer paymentId
     ) {
-        return ResponseEntity.ok(service.findById(user, paymentId));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findById(user, paymentId));
     }
 }

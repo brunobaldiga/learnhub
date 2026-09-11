@@ -2,7 +2,7 @@ package org.example.learnhub.section;
 
 import org.example.learnhub.config.SecurityConfiguration;
 import org.example.learnhub.config.TokenService;
-import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.section.controller.SectionController;
 import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
@@ -18,11 +18,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -30,7 +28,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -96,7 +93,7 @@ public class SectionControllerTest {
 
     @Test
     void shouldReturn404WhenSectionDoesNotExist() throws Exception {
-        when(service.createLesson(any(), eq(10), any())).thenThrow(new EntityNotFound("Section not found"));
+        when(service.createLesson(any(), eq(10), any())).thenThrow(new EntityNotFoundException("Section not found"));
 
         mockMvc.perform(post("/api/sections/10/lessons").with(authentication(creatorAuth))
                         .contentType(MediaType.APPLICATION_JSON)

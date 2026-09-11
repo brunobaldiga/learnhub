@@ -7,8 +7,8 @@ import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.repository.CourseSpecs;
 import org.example.learnhub.exception.CourseAccessDeniedException;
-import org.example.learnhub.exception.EntityNotFound;
-import org.example.learnhub.exception.MaxSectionsReached;
+import org.example.learnhub.exception.EntityNotFoundException;
+import org.example.learnhub.exception.MaxSectionsReachedException;
 import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.gateway.UserGateway;
@@ -105,19 +105,19 @@ public class CourseService {
     @Transactional(readOnly = true)
     public Course findCourseEntityById(Integer courseId) {
         return repository.findById(courseId)
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
     }
 
     @Transactional(readOnly = true)
-    public Course findOwnedCourseById(Integer creatorId, Integer courseId) {
+    public Course findOwnedCourseByIdAndCreatorId(Integer courseId, Integer creatorId) {
         return repository.findByIdAndCreatorId(courseId, creatorId)
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
     }
 
     @Transactional(readOnly = true)
     public Course findPublicCourseById(Integer courseId) {
         return repository.findByIdAndStatus(courseId, CourseStatus.PUBLIC)
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
     }
 
     @Transactional(readOnly = true)
@@ -128,7 +128,7 @@ public class CourseService {
     @Transactional
     public CourseResponse updateCourseById(User user, Integer courseId, UpdateCourseRequest request) {
         Course course = repository.findByIdAndCreatorId(courseId, user.getId())
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
 
         mapper.updateCourse(course, request);
 
@@ -138,10 +138,10 @@ public class CourseService {
     @Transactional
     public SectionResponse createCourseSection(User user, Integer courseId, SectionRequest request) {
         repository.findByIdAndCreatorId(courseId, user.getId())
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
 
         if(sectionGateway.countSectionsByCourseId(courseId) >= 20)
-            throw new MaxSectionsReached("Course cannot have more than 20 sections.");
+            throw new MaxSectionsReachedException("Course cannot have more than 20 sections.");
 
         SectionInfo section = sectionGateway.create(request, courseId);
 
@@ -155,7 +155,7 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public List<SectionResponse> findCourseSection(User user, Integer courseId) {
-        Course course = findCourseEntityById(user.getId(), courseId);
+        Course course = findCourseEntityById(courseId);
 
         boolean hasPaid = paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
         boolean isOwner = course.getCreatorId().equals(user.getId());
@@ -177,7 +177,7 @@ public class CourseService {
     @Transactional
     public void incrementSalesAmount(Integer courseId) {
         Course course = repository.findById(courseId)
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
         course.setSalesAmount(course.getSalesAmount() + 1);
         repository.save(course);
     }
@@ -185,7 +185,7 @@ public class CourseService {
 
     public void recordReview(Integer courseId, Integer rating) {
         Course course = repository.findById(courseId)
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
 
         course.addReview(rating);
         repository.save(course);
@@ -197,7 +197,7 @@ public class CourseService {
 
     public CourseSummary findCourseSummaryById(Integer courseId) {
         Course course = repository.findById(courseId)
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
         String creatorUsername = userGateway.findUsernameById(course.getCreatorId());
 
         return new CourseSummary(course.getId(), course.getTitle(), creatorUsername);

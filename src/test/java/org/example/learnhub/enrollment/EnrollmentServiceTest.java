@@ -117,7 +117,7 @@ public class EnrollmentServiceTest {
         when(repository.findByUserIdAndCourseId(user.getId(), courseInfo.id())).thenReturn(Optional.of(enrollment));
 
         assertThatThrownBy(() -> service.enroll(user, 1))
-                .isInstanceOf(UserAlreadyEnrolled.class)
+                .isInstanceOf(UserAlreadyEnrolledException.class)
                 .hasMessage("User is already enrolled.");
     }
 
@@ -143,7 +143,7 @@ public class EnrollmentServiceTest {
         when(repository.findByIdAndUserId(1, 1)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findEnrollmentById(1, 1))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Enrollment not found.");
     }
 
@@ -185,7 +185,7 @@ public class EnrollmentServiceTest {
         when(repository.findByUserIdAndCourseId(1, 10)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.startLesson(user, 20))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Enrollment not found.");
     }
 
@@ -244,7 +244,7 @@ public class EnrollmentServiceTest {
         when(lessonProgressRepository.findByLessonIdAndEnrollmentId(20, 1)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.progress(user, 20, new ProgressRequest(20)))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Lesson progress not found.");
     }
 
@@ -305,7 +305,7 @@ public class EnrollmentServiceTest {
         when(certificateRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findCertificateById(id))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Certificate not found.");
     }
 

@@ -77,7 +77,7 @@ public class CourseReviewService {
     @Transactional
     public void deleteById(User user, Integer courseId, Integer courseReviewId) {
         CourseReview courseReview = repository.findByIdAndCourseId(courseReviewId, courseId)
-                .orElseThrow(() -> new EntityNotFound("Course Review not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course Review not found."));
 
         if(!courseReview.getAuthorId().equals(user.getId()))
             throw new ReviewOwnershipException("You cannot delete another user's review.");

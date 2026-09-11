@@ -59,7 +59,6 @@ public class SectionRepositoryTest {
                 .title("Java Course")
                 .status(CourseStatus.PUBLIC)
                 .price(BigDecimal.TEN)
-                .averageRating(0.0)
                 .build();
 
         entityManager.persist(course);
