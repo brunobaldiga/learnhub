@@ -35,7 +35,7 @@ public class PaymentService {
 
     @Transactional
     public PurchaseResponse purchase(User user, Integer courseId, PurchaseRequest request) {
-        CourseInfo course = courseGateway.findById(user.getId(), courseId);
+        CourseInfo course = courseGateway.findById(courseId);
 
         if(user.getId().equals(course.creatorId()) || !course.status().equals(CourseStatus.PUBLIC))
             throw new CourseAccessDeniedException("Course access denied.");

@@ -27,8 +27,8 @@ public class CourseGatewayImpl implements CourseGateway {
     }
 
     @Override
-    public CourseInfo findById(Integer userId, Integer courseId) {
-        Course course = service.findCourseEntityById(userId);
+    public CourseInfo findById(Integer courseId) {
+        Course course = service.findEntityById(courseId);
 
         return new CourseInfo(
                 course.getId(),

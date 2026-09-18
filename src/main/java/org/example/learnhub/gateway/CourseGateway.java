@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 
 public interface CourseGateway {
-    CourseInfo findById(Integer userId, Integer courseId);
+    CourseInfo findById(Integer courseId);
 
     Integer countLessonsByCourseId(Integer courseId);
 

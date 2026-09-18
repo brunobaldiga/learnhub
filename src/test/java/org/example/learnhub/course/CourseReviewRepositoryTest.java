@@ -1,8 +1,9 @@
 package org.example.learnhub.course;
 
 import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.course.entity.CourseReview;
 import org.example.learnhub.course.entity.CourseStatus;
-import org.example.learnhub.course.repository.CourseRepository;
+import org.example.learnhub.course.repository.CourseReviewRepository;
 import org.example.learnhub.integration.frankfurter.currency.CurrencyCode;
 import org.example.learnhub.user.dto.RoleType;
 import org.example.learnhub.user.entity.User;
@@ -25,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=create-drop"
 })
-class CourseRepositoryTest {
+class CourseReviewRepositoryTest {
     @Container
     @ServiceConnection
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16");
@@ -33,30 +34,28 @@ class CourseRepositoryTest {
     @Autowired
     TestEntityManager entityManager;
     @Autowired
-    CourseRepository repository;
+    CourseReviewRepository repository;
 
-    private User creator;
-    private User otherCreator;
+    private User student;
     private Course course;
+    private CourseReview review;
 
     @BeforeEach
     void setUp() {
-        creator = entityManager.persist(User.builder()
+        User creator = entityManager.persist(User.builder()
                 .username("creator")
                 .email("creator@example.com")
                 .fullName("Creator One")
                 .password("password")
                 .roleType(RoleType.CREATOR)
                 .build());
-
-        otherCreator = entityManager.persist(User.builder()
-                .username("other")
-                .email("other@example.com")
-                .fullName("Creator Two")
+        student = entityManager.persist(User.builder()
+                .username("student")
+                .email("student@example.com")
+                .fullName("Student One")
                 .password("password")
-                .roleType(RoleType.CREATOR)
+                .roleType(RoleType.USER)
                 .build());
-
         course = entityManager.persist(Course.builder()
                 .creatorId(creator.getId())
                 .title("Java Course")
@@ -64,38 +63,29 @@ class CourseRepositoryTest {
                 .price(BigDecimal.TEN)
                 .currency(CurrencyCode.USD)
                 .build());
-
+        review = entityManager.persist(CourseReview.builder()
+                .course(course)
+                .authorId(student.getId())
+                .rating(5)
+                .comment("Excellent course")
+                .build());
         entityManager.flush();
         entityManager.clear();
     }
 
     @Test
-    void shouldFindCourseByIdAndStatus() {
-        assertThat(repository.findByIdAndStatus(course.getId(), CourseStatus.PUBLIC))
-                .isPresent()
-                .get()
-                .extracting(Course::getId)
-                .isEqualTo(course.getId());
+    void shouldFindReviewByIdAndCourseId() {
+        assertThat(repository.findByIdAndCourseId(review.getId(), course.getId())).isPresent();
     }
 
     @Test
-    void shouldReturnEmptyWhenStatusDoesNotMatch() {
-        assertThat(repository.findByIdAndStatus(course.getId(), CourseStatus.PRIVATE)).isEmpty();
+    void shouldReturnEmptyForWrongCourseId() {
+        assertThat(repository.findByIdAndCourseId(review.getId(), course.getId() + 100)).isEmpty();
     }
 
     @Test
-    void shouldFindCourseByIdAndCreatorId() {
-        assertThat(repository.findByIdAndCreatorId(course.getId(), creator.getId())).isPresent();
-    }
-
-    @Test
-    void shouldReturnEmptyWhenCourseBelongsToAnotherCreator() {
-        assertThat(repository.findByIdAndCreatorId(course.getId(), otherCreator.getId())).isEmpty();
-    }
-
-    @Test
-    void shouldCheckCourseOwnership() {
-        assertThat(repository.existsByIdAndCreatorId(course.getId(), creator.getId())).isTrue();
-        assertThat(repository.existsByIdAndCreatorId(course.getId(), otherCreator.getId())).isFalse();
+    void shouldCheckWhetherAuthorAlreadyReviewedCourse() {
+        assertThat(repository.existsByAuthorIdAndCourseId(student.getId(), course.getId())).isTrue();
+        assertThat(repository.existsByAuthorIdAndCourseId(student.getId() + 100, course.getId())).isFalse();
     }
 }

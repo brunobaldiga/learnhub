@@ -94,15 +94,15 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
-    public CourseResponse findCourseById(User user, Integer courseId) {
-        Course course = findCourseEntityById(courseId);
+    public CourseResponse findById(User user, Integer courseId) {
+        Course course = findEntityById(courseId);
         String creatorUsername = userGateway.findUsernameById(course.getCreatorId());
 
         return mapper.toDto(course, creatorUsername);
     }
 
     @Transactional(readOnly = true)
-    public Course findCourseEntityById(Integer courseId) {
+    public Course findEntityById(Integer courseId) {
         return repository.findById(courseId)
                 .orElseThrow(() -> new EntityNotFoundException("Course not found."));
     }
@@ -125,7 +125,7 @@ public class CourseService {
     }
 
     @Transactional
-    public CourseResponse updateCourseById(User user, Integer courseId, UpdateCourseRequest request) {
+    public CourseResponse updateById(User user, Integer courseId, UpdateCourseRequest request) {
         Course course = repository.findByIdAndCreatorId(courseId, user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Course not found."));
 
@@ -154,7 +154,7 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public List<SectionResponse> findCourseSection(User user, Integer courseId) {
-        Course course = findCourseEntityById(courseId);
+        Course course = findEntityById(courseId);
 
         boolean hasPaid = paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
         boolean isOwner = course.getCreatorId().equals(user.getId());
@@ -167,7 +167,7 @@ public class CourseService {
     public SectionResponse updateCourseSection(User user, Integer sectionId, SectionRequest request) {
         Integer courseId = sectionGateway.findById(sectionId).courseId();
 
-        if (!isCourseCreator(courseId, user.getId()))
+        if(!isCourseCreator(courseId, user.getId()))
             throw new CourseAccessDeniedException("You do not own this course.");
 
         return sectionGateway.update(sectionId, request);
@@ -177,7 +177,7 @@ public class CourseService {
     public void deleteCourseSection(User user, Integer sectionId) {
         Integer courseId = sectionGateway.findById(sectionId).courseId();
 
-        if (!isCourseCreator(courseId, user.getId()))
+        if(!isCourseCreator(courseId, user.getId()))
             throw new CourseAccessDeniedException("You do not own this course.");
 
         sectionGateway.delete(sectionId);

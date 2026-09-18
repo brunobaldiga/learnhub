@@ -46,7 +46,7 @@ public class EnrollmentService {
 
     @Transactional
     public void enroll(User user, Integer courseId) {
-        CourseInfo course = courseGateway.findById(user.getId(), courseId);
+        CourseInfo course = courseGateway.findById(courseId);
 
         if(!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId))
             throw new CourseAccessDeniedException("User haven't bought the course.");

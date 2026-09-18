@@ -1,13 +1,11 @@
 package org.example.learnhub.section.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.course.dto.SectionRequest;
 import org.example.learnhub.exception.CourseAccessDeniedException;
 import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.gateway.CourseGateway;
 import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.gateway.dto.CourseInfo;
-import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
@@ -66,7 +64,7 @@ public class SectionService {
     public LessonResponse findLessonById(User user, Integer lessonId) {
         Lesson lesson = findLessonEntityById(lessonId);
 
-        CourseInfo courseInfo = courseGateway.findById(user.getId(), lesson.getSection().getCourseId());
+        CourseInfo courseInfo = courseGateway.findById(lesson.getSection().getCourseId());
 
         boolean isCourseCreator = courseInfo.creatorId().equals(user.getId());
         boolean isEnrolled = enrollmentGateway.existsByUserIdAndCourseId(user.getId(), courseInfo.id());
@@ -88,7 +86,7 @@ public class SectionService {
         Section section = repository.findById(sectionId)
                 .orElseThrow(() -> new EntityNotFoundException("Section not found"));
 
-        CourseInfo courseInfo = courseGateway.findById(user.getId(), section.getCourseId());
+        CourseInfo courseInfo = courseGateway.findById(section.getCourseId());
 
         boolean isCourseCreator = courseInfo.creatorId().equals(user.getId());
         boolean isEnrolled = enrollmentGateway.findByUserIdAndCourseId(user.getId(), courseInfo.id()).isPresent();

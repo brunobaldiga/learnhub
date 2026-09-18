@@ -100,7 +100,7 @@ public class CourseController {
             @PathVariable Integer courseId
     ) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(service.findCourseById(user, courseId));
+                .body(service.findById(user, courseId));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
@@ -115,7 +115,7 @@ public class CourseController {
             @RequestBody @Validated UpdateCourseRequest request
     ) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(service.updateCourseById(user, courseId, request));
+                .body(service.updateById(user, courseId, request));
     }
 
     @PreAuthorize("hasRole('CREATOR')")

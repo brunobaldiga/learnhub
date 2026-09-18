@@ -35,7 +35,7 @@ public class CourseReviewService {
 
     @Transactional
     public CourseReviewResponse create(User user, Integer courseId, CourseReviewRequest request) {
-        Course course = courseService.findCourseEntityById(courseId);
+        Course course = courseService.findEntityById(courseId);
         Optional<EnrollmentInfo> enrollment = enrollmentGateway.findByUserIdAndCourseId(user.getId(), courseId);
 
         if(course.getCreatorId().equals(user.getId()))
