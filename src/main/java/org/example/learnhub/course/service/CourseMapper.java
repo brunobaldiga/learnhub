@@ -28,6 +28,8 @@ public class CourseMapper {
                 course.getPrice(),
                 course.getCurrency(),
                 course.getSalesAmount(),
+                course.getAverageRating(),
+                course.getTotalReviews(),
                 course.getCreatedAt()
         );
     }

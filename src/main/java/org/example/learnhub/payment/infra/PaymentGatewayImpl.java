@@ -11,7 +11,7 @@ public class PaymentGatewayImpl implements PaymentGateway {
     private final PaymentRepository repository;
 
     @Override
-    public Boolean existsByUserIdAndCourseId(Integer id, Integer courseId) {
-        return repository.existsByUserIdAndCourseId(id, courseId);
+    public Boolean existsByUserIdAndCourseId(Integer userId, Integer courseId) {
+        return repository.existsByUserIdAndCourseId(userId, courseId);
     }
 }

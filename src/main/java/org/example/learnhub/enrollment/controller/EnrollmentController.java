@@ -103,8 +103,8 @@ public class EnrollmentController {
         CertificateResponse response = service.generateCertificate(user, enrollmentId);
 
         URI uri = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
+                .fromCurrentContextPath()
+                .path("/api/enrollments/certificates/{id}")
                 .buildAndExpand(response.id())
                 .toUri();
 

@@ -30,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -143,7 +144,7 @@ class EnrollmentControllerTest {
         mockMvc.perform(post("/api/enrollments/5/certificates")
                         .with(authentication(auth(RoleType.USER))))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", org.hamcrest.Matchers.containsString(id.toString())))
+                .andExpect(header().string("Location", containsString(id.toString())))
                 .andExpect(jsonPath("$.id").value(id.toString()));
     }
 

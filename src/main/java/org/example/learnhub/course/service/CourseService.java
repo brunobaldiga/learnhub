@@ -9,7 +9,7 @@ import org.example.learnhub.course.repository.CourseSpecs;
 import org.example.learnhub.exception.CourseAccessDeniedException;
 import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.exception.MaxSectionsReachedException;
-import org.example.learnhub.gateway.PaymentGateway;
+import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.gateway.UserGateway;
 import org.example.learnhub.gateway.dto.CourseSummary;
@@ -34,8 +34,8 @@ public class CourseService {
     private final CourseRepository repository;
     private final CourseMapper mapper;
     private final SectionGateway sectionGateway;
-    private final PaymentGateway paymentGateway;
     private final UserGateway userGateway;
+    private final EnrollmentGateway enrollmentGateway;
 
     @Transactional
     public CourseResponse create(User user, CourseRequest request) {
@@ -96,7 +96,19 @@ public class CourseService {
     @Transactional(readOnly = true)
     public CourseResponse findById(User user, Integer courseId) {
         Course course = findEntityById(courseId);
+
+        boolean hasAccess =
+                course.getCreatorId().equals(user.getId()) ||
+                        course.getStatus() == CourseStatus.PUBLIC ||
+                        enrollmentGateway.existsByUserIdAndCourseId(user.getId(), course.getId());
+
+
+        if(!hasAccess) {
+            throw new EntityNotFoundException("Course not found.");
+        }
+
         String creatorUsername = userGateway.findUsernameById(course.getCreatorId());
+
 
         return mapper.toDto(course, creatorUsername);
     }
@@ -156,10 +168,10 @@ public class CourseService {
     public List<SectionResponse> findCourseSection(User user, Integer courseId) {
         Course course = findEntityById(courseId);
 
-        boolean hasPaid = paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
+        boolean isEnrolled = enrollmentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
         boolean isOwner = course.getCreatorId().equals(user.getId());
 
-        if(!hasPaid && !isOwner) throw new CourseAccessDeniedException("User haven't paid for the course.");
+        if(!isEnrolled && !isOwner) throw new CourseAccessDeniedException("User does not have access to this course.");
 
         return sectionGateway.findAllByCourseId(courseId);
     }

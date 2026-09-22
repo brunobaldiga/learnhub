@@ -15,6 +15,8 @@ public record CourseResponse(
         BigDecimal price,
         CurrencyCode currency,
         Integer salesAmount,
+        Double averageRating,
+        Integer totalReviews,
         LocalDateTime createdAt
 ) {
 }

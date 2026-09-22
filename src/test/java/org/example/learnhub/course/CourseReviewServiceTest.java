@@ -123,9 +123,11 @@ class CourseReviewServiceTest {
         when(repository.findAll(any(Specification.class), eq(pageable)))
                 .thenReturn(new PageImpl<>(List.of(review), pageable, 1));
         when(userGateway.findUsernamesByIds(Set.of(2))).thenReturn(Map.of(2, "student"));
+        when(courseService.findEntityById(10)).thenReturn(course);
+        when(enrollmentGateway.existsByUserIdAndCourseId(2, 10)).thenReturn(true);
         when(mapper.toDto(review, "student")).thenReturn(response);
 
-        Page<CourseReviewResponse> result = service.findCourseReviews(10, new CourseReviewFilter(5), pageable);
+        Page<CourseReviewResponse> result = service.findCourseReviews(student, 10, new CourseReviewFilter(5), pageable);
 
         assertThat(result.getContent()).containsExactly(response);
     }

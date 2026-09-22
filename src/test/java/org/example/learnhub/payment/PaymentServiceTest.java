@@ -104,7 +104,7 @@ class PaymentServiceTest {
         assertThat(payment.getExchangeRate()).isEqualByComparingTo(rate);
         assertThat(payment.getPaidPrice()).isEqualByComparingTo("524.95");
         verify(courseGateway).incrementSalesAmount(10);
-        verify(enrollmentGateway).enroll(user, 10);
+        verify(enrollmentGateway).enroll(user.getId(), 10);
     }
 
     @Test

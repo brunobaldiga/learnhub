@@ -51,9 +51,9 @@ public class EnrollmentService {
         if(!paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId))
             throw new CourseAccessDeniedException("User haven't bought the course.");
 
-        Optional<Enrollment> existingCourseProgress = repository.findByUserIdAndCourseId(user.getId(), course.id());
+        Optional<Enrollment> existingEnrollment = repository.findByUserIdAndCourseId(user.getId(), course.id());
 
-        if(existingCourseProgress.isPresent()) throw new UserAlreadyEnrolledException("User is already enrolled.");
+        if(existingEnrollment.isPresent()) throw new UserAlreadyEnrolledException("User is already enrolled.");
 
         Enrollment courseProgress = Enrollment.builder()
                 .userId(user.getId())
@@ -177,6 +177,9 @@ public class EnrollmentService {
 
         Integer totalLessons = courseGateway.countLessonsByCourseId(enrollment.getCourseId());
 
+        if(totalLessons == 0)
+            throw new CourseNotCompletedException("Cannot generate a certificate for a course without lessons.");
+
         if(lessonProgressRepository.countByEnrollmentIdAndCompletedTrue(enrollmentId) < totalLessons)
             throw new CourseNotCompletedException("Cannot generate certificate, user did not finish the course.");
 
@@ -199,14 +202,5 @@ public class EnrollmentService {
                 certificateRepository.findById(certificateId)
                         .orElseThrow(() -> new EntityNotFoundException("Certificate not found."))
         );
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<Enrollment> findEnrollmentEntityByUserIdAndCourseId(Integer userId, Integer courseId) {
-        return repository.findByUserIdAndCourseId(userId, courseId);
-    }
-
-    public boolean existsByUserIdAndCourseId(Integer userId, Integer courseId) {
-        return repository.existsByUserIdAndCourseId(userId, courseId);
     }
 }

@@ -356,16 +356,4 @@ class EnrollmentServiceTest {
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("Certificate not found.");
     }
-
-    @Test
-    void shouldExposeEnrollmentLookupForGateway() {
-        when(repository.findByUserIdAndCourseId(1, 10)).thenReturn(Optional.of(enrollment));
-        assertThat(service.findEnrollmentEntityByUserIdAndCourseId(1, 10)).contains(enrollment);
-    }
-
-    @Test
-    void shouldExposeEnrollmentExistenceForGateway() {
-        when(repository.existsByUserIdAndCourseId(1, 10)).thenReturn(true);
-        assertThat(service.existsByUserIdAndCourseId(1, 10)).isTrue();
-    }
 }

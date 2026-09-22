@@ -6,8 +6,8 @@ public record LessonRequest(
         @NotBlank(message = "Lesson URL cannot be blank.")
         @Size(
                 min = 10,
-                max = 255,
-                message = "Lesson URL must be between 10 and 255 characters long."
+                max = 1000,
+                message = "Lesson URL must be between 10 and 1000 characters long."
         )
         String contentUrl,
 

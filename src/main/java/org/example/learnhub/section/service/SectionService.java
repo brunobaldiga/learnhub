@@ -55,11 +55,6 @@ public class SectionService {
         repository.save(section);
     }
 
-    @Transactional
-    public void delete(Integer sectionId, Integer creatorId) {
-
-    }
-
     @Transactional(readOnly = true)
     public LessonResponse findLessonById(User user, Integer lessonId) {
         Lesson lesson = findLessonEntityById(lessonId);

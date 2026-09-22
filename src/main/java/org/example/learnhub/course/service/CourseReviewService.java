@@ -6,6 +6,7 @@ import org.example.learnhub.course.dto.CourseReviewRequest;
 import org.example.learnhub.course.dto.CourseReviewResponse;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseReview;
+import org.example.learnhub.course.entity.CourseStatus;
 import org.example.learnhub.course.repository.CourseReviewRepository;
 import org.example.learnhub.course.repository.CourseReviewSpecs;
 import org.example.learnhub.exception.*;
@@ -58,7 +59,19 @@ public class CourseReviewService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CourseReviewResponse> findCourseReviews(Integer courseId, CourseReviewFilter filter, Pageable pageable) {
+    public Page<CourseReviewResponse> findCourseReviews(User user, Integer courseId, CourseReviewFilter filter, Pageable pageable) {
+        Course course = courseService.findEntityById(courseId);
+
+        boolean hasAccess =
+                course.getCreatorId().equals(user.getId()) ||
+                        course.getStatus() == CourseStatus.PUBLIC ||
+                        enrollmentGateway.existsByUserIdAndCourseId(user.getId(), course.getId());
+
+
+        if(!hasAccess) {
+            throw new EntityNotFoundException("Course not found.");
+        }
+
         Specification<CourseReview> specification = Specification
                 .where(CourseReviewSpecs.withFilter(filter))
                 .and(CourseReviewSpecs.withCourseId(courseId));

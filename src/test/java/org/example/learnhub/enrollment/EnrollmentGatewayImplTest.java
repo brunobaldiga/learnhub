@@ -2,9 +2,8 @@ package org.example.learnhub.enrollment;
 
 import org.example.learnhub.enrollment.entity.Enrollment;
 import org.example.learnhub.enrollment.infra.EnrollmentGatewayImpl;
-import org.example.learnhub.enrollment.service.EnrollmentService;
+import org.example.learnhub.enrollment.repository.EnrollmentRepository;
 import org.example.learnhub.gateway.dto.EnrollmentInfo;
-import org.example.learnhub.user.entity.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,47 +20,68 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class EnrollmentGatewayImplTest {
     @Mock
-    private EnrollmentService service;
+    private EnrollmentRepository repository;
 
     @InjectMocks
     private EnrollmentGatewayImpl gateway;
 
     @Test
-    void shouldDelegateEnrollment() {
-        User user = User.builder().id(2).build();
+    void shouldReturnTrueWhenEnrollmentExists() {
+        when(repository.existsByUserIdAndCourseId(2, 10))
+                .thenReturn(true);
 
-        gateway.enroll(user, 10);
+        boolean result =
+                gateway.existsByUserIdAndCourseId(2, 10);
 
-        verify(service).enroll(user, 10);
-    }
+        assertThat(result).isTrue();
 
-    @Test
-    void shouldDelegateEnrollmentExistenceCheck() {
-        when(service.existsByUserIdAndCourseId(2, 10)).thenReturn(true);
-
-        assertThat(gateway.existsByUserIdAndCourseId(2, 10)).isTrue();
+        verify(repository)
+                .existsByUserIdAndCourseId(2, 10);
     }
 
     @Test
     void shouldMapEnrollmentEntityToInfo() {
-        LocalDateTime enrolledAt = LocalDateTime.of(2026, 9, 15, 10, 30);
+        LocalDateTime enrolledAt =
+                LocalDateTime.of(2026, 9, 15, 10, 30);
+
         Enrollment enrollment = Enrollment.builder()
                 .id(5)
                 .userId(2)
                 .courseId(10)
                 .enrolledAt(enrolledAt)
                 .build();
-        when(service.findEnrollmentEntityByUserIdAndCourseId(2, 10)).thenReturn(Optional.of(enrollment));
 
-        Optional<EnrollmentInfo> result = gateway.findByUserIdAndCourseId(2, 10);
+        when(repository.findByUserIdAndCourseId(2, 10))
+                .thenReturn(Optional.of(enrollment));
 
-        assertThat(result).contains(new EnrollmentInfo(5, 2, 10, enrolledAt));
+        Optional<EnrollmentInfo> result =
+                gateway.findByUserIdAndCourseId(2, 10);
+
+        assertThat(result)
+                .contains(
+                        new EnrollmentInfo(
+                                5,
+                                2,
+                                10,
+                                enrolledAt
+                        )
+                );
+
+        verify(repository)
+                .findByUserIdAndCourseId(2, 10);
     }
 
     @Test
     void shouldReturnEmptyWhenEnrollmentDoesNotExist() {
-        when(service.findEnrollmentEntityByUserIdAndCourseId(2, 10)).thenReturn(Optional.empty());
+        when(repository.findByUserIdAndCourseId(2, 10))
+                .thenReturn(Optional.empty());
 
-        assertThat(gateway.findByUserIdAndCourseId(2, 10)).isEmpty();
+        Optional<EnrollmentInfo> result =
+                gateway.findByUserIdAndCourseId(2, 10);
+
+        assertThat(result).isEmpty();
+
+        verify(repository)
+                .findByUserIdAndCourseId(2, 10);
     }
 }

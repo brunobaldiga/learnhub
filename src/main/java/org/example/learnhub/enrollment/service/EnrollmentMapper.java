@@ -8,6 +8,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class EnrollmentMapper {
     public EnrollmentResponse toDto(Enrollment enrollment, CourseSummary courseSummary, Integer completedLessons, Integer totalLessons) {
+        double percentage = totalLessons == 0 ? 0.0 : (((double) completedLessons / totalLessons) * 100);
+
         return new EnrollmentResponse(
                 enrollment.getId(),
                 courseSummary.id(),
@@ -15,7 +17,7 @@ public class EnrollmentMapper {
                 courseSummary.creatorUsername(),
                 completedLessons,
                 totalLessons,
-                (((double) completedLessons / totalLessons) * 100),
+                percentage,
                 enrollment.getEnrolledAt()
         );
 

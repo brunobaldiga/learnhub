@@ -65,7 +65,7 @@ public class Course {
             throw new IllegalStateException("Course has no reviews");
         }
 
-        if(totalReviews > 1) {
+        if(totalReviews == 1) {
             totalReviews = 0;
             averageRating = 0.0;
 

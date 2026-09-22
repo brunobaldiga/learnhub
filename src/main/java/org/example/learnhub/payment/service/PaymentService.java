@@ -67,7 +67,7 @@ public class PaymentService {
 
         payment = repository.save(payment);
 
-        enrollmentGateway.enroll(user, course.id());
+        enrollmentGateway.enroll(user.getId(), course.id());
 
         return mapper.toDto(payment);
     }

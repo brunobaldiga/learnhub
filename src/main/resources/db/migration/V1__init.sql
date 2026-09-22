@@ -20,6 +20,7 @@ create table courses
     title          varchar(255)     not null,
     status         varchar(20)      not null,
     price          numeric(38, 2)   not null,
+    currency       varchar(3)       not null,
     sales_amount   integer          not null,
     average_rating double precision not null default 0,
     total_reviews  integer          not null default 0,
@@ -61,13 +62,16 @@ create index idx_course_reviews_created_at on course_reviews (created_at);
 
 create table payments
 (
-    id           serial primary key,
-    user_id      integer        not null,
-    course_id    integer        not null,
-    course_title varchar(255)   not null,
-    course_price numeric(38, 2) not null,
-    currency     varchar(50)    not null,
-    created_at   timestamp(6)   not null,
+    id              serial primary key,
+    user_id         integer        not null,
+    course_id       integer        not null,
+    course_title    varchar(255)   not null,
+    course_price    numeric(38, 2) not null,
+    course_currency varchar(3)     not null,
+    exchange_rate   numeric(38, 2) not null,
+    paid_currency   varchar(3)     not null,
+    paid_price      numeric(38, 2) not null,
+    created_at      timestamp(6)   not null,
 
     constraint fk_payment_user foreign key (user_id) references users (id),
     constraint fk_payment_course foreign key (course_id) references courses (id),
@@ -169,12 +173,14 @@ values ('user',
         CURRENT_TIMESTAMP);
 
 
-insert into courses (creator_id, title, status, price, sales_amount, average_rating, total_reviews, created_at)
+insert into courses (creator_id, title, status, price, currency, sales_amount, average_rating, total_reviews,
+                     created_at)
 values (2,
         'Spring Boot Masterclass',
         'PUBLIC',
         99.99,
-        15,
+        'USD',
+        0,
         0,
         0,
         CURRENT_TIMESTAMP),
@@ -182,7 +188,8 @@ values (2,
         'React Fundamentals',
         'PUBLIC',
         79.99,
-        8,
+        'BRL',
+        0,
         0,
         0,
         CURRENT_TIMESTAMP);

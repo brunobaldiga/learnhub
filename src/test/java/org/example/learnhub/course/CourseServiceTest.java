@@ -9,6 +9,7 @@ import org.example.learnhub.course.service.CourseService;
 import org.example.learnhub.exception.CourseAccessDeniedException;
 import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.exception.MaxSectionsReachedException;
+import org.example.learnhub.gateway.EnrollmentGateway;
 import org.example.learnhub.gateway.PaymentGateway;
 import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.gateway.UserGateway;
@@ -54,6 +55,8 @@ class CourseServiceTest {
     PaymentGateway paymentGateway;
     @Mock
     UserGateway userGateway;
+    @Mock
+    EnrollmentGateway enrollmentGateway;
 
     @InjectMocks
     CourseService service;
@@ -79,7 +82,8 @@ class CourseServiceTest {
     private CourseResponse responseFor(Course value, String username) {
         return new CourseResponse(
                 value.getId(), value.getCreatorId(), username, value.getTitle(), value.getStatus(),
-                value.getPrice(), value.getCurrency(), value.getSalesAmount(), value.getCreatedAt()
+                value.getPrice(), value.getCurrency(), value.getSalesAmount(), value.getAverageRating(),
+                value.getTotalReviews(), value.getCreatedAt()
         );
     }
 
@@ -145,6 +149,7 @@ class CourseServiceTest {
     void shouldFindCourseById() {
         CourseResponse response = responseFor(course, "creator");
         when(repository.findById(course.getId())).thenReturn(Optional.of(course));
+        when(enrollmentGateway.existsByUserIdAndCourseId(creator.getId(), course.getId())).thenReturn(true);
         when(userGateway.findUsernameById(creator.getId())).thenReturn("creator");
         when(mapper.toDto(course, "creator")).thenReturn(response);
 
@@ -225,7 +230,7 @@ class CourseServiceTest {
     void shouldListSectionsForCourseOwnerWithoutPayment() {
         SectionResponse section = new SectionResponse(20, "Introduction", 1, List.of());
         when(repository.findById(10)).thenReturn(Optional.of(course));
-        when(paymentGateway.existsByUserIdAndCourseId(1, 10)).thenReturn(false);
+        when(enrollmentGateway.existsByUserIdAndCourseId(creator.getId(), course.getId())).thenReturn(false);
         when(sectionGateway.findAllByCourseId(10)).thenReturn(List.of(section));
 
         assertThat(service.findCourseSection(creator, 10)).containsExactly(section);
@@ -236,7 +241,7 @@ class CourseServiceTest {
         User student = User.builder().id(2).build();
         SectionResponse section = new SectionResponse(20, "Introduction", 1, List.of());
         when(repository.findById(10)).thenReturn(Optional.of(course));
-        when(paymentGateway.existsByUserIdAndCourseId(2, 10)).thenReturn(true);
+        when(enrollmentGateway.existsByUserIdAndCourseId(student.getId(), course.getId())).thenReturn(true);
         when(sectionGateway.findAllByCourseId(10)).thenReturn(List.of(section));
 
         assertThat(service.findCourseSection(student, 10)).containsExactly(section);
@@ -246,7 +251,6 @@ class CourseServiceTest {
     void shouldRejectSectionsForUnpaidNonOwner() {
         User student = User.builder().id(2).build();
         when(repository.findById(10)).thenReturn(Optional.of(course));
-        when(paymentGateway.existsByUserIdAndCourseId(2, 10)).thenReturn(false);
 
         assertThatThrownBy(() -> service.findCourseSection(student, 10))
                 .isInstanceOf(CourseAccessDeniedException.class)

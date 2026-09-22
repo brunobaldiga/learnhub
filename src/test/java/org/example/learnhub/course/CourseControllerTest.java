@@ -71,7 +71,7 @@ public class CourseControllerTest {
     private CourseResponse courseResponse() {
         return new CourseResponse(
                 10, 1, "creator", "Java Course", CourseStatus.PUBLIC,
-                BigDecimal.valueOf(99.9), CurrencyCode.USD, 3, LocalDateTime.now()
+                BigDecimal.valueOf(99.9), CurrencyCode.USD, 3, 0.0, 0, LocalDateTime.now()
         );
     }
 
@@ -144,7 +144,7 @@ public class CourseControllerTest {
     void shouldUpdateCourse() throws Exception {
         CourseResponse updated = new CourseResponse(
                 10, 1, "creator", "Updated Course", CourseStatus.PUBLIC,
-                BigDecimal.valueOf(149.99), CurrencyCode.BRL, 3, LocalDateTime.now()
+                BigDecimal.valueOf(149.99), CurrencyCode.BRL, 3, 0.0, 0, LocalDateTime.now()
         );
 
         when(service.updateById(any(), eq(10), any())).thenReturn(updated);
@@ -250,7 +250,7 @@ public class CourseControllerTest {
 
     @Test
     void shouldListCourseReviews() throws Exception {
-        when(courseReviewService.findCourseReviews(eq(10), any(), any())).thenReturn(Page.empty());
+        when(courseReviewService.findCourseReviews(eq(student), eq(10), any(), any())).thenReturn(Page.empty());
 
         mockMvc.perform(get("/api/courses/10/reviews")
                         .with(authentication(auth(student))))

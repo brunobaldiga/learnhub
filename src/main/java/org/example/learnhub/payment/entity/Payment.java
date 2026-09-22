@@ -33,14 +33,14 @@ public class Payment {
     private BigDecimal coursePrice;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 3)
     private CurrencyCode courseCurrency;
 
     @Column(nullable = false)
     private BigDecimal exchangeRate;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 3)
     private CurrencyCode paidCurrency;
 
     @Column(nullable = false)
