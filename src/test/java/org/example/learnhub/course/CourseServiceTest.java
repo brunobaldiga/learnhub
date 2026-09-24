@@ -149,7 +149,6 @@ class CourseServiceTest {
     void shouldFindCourseById() {
         CourseResponse response = responseFor(course, "creator");
         when(repository.findById(course.getId())).thenReturn(Optional.of(course));
-        when(enrollmentGateway.existsByUserIdAndCourseId(creator.getId(), course.getId())).thenReturn(true);
         when(userGateway.findUsernameById(creator.getId())).thenReturn("creator");
         when(mapper.toDto(course, "creator")).thenReturn(response);
 
@@ -254,7 +253,7 @@ class CourseServiceTest {
 
         assertThatThrownBy(() -> service.findCourseSection(student, 10))
                 .isInstanceOf(CourseAccessDeniedException.class)
-                .hasMessage("User haven't paid for the course.");
+                .hasMessage("User does not have access to this course.");
     }
 
     @Test
