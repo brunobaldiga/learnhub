@@ -1,142 +1,213 @@
-# Learnhub API
+# LearnHub API
 
-Learnhub is a REST API for an online course platform, built as a portfolio project to practice designing and implementing a real backend system from scratch: authentication, relational data modeling, payments, and content management.
+LearnHub is a REST API for an online course platform, built as a portfolio project focused on backend architecture,
+authentication, relational data modeling, course access control, payments, progress tracking, and external API
+integration.
 
-Live API and interactive docs: https://learnhub-8zwy.onrender.com/swagger-ui/index.html
+Live API and interactive documentation: https://learnhub-8zwy.onrender.com/swagger-ui/index.html
 
-Note: the app is hosted on Render's free tier, so the first request after a period of inactivity can take up to a minute to respond while the instance spins back up.
+Note: the application is hosted on Render's free tier, so the first request after a period of inactivity can take up to
+a minute while the instance starts.
 
 ## Overview
 
-The platform allows creators to publish courses made of sections and videos, and allows users to browse, purchase, and review those courses. Access is controlled through JWT authentication, and every write operation is scoped to the authenticated user, so a creator can only manage their own courses and a user can only see their own purchases and enrollments.
+LearnHub is implemented as a modular monolith. The application is deployed as a single Spring Boot service and uses one
+PostgreSQL database, while the codebase is separated into domain-focused modules for users, courses, sections and
+lessons, enrollments, and payments.
+
+Modules communicate across domain boundaries through gateway interfaces. Each module keeps ownership of its own
+services, repositories, entities, and persistence logic. The same gateway abstraction is also used for the Frankfurter
+currency exchange integration.
 
 ## Features
 
 - User registration and login with JWT-based authentication
-- Course creation and management, including draft, review, and publish status
-- Course sections and videos, with ordering support
-- Course search and listing with pagination and sorting
-- Course purchases, with automatic enrollment on payment
-- Payment history with date range filtering
-- Enrollment tracking with progress based on completed lessons
-- Course reviews with rating and comment, restricted to users who purchased the course
-
-## Tech stack
-
-- Java 17
-- Spring Boot (Web, Security, Data JPA, Validation)
-- PostgreSQL
-- Flyway for database migrations
-- JWT authentication (java-jwt)
-- springdoc-openapi for the Swagger/OpenAPI documentation
-- JUnit and Spring Boot Test for unit and integration tests
-- JaCoCo for test coverage reports
-- Deployed on Render
+- Role-based authorization with USER, CREATOR, and ADMIN roles
+- Course creation, updates, visibility management, search, pagination, and sorting
+- Course sections and lessons with access control
+- Course reviews with ratings and comments
+- Course purchases with automatic enrollment
+- Multi-currency purchases using exchange rates from the Frankfurter API
+- Payment history with date filtering and pagination
+- Enrollment and lesson progress tracking
+- Certificate generation after course completion
+- Centralized exception handling and request validation
+- Swagger/OpenAPI documentation
+- Docker Compose configuration for local execution
+- Continuous integration with GitHub Actions
 
 ## Architecture
 
-The codebase is organized by domain rather than by technical layer. Each feature area (user, course, section, enrollment, payment) has its own package containing its controller, service, repository, and DTOs. This keeps related code together and makes each module easy to navigate on its own.
+The project follows a domain-oriented modular monolith structure. Controllers expose the REST API, services contain
+application and business logic, repositories handle persistence, and gateway interfaces define cross-module boundaries.
 
-```
+Repositories access PostgreSQL directly through Spring Data JPA. Gateways are used when one module needs functionality
+or information owned by another module. The payment module also uses a CurrencyExchangeGateway backed by an OpenFeign
+client for the Frankfurter API.
+
+![LearnHub architecture](architecture.png)
+
+Main packages:
+
+```text
 org.example.learnhub
 ├── user
-├── course
+├── course  
 ├── section
 ├── enrollment
 ├── payment
 ├── gateway
+├── integration
 ├── config
 └── exception
 ```
 
-Cross-cutting concerns such as security configuration, exception handling, and global request/response setup live in their own packages (`config`, `exception`, `gateway`) rather than being spread across the domain modules.
+## Tech stack
+
+- Java 21
+- Spring Boot 4
+- Spring Security
+- Spring Data JPA
+- Spring Validation
+- PostgreSQL
+- Flyway
+- Auth0 java-jwt
+- Spring Cloud OpenFeign
+- Frankfurter currency exchange API
+- springdoc-openapi / Swagger UI
+- JUnit
+- Mockito
+- Testcontainers
+- JaCoCo
+- Docker and Docker Compose
+- GitHub Actions
+- Render
 
 ## API documentation
 
-Full API documentation is available through Swagger UI once the application is running:
+Swagger UI is available at:
 
-```
+```text
 /swagger-ui/index.html
 ```
 
-The raw OpenAPI spec is available at:
+The raw OpenAPI specification is available at:
 
-```
+```text
 /v3/api-docs
 ```
 
 ### Main resources
 
-| Resource | Description |
-|---|---|
-| `/api/users` | Registration, login, and profile |
-| `/api/courses` | Course creation, listing, search, and updates |
-| `/api/courses/{courseId}/sections` | Course sections |
-| `/api/sections/{sectionId}/videos` | Videos within a section |
-| `/api/courses/{courseId}/reviews` | Course reviews |
-| `/api/payments` | Course purchases and payment history |
-| `/api/enrollments` | User enrollments and progress |
+| Resource                                        | Description                                           |
+|-------------------------------------------------|-------------------------------------------------------|
+| `/api/users/register`                           | User registration                                     |
+| `/api/users/login`                              | User authentication                                   |
+| `/api/users/me`                                 | Authenticated user profile                            |
+| `/api/courses`                                  | Creator course management                             |
+| `/api/courses/search`                           | Course search with filtering, pagination, and sorting |
+| `/api/courses/{courseId}`                       | Course details and updates                            |
+| `/api/courses/{courseId}/sections`              | Course section creation and listing                   |
+| `/api/sections/{sectionId}/lessons`             | Lesson creation and listing                           |
+| `/api/sections/lessons/{lessonId}`              | Lesson details                                        |
+| `/api/courses/{courseId}/reviews`               | Course reviews                                        |
+| `/api/payments`                                 | Payment history                                       |
+| `/api/payments/{courseId}`                      | Course purchase                                       |
+| `/api/enrollments`                              | User enrollments                                      |
+| `/api/enrollments/lessons/{lessonId}/start`     | Start lesson progress                                 |
+| `/api/enrollments/lessons/{lessonId}/progress`  | Update lesson progress                                |
+| `/api/enrollments/{enrollmentId}/certificates`  | Generate a completion certificate                     |
+| `/api/enrollments/certificates/{certificateId}` | Retrieve a certificate                                |
 
-All endpoints except registration and login require a valid JWT, sent as a Bearer token in the `Authorization` header.
+Registration, login, Swagger UI, and the OpenAPI specification are publicly accessible. Other application endpoints
+require a valid JWT sent as a Bearer token in the Authorization header.
 
 ## Running locally
 
 ### With Docker
 
-The project ships with a `docker-compose.yml` that runs the API alongside its own PostgreSQL instance, using the prebuilt image published at [brunobaldiga/learnhub](https://hub.docker.com/r/brunobaldiga/learnhub). This is the fastest way to get it running, no Java or Maven required:
+The project includes a `docker-compose.yml` that starts the API and PostgreSQL. The backend uses the published Docker
+image `brunobaldiga/learnhub`.
 
-```
+```bash
 git clone https://github.com/brunobaldiga/learnhub.git
 cd learnhub
 docker compose up
 ```
 
-The API will be available at `http://localhost:8080`, with Swagger UI at `http://localhost:8080/swagger-ui/index.html`.
+The API will be available at:
+
+```text
+http://localhost:8080
+```
+
+Swagger UI will be available at:
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
 
 ### From source
 
-To build and run the application locally, for example to make changes to the code:
+Prerequisites:
 
-1. Clone the repository:
+- Java 21
+- Maven or the included Maven wrapper
+- PostgreSQL
 
-```
+Clone the repository:
+
+```bash
 git clone https://github.com/brunobaldiga/learnhub.git
 cd learnhub
 ```
 
-2. Create a PostgreSQL database for the project.
+Create a PostgreSQL database and configure the application using environment variables:
 
-3. Set the following environment variables, or rely on the defaults in `application.yaml` for local development:
-
-```
+```text
 DB_URL=jdbc:postgresql://localhost:5432/learnhub
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 JWT_SECRET=your_jwt_secret
 ```
 
-4. Run the application:
+The Frankfurter API URL can also be overridden if needed:
 
+```text
+FRANKFURTER_URL=https://api.frankfurter.dev
 ```
+
+Run the application:
+
+```bash
 ./mvnw spring-boot:run
 ```
 
-Flyway will run the database migrations automatically on startup.
-
-Prerequisites: Java 17, Maven (or the included wrapper `./mvnw`), and PostgreSQL.
+Flyway runs the database migration automatically during startup, and Hibernate validates the resulting schema against
+the JPA mappings.
 
 ## Testing
 
-The project includes unit and integration tests for the service and controller layers of every module, run automatically on push and pull requests through GitHub Actions.
+The project contains unit, controller, service, gateway, repository, and integration tests. PostgreSQL repository tests
+use Testcontainers to run against a real PostgreSQL instance.
 
-To run the tests locally:
+The current test suite contains 186 tests, with no failures or errors in the latest included test reports.
 
-```
+Run the test suite with:
+
+```bash
 ./mvnw clean test
 ```
 
-A JaCoCo coverage report is generated after running the tests, at `target/site/jacoco/index.html`.
+JaCoCo generates the coverage report at:
+
+```text
+target/site/jacoco/index.html
+```
+
+GitHub Actions runs the Maven test workflow in CI.
 
 ## Contact
 
-Bruno — brunobaldiga@gmail.com
+Bruno
+brunobaldiga@gmail.com
