@@ -10,16 +10,14 @@ import java.time.LocalDate;
 
 @Component
 public class CertificateMapper {
-
-    public Certificate toCertificate(User user, Enrollment enrollment) {
+    public Certificate toCertificate(User user, Enrollment enrollment, String courseTitle, Integer courseDuration) {
         return Certificate.builder()
                 .enrollment(enrollment)
-                .user(user)
                 .fullNameAtIssuance(user.getFullName())
-                .courseTitleAtIssuance(enrollment.getCourse().getTitle())
-                .courseLengthInHoursAtIssuance(enrollment.getCourse().calculateDuration())
+                .courseTitleAtIssuance(courseTitle)
+                .courseLengthInHoursAtIssuance(courseDuration / 3600)
                 .issuedAt(LocalDate.now())
-            .build();
+                .build();
     }
 
     public CertificateResponse toDto(Certificate certificate) {

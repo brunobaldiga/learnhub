@@ -1,18 +1,23 @@
 package org.example.learnhub.section.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.learnhub.course.dto.SectionRequest;
-import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.exception.EntityNotFound;
+import org.example.learnhub.exception.CourseAccessDeniedException;
+import org.example.learnhub.exception.EntityNotFoundException;
+import org.example.learnhub.gateway.CourseGateway;
+import org.example.learnhub.gateway.EnrollmentGateway;
+import org.example.learnhub.gateway.dto.CourseInfo;
+import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.entity.Lesson;
 import org.example.learnhub.section.entity.Section;
 import org.example.learnhub.section.repository.LessonRepository;
 import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.user.entity.User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -21,54 +26,85 @@ public class SectionService {
     private final LessonRepository lessonRepository;
     private final SectionMapper mapper;
     private final LessonMapper lessonMapper;
+    private final EnrollmentGateway enrollmentGateway;
+    private final CourseGateway courseGateway;
 
-    public Section saveSection(Section section) {
-        return repository.save(section);
-    }
-
-    public Section createSection(SectionRequest request, Course course) {
-        Section section = mapper.toSection(request, course);
-
-        return repository.save(section);
-    }
-
+    @Transactional
     public SectionResponse createLesson(User user, Integer sectionId, LessonRequest request) {
         Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
-
         Lesson lesson = lessonMapper.toLesson(request);
-        lesson.setSection(section);
 
-        section.getLessons().add(lesson);
+        section.addLesson(lesson);
 
         repository.save(section);
 
         return mapper.toDto(section);
     }
 
+    @Transactional
     public void deleteLesson(User user, Integer sectionId, Integer lessonId) {
         Section section = findSectionEntityByIdAndCourseCreatorId(sectionId, user.getId());
 
-        section.getLessons().removeIf(lesson -> lesson.getId().equals(lessonId));
+        Lesson lesson = section.getLessons()
+                .stream()
+                .filter(l -> l.getId().equals(lessonId))
+                .findFirst().orElseThrow(() -> new EntityNotFoundException("Lesson not found."));
+
+        section.getLessons().remove(lesson);
 
         repository.save(section);
     }
 
-    public Section findSectionEntityByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
-        return repository.findByIdAndCourseCreatorId(sectionId, creatorId)
-                .orElseThrow(() -> new EntityNotFound("Section not found"));
+    @Transactional(readOnly = true)
+    public LessonResponse findLessonById(User user, Integer lessonId) {
+        Lesson lesson = findLessonEntityById(lessonId);
+
+        CourseInfo courseInfo = courseGateway.findById(lesson.getSection().getCourseId());
+
+        boolean isCourseCreator = courseInfo.creatorId().equals(user.getId());
+        boolean isEnrolled = enrollmentGateway.existsByUserIdAndCourseId(user.getId(), courseInfo.id());
+
+        if(!isCourseCreator && !isEnrolled)
+            throw new CourseAccessDeniedException("User does not have access to this course.");
+
+        return lessonMapper.toDto(lesson);
     }
 
-    public void deleteSection(Section section) {
-        repository.delete(section);
-    }
-
-    public LessonResponse findLessonById(Integer lessonId) {
-        // todo: check if course is public or user is the owner
-        return lessonMapper.toDto(findLessonEntityById(lessonId));
-    }
-
+    @Transactional(readOnly = true)
     public Lesson findLessonEntityById(Integer lessonId) {
         return lessonRepository.findById(lessonId).orElseThrow(
-                () -> new EntityNotFound("Lesson not found."));
+                () -> new EntityNotFoundException("Lesson not found."));
+    }
+
+    @Transactional(readOnly = true)
+    public List<LessonResponse> findSectionLessons(User user, Integer sectionId) {
+        Section section = repository.findById(sectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Section not found"));
+
+        CourseInfo courseInfo = courseGateway.findById(section.getCourseId());
+
+        boolean isCourseCreator = courseInfo.creatorId().equals(user.getId());
+        boolean isEnrolled = enrollmentGateway.findByUserIdAndCourseId(user.getId(), courseInfo.id()).isPresent();
+
+        if(!isCourseCreator && !isEnrolled)
+            throw new CourseAccessDeniedException("User does not have access to this course.");
+
+        return lessonRepository.findAllBySectionId(section.getId())
+                .stream().map(lessonMapper::toDto).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Section findSectionEntityByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
+        Section section = repository.findById(sectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Section not found"));
+
+        if(!courseGateway.isCourseCreator(section.getCourseId(), creatorId))
+            throw new CourseAccessDeniedException("You do not own this course.");
+
+        return section;
+    }
+
+    public Integer calculateDurationByCourseId(Integer courseId) {
+        return repository.calculateDurationByCourseId(courseId);
     }
 }

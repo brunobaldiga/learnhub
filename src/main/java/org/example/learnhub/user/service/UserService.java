@@ -2,19 +2,25 @@ package org.example.learnhub.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.config.TokenService;
-import org.example.learnhub.exception.EmailAlreadyInUse;
-import org.example.learnhub.exception.EntityNotFound;
-import org.example.learnhub.exception.UsernameAlreadyInUse;
+import org.example.learnhub.exception.EmailAlreadyInUseException;
+import org.example.learnhub.exception.EntityNotFoundException;
+import org.example.learnhub.exception.UsernameAlreadyInUseException;
 import org.example.learnhub.user.dto.TokenResponse;
 import org.example.learnhub.user.dto.UserLoginRequest;
-import org.example.learnhub.user.repository.UserRepository;
-import org.example.learnhub.user.entity.User;
 import org.example.learnhub.user.dto.UserRegisterRequest;
 import org.example.learnhub.user.dto.UserResponse;
+import org.example.learnhub.user.entity.User;
+import org.example.learnhub.user.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,9 +31,12 @@ public class UserService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
 
+    @Transactional
     public TokenResponse register(UserRegisterRequest request) {
-        if (repository.existsByEmailIgnoreCase(request.email())) throw new EmailAlreadyInUse("Email is already in use.");
-        if (repository.existsByUsernameIgnoreCase(request.username())) throw new UsernameAlreadyInUse("Username is already in use.");
+        if(repository.existsByEmailIgnoreCase(request.email()))
+            throw new EmailAlreadyInUseException("Email is already in use.");
+        if(repository.existsByUsernameIgnoreCase(request.username()))
+            throw new UsernameAlreadyInUseException("Username is already in use.");
 
         User user = mapper.toUser(request);
 
@@ -38,13 +47,15 @@ public class UserService {
         return login(new UserLoginRequest(request.email(), request.password()));
     }
 
+    @Transactional(readOnly = true)
     public UserResponse findById(Integer id) {
         User user = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFound("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         return mapper.toDto(user);
     }
 
+    @Transactional
     public TokenResponse login(UserLoginRequest request) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(
                 request.identifier(), request.password()
@@ -54,5 +65,19 @@ public class UserService {
         var token = tokenService.generateToken((User) auth.getPrincipal());
 
         return new TokenResponse(token);
+    }
+
+    public Map<Integer, String> findUsernamesByIds(Set<Integer> userIds) {
+        return repository.findAllById(userIds).stream()
+                .collect(Collectors.toMap(User::getId, User::getUsername));
+    }
+
+    public String findUsernamesById(Integer userId) {
+        return repository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found")).getUsername();
+    }
+
+    public List<Integer> findIdsByUsernameContaining(String username) {
+        return repository.findIdsByUsernameContaining(username);
     }
 }

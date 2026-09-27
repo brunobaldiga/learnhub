@@ -6,6 +6,7 @@ import org.example.learnhub.exception.dto.ValidationApiError;
 import org.example.learnhub.exception.dto.ValidationError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -19,17 +20,16 @@ import java.util.List;
 @Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler({
-            CourseAccessDenied.class,
+            CourseAccessDeniedException.class,
             ReviewOwnershipException.class,
             AuthorizationDeniedException.class,
-            CourseNotCompletedException.class
     })
     public ResponseEntity<ApiError> handleForbidden(Exception ex) {
         return buildError(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
-    @ExceptionHandler(EntityNotFound.class)
-    public ResponseEntity<ApiError> handleNotFound(EntityNotFound ex) {
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(EntityNotFoundException ex) {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
@@ -39,13 +39,15 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-            EmailAlreadyInUse.class,
-            MaxSectionsReached.class,
-            UserAlreadyEnrolled.class,
-            UsernameAlreadyInUse.class,
+            EmailAlreadyInUseException.class,
+            MaxSectionsReachedException.class,
+            UserAlreadyEnrolledException.class,
+            UsernameAlreadyInUseException.class,
             DuplicatePurchaseException.class,
             DuplicateReviewException.class,
             DuplicateCertificateException.class,
+            MaxLessonsReachedException.class,
+            CourseNotCompletedException.class
     })
     public ResponseEntity<ApiError> handleConflict(RuntimeException ex) {
         return buildError(HttpStatus.CONFLICT, ex.getMessage());
@@ -54,7 +56,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             SelfReviewNotAllowedException.class,
             CourseReviewNotAllowedException.class,
-            InvalidLessonProgressException.class
+            InvalidLessonProgressException.class,
+            CurrencyExchangeException.class,
+            HttpMessageNotReadableException.class
     })
     public ResponseEntity<ApiError> handleBadRequest(RuntimeException ex) {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage());

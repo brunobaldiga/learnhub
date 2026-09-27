@@ -1,9 +1,9 @@
 package org.example.learnhub.user;
 
 import org.example.learnhub.config.TokenService;
-import org.example.learnhub.exception.EmailAlreadyInUse;
-import org.example.learnhub.exception.EntityNotFound;
-import org.example.learnhub.exception.UsernameAlreadyInUse;
+import org.example.learnhub.exception.EmailAlreadyInUseException;
+import org.example.learnhub.exception.EntityNotFoundException;
+import org.example.learnhub.exception.UsernameAlreadyInUseException;
 import org.example.learnhub.user.dto.TokenResponse;
 import org.example.learnhub.user.dto.UserLoginRequest;
 import org.example.learnhub.user.dto.UserRegisterRequest;
@@ -20,36 +20,29 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
-    @Mock
-    private UserMapper mapper;
+class UserServiceTest {
+    @Mock UserMapper mapper;
+    @Mock PasswordEncoder passwordEncoder;
+    @Mock UserRepository repository;
+    @Mock AuthenticationManager authenticationManager;
+    @Mock TokenService tokenService;
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private UserRepository repository;
-
-    @Mock
-    private AuthenticationManager authenticationManager;
-
-    @Mock
-    private TokenService tokenService;
-
-    @InjectMocks
-    private UserService service;
+    @InjectMocks UserService service;
 
     private User user;
 
@@ -58,120 +51,105 @@ public class UserServiceTest {
         user = User.builder()
                 .id(1)
                 .username("john")
-                .email("john@email.com")
-                .password("encoded-password")
+                .email("john@example.com")
+                .fullName("John Doe")
+                .password("encoded")
                 .build();
     }
 
     @Test
-    void shouldRegisterSuccessfully() {
-        UserRegisterRequest request = new UserRegisterRequest(
-                "john",
-                "john@email.com",
-                "123456"
-        );
-
+    void shouldRegisterAndReturnToken() {
+        UserRegisterRequest request = new UserRegisterRequest("john", "john@example.com", "John Doe", "123456");
         when(repository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
         when(repository.existsByUsernameIgnoreCase(request.username())).thenReturn(false);
-
         when(mapper.toUser(request)).thenReturn(user);
-        when(passwordEncoder.encode(request.password())).thenReturn("encoded-password");
+        when(passwordEncoder.encode("123456")).thenReturn("encoded");
 
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(user, null);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
+        when(tokenService.generateToken(user)).thenReturn("jwt-token");
 
-        when(authenticationManager.authenticate(any()))
-                .thenReturn(authentication);
-
-        when(tokenService.generateToken(user))
-                .thenReturn("jwt-token");
-
-        TokenResponse result = service.register(request);
-
+        assertThat(service.register(request)).isEqualTo(new TokenResponse("jwt-token"));
+        assertThat(user.getPassword()).isEqualTo("encoded");
         verify(repository).save(user);
-
-        assertThat(result.token()).isEqualTo("jwt-token");
     }
 
     @Test
-    void shouldReturn409WhenEmailAlreadyExists() {
-        UserRegisterRequest request = new UserRegisterRequest(
-                "john",
-                "john@email.com",
-                "123456"
-        );
-
+    void shouldRejectDuplicateEmail() {
+        UserRegisterRequest request = new UserRegisterRequest("john", "john@example.com", "John Doe", "123456");
         when(repository.existsByEmailIgnoreCase(request.email())).thenReturn(true);
 
         assertThatThrownBy(() -> service.register(request))
-                .isInstanceOf(EmailAlreadyInUse.class)
+                .isInstanceOf(EmailAlreadyInUseException.class)
                 .hasMessage("Email is already in use.");
+        verify(repository, never()).save(any());
     }
 
     @Test
-    void shouldReturn409WhenUsernameAlreadyExists() {
-        UserRegisterRequest request = new UserRegisterRequest(
-                "john",
-                "john@email.com",
-                "123456"
-        );
-
+    void shouldRejectDuplicateUsername() {
+        UserRegisterRequest request = new UserRegisterRequest("john", "john@example.com", "John Doe", "123456");
         when(repository.existsByEmailIgnoreCase(request.email())).thenReturn(false);
         when(repository.existsByUsernameIgnoreCase(request.username())).thenReturn(true);
 
         assertThatThrownBy(() -> service.register(request))
-                .isInstanceOf(UsernameAlreadyInUse.class)
+                .isInstanceOf(UsernameAlreadyInUseException.class)
                 .hasMessage("Username is already in use.");
     }
 
     @Test
-    void shouldLoginSuccessfully() {
-        UserLoginRequest request = new UserLoginRequest(
-                "john@email.com",
-                "123456"
-        );
+    void shouldLoginAndReturnToken() {
+        UserLoginRequest request = new UserLoginRequest("john@example.com", "123456");
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
+        when(tokenService.generateToken(user)).thenReturn("jwt-token");
 
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(user, null);
-
-        when(authenticationManager.authenticate(any()))
-                .thenReturn(authentication);
-
-        when(tokenService.generateToken(user))
-                .thenReturn("jwt-token");
-
-        TokenResponse result = service.login(request);
-
-        assertThat(result.token()).isEqualTo("jwt-token");
+        assertThat(service.login(request)).isEqualTo(new TokenResponse("jwt-token"));
     }
 
     @Test
-    void shouldReturnUserWhenUserExists() {
-        UserResponse response = new UserResponse(
-                user.getEmail(),
-                user.getUsername(),
-                user.getRoleType(),
-                LocalDateTime.now()
-        );
+    void shouldFindUserById() {
+        UserResponse response = new UserResponse("john@example.com", "john", "John Doe", user.getRoleType(), LocalDateTime.now());
+        when(repository.findById(1)).thenReturn(Optional.of(user));
+        when(mapper.toDto(user)).thenReturn(response);
 
-        when(repository.findById(1))
-                .thenReturn(Optional.of(user));
-
-        when(mapper.toDto(user))
-                .thenReturn(response);
-
-        UserResponse result = service.findById(1);
-
-        assertThat(result).isEqualTo(response);
+        assertThat(service.findById(1)).isEqualTo(response);
     }
 
     @Test
-    void shouldReturn404WhenUserDoesNotExist() {
-        when(repository.findById(any()))
-                .thenReturn(Optional.empty());
+    void shouldThrowWhenUserDoesNotExist() {
+        when(repository.findById(1)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.findById(1))
-                .isInstanceOf(EntityNotFound.class)
+                .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("User not found");
+    }
+
+    @Test
+    void shouldResolveUsernamesByIds() {
+        User second = User.builder().id(2).username("mary").build();
+        when(repository.findAllById(Set.of(1, 2))).thenReturn(List.of(user, second));
+
+        assertThat(service.findUsernamesByIds(Set.of(1, 2)))
+                .isEqualTo(Map.of(1, "john", 2, "mary"));
+    }
+
+    @Test
+    void shouldResolveSingleUsername() {
+        when(repository.findById(1)).thenReturn(Optional.of(user));
+        assertThat(service.findUsernamesById(1)).isEqualTo("john");
+    }
+
+    @Test
+    void shouldThrowWhenResolvingMissingUsername() {
+        when(repository.findById(1)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> service.findUsernamesById(1))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("User not found");
+    }
+
+    @Test
+    void shouldFindIdsByUsernameFragment() {
+        when(repository.findIdsByUsernameContaining("jo")).thenReturn(List.of(1, 3));
+        assertThat(service.findIdsByUsernameContaining("jo")).containsExactly(1, 3);
     }
 }

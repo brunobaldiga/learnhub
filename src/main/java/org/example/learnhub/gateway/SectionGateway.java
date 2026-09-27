@@ -1,19 +1,21 @@
 package org.example.learnhub.gateway;
 
 import org.example.learnhub.course.dto.SectionRequest;
-import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.entity.Section;
-import org.example.learnhub.user.entity.User;
+
+import java.util.List;
 
 public interface SectionGateway {
-    Section saveSection(Section section);
+    SectionInfo create(SectionRequest request, Integer courseId);
 
-    Section createSection(SectionRequest request, Course course);
+    SectionInfo findById(Integer sectionId);
 
-    SectionResponse toDto(Section section);
+    SectionResponse update(Integer sectionId, SectionRequest request);
 
-    Section findByIdAndCourseCreatorId(Integer sectionId, Integer creatorId);
+    void delete(Integer sectionId);
 
-    void deleteSection(Section section);
+    long countSectionsByCourseId(Integer courseId);
+
+    List<SectionResponse> findAllByCourseId(Integer courseId);
 }

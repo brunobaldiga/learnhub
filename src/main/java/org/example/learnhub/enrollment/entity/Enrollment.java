@@ -2,11 +2,11 @@ package org.example.learnhub.enrollment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.course.entity.Course;
-import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(
@@ -24,20 +24,15 @@ public class Enrollment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @Column(name = "course_id", nullable = false)
+    private Integer courseId;
 
-    @Column(nullable = false)
+    @OneToMany(mappedBy = "enrollment", fetch = FetchType.LAZY)
     @Builder.Default
-    private Integer completedLessons = 0;
-
-    @Column(nullable = false)
-    private Integer totalLessons;
+    private List<LessonProgress> lessonProgresses = new ArrayList<>();
 
     @CreationTimestamp
     @Column(updatable = false, nullable = false)

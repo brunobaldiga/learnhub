@@ -11,20 +11,20 @@ import java.time.LocalDateTime;
 
 @Component
 public class CourseReviewMapper {
-
     public CourseReview toCourseReview(User user, Course course, CourseReviewRequest request) {
         return CourseReview.builder()
                 .course(course)
-                .author(user)
+                .authorId(user.getId())
                 .rating(request.rating())
                 .comment(request.comment())
                 .createdAt(LocalDateTime.now())
                 .build();
     }
 
-    public CourseReviewResponse toDto(CourseReview courseReview) {
+    public CourseReviewResponse toDto(CourseReview courseReview, String authorUsername) {
         return new CourseReviewResponse(
-                courseReview.getAuthor().getUsername(),
+                courseReview.getId(),
+                authorUsername,
                 courseReview.getRating(),
                 courseReview.getComment(),
                 courseReview.getCreatedAt()

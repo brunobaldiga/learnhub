@@ -5,16 +5,18 @@ import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.List;
+
 public class CourseSpecs {
-    public static Specification<Course> withFilter(CourseFilter filter) {
+    public static Specification<Course> withFilter(CourseFilter filter, List<Integer> creatorIds) {
         return Specification
                 .where(titleContains(filter.title()))
-                .and(hasCreator(filter.creatorName()));
+                .and(hasCreator(creatorIds));
     }
 
     private static Specification<Course> titleContains(String title) {
         return (root, query, criteriaBuilder) -> {
-            if (title == null || title.isBlank()) return null;
+            if(title == null || title.isBlank()) return null;
 
             return criteriaBuilder.like(
                     criteriaBuilder.lower(root.get("title")),
@@ -23,22 +25,20 @@ public class CourseSpecs {
         };
     }
 
-    private static Specification<Course> hasCreator(String creatorUsername) {
+    private static Specification<Course> hasCreator(List<Integer> creatorIds) {
         return (root, query, criteriaBuilder) -> {
-            if (creatorUsername == null || creatorUsername.isBlank()) return null;
+            if(creatorIds == null) return null;
+            if(creatorIds.isEmpty()) return criteriaBuilder.disjunction();
 
-            return criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("creator").get("username")),
-                    "%" + creatorUsername.toLowerCase() + "%"
-            );
+            return root.get("creatorId").in(creatorIds);
         };
     }
 
     public static Specification<Course> ownedBy(Integer userId) {
         return (root, query, criteriaBuilder) -> {
-            if (userId == null) return null;
+            if(userId == null) return null;
 
-            return criteriaBuilder.equal(root.get("creator").get("id"), userId);
+            return criteriaBuilder.equal(root.get("creatorId"), userId);
         };
     }
 

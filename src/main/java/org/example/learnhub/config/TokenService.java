@@ -6,15 +6,15 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import org.example.learnhub.user.entity.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class TokenService {
-    @Value("${JWT_SECRET:secret-key}")
+    @Value("${api.security.token.secret}")
     private String secret;
 
 
@@ -28,7 +28,7 @@ public class TokenService {
                     .verify(token)
                     .getSubject();
         } catch (JWTVerificationException exception) {
-            return "";
+            throw new BadCredentialsException("Invalid JWT token.");
         }
     }
 
@@ -49,6 +49,6 @@ public class TokenService {
     }
 
     private Instant generateExpirationDate() {
-        return LocalDateTime.now().plusDays(7).toInstant(ZoneOffset.of("-03:00"));
+        return Instant.now().plus(7, ChronoUnit.DAYS);
     }
 }

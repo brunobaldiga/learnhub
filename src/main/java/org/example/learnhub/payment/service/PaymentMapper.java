@@ -12,6 +12,10 @@ public class PaymentMapper {
                 payment.getCourseId(),
                 payment.getCourseTitle(),
                 payment.getCoursePrice(),
+                payment.getCourseCurrency(),
+                payment.getExchangeRate(),
+                payment.getPaidCurrency(),
+                payment.getPaidPrice(),
                 payment.getCreatedAt()
         );
     }

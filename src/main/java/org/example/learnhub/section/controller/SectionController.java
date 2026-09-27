@@ -4,16 +4,19 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.dto.LessonResponse;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.dto.LessonRequest;
 import org.example.learnhub.section.service.SectionService;
 import org.example.learnhub.user.entity.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/sections")
@@ -35,7 +38,7 @@ public class SectionController {
     public ResponseEntity<SectionResponse> createLesson(
             @AuthenticationPrincipal User user,
             @PathVariable Integer sectionId,
-            @RequestBody LessonRequest request
+            @RequestBody @Validated LessonRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(service.createLesson(user, sectionId, request));
@@ -57,15 +60,32 @@ public class SectionController {
     }
 
     @PreAuthorize("hasRole('USER')")
+    @GetMapping("/{sectionId}/lessons")
+    @Operation(
+            summary = "List section lessons",
+            description = "Returns all lessons belonging to the specified section"
+    )
+    public ResponseEntity<List<LessonResponse>> findSectionLessons(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer sectionId
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findSectionLessons(user, sectionId));
+    }
+
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/lessons/{lessonId}")
     @Operation(
             summary = "Get lesson details",
             description = "Returns lesson details by its identifier"
     )
     public ResponseEntity<LessonResponse> findLessonById(
+            @AuthenticationPrincipal User user,
             @PathVariable Integer lessonId
     ) {
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .body(service.findLessonById(lessonId));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findLessonById(user, lessonId));
     }
+
+
 }

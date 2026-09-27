@@ -2,7 +2,7 @@ package org.example.learnhub.section.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.exception.MaxLessonsReachedException;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -27,9 +27,8 @@ public class Section {
     @Column(nullable = false)
     private Integer position;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @Column(name = "course_id", nullable = false)
+    private Integer courseId;
 
     @OneToMany(mappedBy = "section", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -38,4 +37,16 @@ public class Section {
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    private static final Integer MAX_LESSONS = 20;
+
+    public void addLesson(Lesson lesson) {
+        if(lessons.size() >= MAX_LESSONS) {
+            throw new MaxLessonsReachedException("A section cannot contain more than " + MAX_LESSONS + " lessons.");
+        }
+
+        lesson.setSection(this);
+        lessons.add(lesson);
+
+    }
 }

@@ -2,16 +2,11 @@ package org.example.learnhub.course.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.section.entity.Lesson;
-import org.example.learnhub.section.entity.Section;
-import org.example.learnhub.user.entity.User;
+import org.example.learnhub.integration.frankfurter.currency.CurrencyCode;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Entity
 @Table(name = "courses")
@@ -25,9 +20,8 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User creator;
+    @Column(name = "creator_id", nullable = false)
+    private Integer creatorId;
 
     @Column(nullable = false)
     private String title;
@@ -38,20 +32,24 @@ public class Course {
     private CourseStatus status = CourseStatus.PRIVATE;
 
     @Builder.Default
+    private Integer salesAmount = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Double averageRating = 0.0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer totalReviews = 0;
+
+    @Builder.Default
+    @Column(nullable = false, precision = 38, scale = 2)
     private BigDecimal price = BigDecimal.ZERO;
 
     @Builder.Default
-    private Integer salesAmount = 0;
-
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Section> sections = new ArrayList<>();
-
-    @Column(nullable = false)
-    private Double averageRating;
-
-    @Column(nullable = false)
-    private Integer totalReviews = 0;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 3)
+    private CurrencyCode currency = CurrencyCode.USD;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
@@ -62,10 +60,18 @@ public class Course {
         totalReviews++;
     }
 
-    public Integer calculateDuration() {
-        return sections.stream()
-                .flatMap(section -> section.getLessons().stream())
-                .mapToInt(Lesson::getDuration)
-                .sum();
+    public void removeReview(Integer rating) {
+        if(totalReviews <= 0) {
+            throw new IllegalStateException("Course has no reviews");
+        }
+
+        if(totalReviews == 1) {
+            totalReviews = 0;
+            averageRating = 0.0;
+
+            return;
+        }
+        averageRating = (averageRating * totalReviews - rating) / (totalReviews - 1);
+        totalReviews--;
     }
 }

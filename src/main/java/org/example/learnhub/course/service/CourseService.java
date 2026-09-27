@@ -4,23 +4,29 @@ import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.entity.Course;
 import org.example.learnhub.course.entity.CourseStatus;
-import org.example.learnhub.gateway.PaymentGateway;
-import org.example.learnhub.gateway.SectionGateway;
 import org.example.learnhub.course.repository.CourseRepository;
 import org.example.learnhub.course.repository.CourseSpecs;
-import org.example.learnhub.exception.CourseAccessDenied;
-import org.example.learnhub.exception.EntityNotFound;
-import org.example.learnhub.exception.MaxSectionsReached;
+import org.example.learnhub.exception.CourseAccessDeniedException;
+import org.example.learnhub.exception.EntityNotFoundException;
+import org.example.learnhub.exception.MaxSectionsReachedException;
+import org.example.learnhub.gateway.EnrollmentGateway;
+import org.example.learnhub.gateway.SectionGateway;
+import org.example.learnhub.gateway.UserGateway;
+import org.example.learnhub.gateway.dto.CourseSummary;
+import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.SectionResponse;
-import org.example.learnhub.section.entity.Section;
-import org.example.learnhub.section.service.SectionMapper;
 import org.example.learnhub.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,102 +34,204 @@ public class CourseService {
     private final CourseRepository repository;
     private final CourseMapper mapper;
     private final SectionGateway sectionGateway;
-    private final PaymentGateway paymentGateway;
-    private final SectionMapper sectionMapper;
+    private final UserGateway userGateway;
+    private final EnrollmentGateway enrollmentGateway;
 
+    @Transactional
     public CourseResponse create(User user, CourseRequest request) {
         Course course = mapper.toCourse(request);
-        course.setCreator(user);
+        course.setCreatorId(user.getId());
 
         repository.save(course);
 
-        return mapper.toDto(course);
+        return mapper.toDto(course, user.getUsername());
     }
 
+    @Transactional(readOnly = true)
     public Page<CourseResponse> search(CourseFilter filter, Pageable pageable) {
+        List<Integer> filteredCreatorIds = null;
+
+        if(filter.creatorName() != null && !filter.creatorName().isBlank()) {
+            filteredCreatorIds = userGateway.findIdsByUsernameContaining(filter.creatorName());
+        }
+
         Specification<Course> specification = Specification
-                .where(CourseSpecs.withFilter(filter))
+                .where(CourseSpecs.withFilter(filter, filteredCreatorIds))
                 .and(CourseSpecs.isPublic());
 
         Page<Course> courses = repository.findAll(specification, pageable);
 
-        return courses.map(mapper::toDto);
+        Set<Integer> creatorIds = courses.getContent().stream()
+                .map(Course::getCreatorId)
+                .collect(Collectors.toSet());
+
+        Map<Integer, String> usernamesByCreatorId = userGateway.findUsernamesByIds(creatorIds);
+
+        return courses.map(course -> mapper.toDto(course, usernamesByCreatorId.get(course.getCreatorId())));
     }
 
-    public Page<CourseResponse> findCourses(User user, CourseFilter filter, Pageable pageable) {
+    @Transactional(readOnly = true)
+    public Page<CourseResponse> findUserCourses(User user, CourseFilter filter, Pageable pageable) {
+        List<Integer> filteredCreatorIds = null;
+
+        if(filter.creatorName() != null && !filter.creatorName().isBlank()) {
+            filteredCreatorIds = userGateway.findIdsByUsernameContaining(filter.creatorName());
+        }
+
         Specification<Course> specification = Specification
-                .where(CourseSpecs.withFilter(filter))
+                .where(CourseSpecs.withFilter(filter, filteredCreatorIds))
                 .and(CourseSpecs.ownedBy(user.getId()));
 
         Page<Course> courses = repository.findAll(specification, pageable);
 
-        return courses.map(mapper::toDto);
+        Set<Integer> creatorIds = courses.getContent().stream()
+                .map(Course::getCreatorId)
+                .collect(Collectors.toSet());
+
+        Map<Integer, String> usernamesByCreatorId = userGateway.findUsernamesByIds(creatorIds);
+
+        return courses.map(course -> mapper.toDto(course, usernamesByCreatorId.get(course.getCreatorId())));
     }
 
-    public CourseResponse findCourseById(User user, Integer courseId) {
-        return mapper.toDto(findCourseEntityById(user, courseId));
+    @Transactional(readOnly = true)
+    public CourseResponse findById(User user, Integer courseId) {
+        Course course = findEntityById(courseId);
+
+        boolean hasAccess =
+                course.getCreatorId().equals(user.getId()) ||
+                        course.getStatus() == CourseStatus.PUBLIC ||
+                        enrollmentGateway.existsByUserIdAndCourseId(user.getId(), course.getId());
+
+
+        if(!hasAccess) {
+            throw new EntityNotFoundException("Course not found.");
+        }
+
+        String creatorUsername = userGateway.findUsernameById(course.getCreatorId());
+
+
+        return mapper.toDto(course, creatorUsername);
     }
 
-    public Course findCourseEntityById(User user, Integer courseId) {
+    @Transactional(readOnly = true)
+    public Course findEntityById(Integer courseId) {
+        return repository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
+    }
+
+    @Transactional(readOnly = true)
+    public Course findOwnedCourseByIdAndCreatorId(Integer courseId, Integer creatorId) {
+        return repository.findByIdAndCreatorId(courseId, creatorId)
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
+    }
+
+    @Transactional(readOnly = true)
+    public Course findPublicCourseById(Integer courseId) {
         return repository.findByIdAndStatus(courseId, CourseStatus.PUBLIC)
-                .or(() -> repository.findByIdAndCreatorId(courseId, user.getId()))
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
     }
 
+    @Transactional(readOnly = true)
     public Integer countLessonsByCourseId(Integer courseId) {
         return repository.countLessonsByCourseId(courseId);
     }
 
-    public CourseResponse updateCourseById(User user, Integer courseId, UpdateCourseRequest request) {
+    @Transactional
+    public CourseResponse updateById(User user, Integer courseId, UpdateCourseRequest request) {
         Course course = repository.findByIdAndCreatorId(courseId, user.getId())
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
 
         mapper.updateCourse(course, request);
-        repository.save(course);
 
-        return mapper.toDto(course);
+        return mapper.toDto(course, user.getUsername());
     }
 
+    @Transactional
     public SectionResponse createCourseSection(User user, Integer courseId, SectionRequest request) {
-        Course course = repository.findByIdAndCreatorId(courseId, user.getId())
-                .orElseThrow(() -> new EntityNotFound("Course not found."));
+        repository.findByIdAndCreatorId(courseId, user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
 
-        if (course.getSections().size() >= 20) throw new MaxSectionsReached("Course cannot have more than 20 sections.");
+        if(sectionGateway.countSectionsByCourseId(courseId) >= 20)
+            throw new MaxSectionsReachedException("Course cannot have more than 20 sections.");
 
-        Section section = sectionGateway.createSection(request, course);
-        course.getSections().add(section);
+        SectionInfo section = sectionGateway.create(request, courseId);
 
-        repository.save(course);
-
-        return sectionGateway.toDto(section);
+        return new SectionResponse(
+                section.id(),
+                section.title(),
+                section.position(),
+                List.of()
+        );
     }
 
+    @Transactional(readOnly = true)
     public List<SectionResponse> findCourseSection(User user, Integer courseId) {
-        Course course = findCourseEntityById(user, courseId);
+        Course course = findEntityById(courseId);
 
-        boolean hasPaid = paymentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
-        boolean isOwner = course.getCreator().getId().equals(user.getId());
+        boolean isEnrolled = enrollmentGateway.existsByUserIdAndCourseId(user.getId(), courseId);
+        boolean isOwner = course.getCreatorId().equals(user.getId());
 
-        if (!hasPaid && !isOwner) throw new CourseAccessDenied("User haven't paid for the course");
+        if(!isEnrolled && !isOwner) throw new CourseAccessDeniedException("User does not have access to this course.");
 
-        return course.getSections().stream()
-                .map(sectionGateway::toDto)
-                .toList();
+        return sectionGateway.findAllByCourseId(courseId);
     }
 
     public SectionResponse updateCourseSection(User user, Integer sectionId, SectionRequest request) {
-        Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
+        Integer courseId = sectionGateway.findById(sectionId).courseId();
 
-        section.setTitle(request.title());
-        section.setPosition(request.position());
+        if(!isCourseCreator(courseId, user.getId()))
+            throw new CourseAccessDeniedException("You do not own this course.");
 
-        sectionGateway.saveSection(section);
-
-        return sectionMapper.toDto(section);
+        return sectionGateway.update(sectionId, request);
     }
 
+    @Transactional
     public void deleteCourseSection(User user, Integer sectionId) {
-        Section section = sectionGateway.findByIdAndCourseCreatorId(sectionId, user.getId());
-        sectionGateway.deleteSection(section);
+        Integer courseId = sectionGateway.findById(sectionId).courseId();
+
+        if(!isCourseCreator(courseId, user.getId()))
+            throw new CourseAccessDeniedException("You do not own this course.");
+
+        sectionGateway.delete(sectionId);
+    }
+
+    @Transactional
+    public void incrementSalesAmount(Integer courseId) {
+        Course course = repository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
+        course.setSalesAmount(course.getSalesAmount() + 1);
+        repository.save(course);
+    }
+
+    public void recordReview(Integer courseId, Integer rating) {
+        Course course = repository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
+
+        course.addReview(rating);
+        repository.save(course);
+    }
+
+    public boolean isCourseCreator(Integer courseId, Integer creatorId) {
+        return repository.existsByIdAndCreatorId(courseId, creatorId);
+    }
+
+    public CourseSummary findCourseSummaryById(Integer courseId) {
+        Course course = repository.findById(courseId)
+                .orElseThrow(() -> new EntityNotFoundException("Course not found."));
+        String creatorUsername = userGateway.findUsernameById(course.getCreatorId());
+
+        return new CourseSummary(course.getId(), course.getTitle(), creatorUsername);
+    }
+
+    public Map<Integer, CourseSummary> findCourseSummariesById(Collection<Integer> courseIds) {
+        List<Course> courses = repository.findAllById(courseIds);
+
+        Set<Integer> creatorIds = courses.stream().map(Course::getCreatorId).collect(Collectors.toSet());
+        Map<Integer, String> usernamesByCreatorId = userGateway.findUsernamesByIds(creatorIds);
+
+        return courses.stream().collect(Collectors.toMap(
+                Course::getId,
+                course -> new CourseSummary(course.getId(), course.getTitle(), usernamesByCreatorId.get(course.getCreatorId()))
+        ));
     }
 }

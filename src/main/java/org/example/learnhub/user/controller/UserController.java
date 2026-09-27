@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
         name = "Users",
         description = "Operations related to user registration, authentication and profile management"
 )
-@SecurityRequirement(name = "bearerAuth")
 public class UserController {
     private final UserService service;
 
@@ -49,9 +48,11 @@ public class UserController {
     public ResponseEntity<TokenResponse> login(
             @RequestBody @Validated UserLoginRequest request
     ) {
-        return ResponseEntity.ok(service.login(request));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.login(request));
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/me")
     @Operation(
@@ -61,6 +62,7 @@ public class UserController {
     public ResponseEntity<UserResponse> me(
             @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(service.findById(user.getId()));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findById(user.getId()));
     }
 }

@@ -10,11 +10,14 @@ import org.example.learnhub.enrollment.dto.ProgressRequest;
 import org.example.learnhub.enrollment.dto.ProgressResponse;
 import org.example.learnhub.enrollment.service.EnrollmentService;
 import org.example.learnhub.user.entity.User;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -40,10 +43,10 @@ public class EnrollmentController {
     )
     public ResponseEntity<Page<EnrollmentResponse>> findUserEnrollments(
             @AuthenticationPrincipal User user,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @ParameterObject Pageable pageable
     ) {
-        return ResponseEntity.ok(service.findEnrolledCourses(user.getId(), page, size));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findEnrolledCourses(user.getId(), pageable));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -56,12 +59,30 @@ public class EnrollmentController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer enrollmentId
     ) {
-        return ResponseEntity.ok(service.findEnrollmentById(user.getId(), enrollmentId));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findEnrollmentById(user.getId(), enrollmentId));
     }
 
-    @PatchMapping("/lesson/{lessonId}/progress")
-    public ResponseEntity<ProgressResponse> progress(
-            @RequestBody ProgressRequest request,
+    @PostMapping("/lessons/{lessonId}/start")
+    @Operation(
+            summary = "Starts a lesson",
+            description = "Initializes enrolled user lesson progress"
+    )
+    public ResponseEntity<ProgressResponse> startLesson(
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer lessonId
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.startLesson(user, lessonId));
+    }
+
+    @PatchMapping("/lessons/{lessonId}/progress")
+    @Operation(
+            summary = "Updates lesson progress",
+            description = "Updates enrolled user lesson progress"
+    )
+    public ResponseEntity<ProgressResponse> lessonProgress(
+            @RequestBody @Validated ProgressRequest request,
             @PathVariable Integer lessonId,
             @AuthenticationPrincipal User user
     ) {
@@ -70,7 +91,7 @@ public class EnrollmentController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @PostMapping("/{enrollmentId}/certificate")
+    @PostMapping("/{enrollmentId}/certificates")
     @Operation(
             summary = "Generate certificate",
             description = "Generate a certificate upon course completion"
@@ -82,8 +103,8 @@ public class EnrollmentController {
         CertificateResponse response = service.generateCertificate(user, enrollmentId);
 
         URI uri = ServletUriComponentsBuilder
-                .fromCurrentRequest()
-                .path("/{id}")
+                .fromCurrentContextPath()
+                .path("/api/enrollments/certificates/{id}")
                 .buildAndExpand(response.id())
                 .toUri();
 
@@ -92,7 +113,7 @@ public class EnrollmentController {
                 .body(response);
     }
 
-    @GetMapping("/{enrollmentId}/certificate/{certificateId}")
+    @GetMapping("/certificates/{certificateId}")
     @Operation(
             summary = "Get certificate details",
             description = "Returns details of a specific certificate"
@@ -100,7 +121,7 @@ public class EnrollmentController {
     public ResponseEntity<CertificateResponse> findCertificateById(
             @PathVariable UUID certificateId
     ) {
-        return ResponseEntity.status(HttpStatus.FOUND)
+        return ResponseEntity.status(HttpStatus.OK)
                 .body(service.findCertificateById(certificateId));
     }
 

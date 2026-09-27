@@ -2,7 +2,6 @@ package org.example.learnhub.enrollment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.learnhub.user.entity.User;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
@@ -20,13 +19,9 @@ public class Certificate {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "enrollment_id", nullable = false)
     private Enrollment enrollment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
 
     @Column(updatable = false, nullable = false)
     private String fullNameAtIssuance;

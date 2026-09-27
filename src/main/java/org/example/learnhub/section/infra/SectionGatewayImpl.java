@@ -2,42 +2,70 @@ package org.example.learnhub.section.infra;
 
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.SectionRequest;
-import org.example.learnhub.course.entity.Course;
+import org.example.learnhub.exception.CourseAccessDeniedException;
+import org.example.learnhub.exception.EntityNotFoundException;
 import org.example.learnhub.gateway.SectionGateway;
+import org.example.learnhub.gateway.dto.SectionInfo;
 import org.example.learnhub.section.dto.SectionResponse;
 import org.example.learnhub.section.entity.Section;
+import org.example.learnhub.section.repository.SectionRepository;
 import org.example.learnhub.section.service.SectionMapper;
 import org.example.learnhub.section.service.SectionService;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class SectionGatewayImpl implements SectionGateway {
-    private final SectionService service;
     private final SectionMapper mapper;
+    private final SectionRepository repository;
 
     @Override
-    public void deleteSection(Section section) {
-        service.deleteSection(section);
+    public SectionInfo create(SectionRequest request, Integer courseId) {
+        Section section = mapper.toSection(request, courseId);
+
+        return mapper.toSectionInfo(repository.save(section));
     }
 
     @Override
-    public Section saveSection(Section section) {
-        return service.saveSection(section);
+    public SectionResponse update(Integer sectionId, SectionRequest request) {
+        Section section = repository.findById(sectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Section not found."));
+
+        section.setTitle(request.title());
+        section.setPosition(request.position());
+        Section saved = repository.save(section);
+
+        return mapper.toDto(saved);
     }
 
     @Override
-    public Section createSection(SectionRequest request, Course course) {
-        return service.createSection(request, course);
+    public void delete(Integer sectionId) {
+        Section section = repository.findById(sectionId)
+                .orElseThrow(() -> new EntityNotFoundException("Section not found"));
+
+        repository.delete(section);
     }
 
     @Override
-    public SectionResponse toDto(Section section) {
-        return mapper.toDto(section);
+    public long countSectionsByCourseId(Integer courseId) {
+        return repository.countByCourseId(courseId);
     }
 
     @Override
-    public Section findByIdAndCourseCreatorId(Integer sectionId, Integer creatorId) {
-        return service.findSectionEntityByIdAndCourseCreatorId(sectionId, creatorId);
+    public List<SectionResponse> findAllByCourseId(Integer courseId) {
+        return repository.findAllByCourseIdOrderByPositionAsc(courseId)
+                .stream()
+                .map(mapper::toDto)
+                .toList();
+    }
+
+    @Override
+    public SectionInfo findById(Integer sectionId) {
+        return mapper.toSectionInfo(
+                repository.findById(sectionId)
+                        .orElseThrow(() -> new EntityNotFoundException("Section not found."))
+        );
     }
 }

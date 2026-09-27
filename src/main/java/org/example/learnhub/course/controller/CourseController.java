@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.learnhub.course.dto.*;
 import org.example.learnhub.course.service.CourseReviewService;
@@ -71,7 +70,8 @@ public class CourseController {
             @ParameterObject CourseFilter filter,
             @ParameterObject Pageable pageable
     ) {
-        return ResponseEntity.ok(service.search(filter, pageable));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.search(filter, pageable));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
@@ -85,7 +85,8 @@ public class CourseController {
             @ParameterObject CourseFilter filter,
             @ParameterObject Pageable pageable
     ) {
-        return ResponseEntity.ok(service.findCourses(user, filter, pageable));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findUserCourses(user, filter, pageable));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -98,7 +99,8 @@ public class CourseController {
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId
     ) {
-        return ResponseEntity.ok(service.findCourseById(user, courseId));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findById(user, courseId));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
@@ -112,7 +114,8 @@ public class CourseController {
             @PathVariable Integer courseId,
             @RequestBody @Validated UpdateCourseRequest request
     ) {
-        return ResponseEntity.ok(service.updateCourseById(user, courseId, request));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.updateById(user, courseId, request));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
@@ -126,11 +129,12 @@ public class CourseController {
             @PathVariable Integer courseId,
             @RequestBody @Validated SectionRequest request
     ) {
-        return ResponseEntity.ok(service.createCourseSection(user, courseId, request));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.createCourseSection(user, courseId, request));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
-    @PutMapping("/section/{sectionId}")
+    @PutMapping("/sections/{sectionId}")
     @Operation(
             summary = "Update section",
             description = "Updates an existing section from a course"
@@ -140,11 +144,12 @@ public class CourseController {
             @PathVariable Integer sectionId,
             @RequestBody @Validated SectionRequest request
     ) {
-        return ResponseEntity.ok(service.updateCourseSection(user, sectionId, request));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.updateCourseSection(user, sectionId, request));
     }
 
     @PreAuthorize("hasRole('CREATOR')")
-    @DeleteMapping("/section/{sectionId}")
+    @DeleteMapping("/sections/{sectionId}")
     @Operation(
             summary = "Delete section",
             description = "Deletes an existing section from a course"
@@ -161,13 +166,14 @@ public class CourseController {
     @GetMapping("/{courseId}/sections")
     @Operation(
             summary = "List course sections",
-            description = "Returns all sections belonging to a course"
+            description = "Returns all sections belonging to the specified course"
     )
     public ResponseEntity<List<SectionResponse>> findCourseSections(
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId
     ) {
-        return ResponseEntity.ok(service.findCourseSection(user, courseId));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(service.findCourseSection(user, courseId));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -179,10 +185,10 @@ public class CourseController {
     public ResponseEntity<CourseReviewResponse> createCourseReview(
             @AuthenticationPrincipal User user,
             @PathVariable Integer courseId,
-            @RequestBody @Valid CourseReviewRequest request
+            @RequestBody @Validated CourseReviewRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(courseReviewService.createCourseReview(user, courseId, request));
+                .body(courseReviewService.create(user, courseId, request));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -192,12 +198,15 @@ public class CourseController {
             description = "Returns all the reviews for the specified course"
     )
     public ResponseEntity<Page<CourseReviewResponse>> findCourseReviews(
-            CourseReviewFilter filter,
+            @AuthenticationPrincipal User user,
+            @PathVariable Integer courseId,
+            @ParameterObject CourseReviewFilter filter,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "25") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(courseReviewService.findCourseReviews(filter, pageable));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(courseReviewService.findCourseReviews(user, courseId, filter, pageable));
     }
 
     @PreAuthorize("hasRole('USER')")
@@ -211,7 +220,7 @@ public class CourseController {
             @PathVariable Integer courseId,
             @PathVariable Integer courseReviewId
     ) {
-        courseReviewService.deleteReviewById(user, courseId, courseReviewId);
+        courseReviewService.deleteById(user, courseId, courseReviewId);
         return ResponseEntity.noContent().build();
     }
 
